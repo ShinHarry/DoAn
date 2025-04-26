@@ -56,6 +56,7 @@ router.post("/login", async (req, res) => {
       user.userPassword
     );
     if (!isPasswordValid) {
+      console.log(userPassword, user.userPassword);
       return res.status(400).json({ message: "Mật khẩu không đúng." });
     }
 

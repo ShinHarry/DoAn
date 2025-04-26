@@ -5,7 +5,7 @@ import styles from './Home.module.scss';
 import { Link } from 'react-router-dom';
 import config from '~/config';
 import Image from '~/components/Image';
-
+import Banner from '~/layouts/components/BannerImage';
 const cx = classNames.bind(styles);
 
 function Home() {
@@ -35,7 +35,10 @@ function Home() {
 
     return (
         <div className={cx('wrapper')}>
-            <h2>Danh sách sản phẩm</h2>
+            <Banner />
+
+            <br /><h2>Danh sách sản phẩm</h2>
+           
             {error && <p>{error}</p>}
             {loading ? (
                 <p>Đang tải...</p>

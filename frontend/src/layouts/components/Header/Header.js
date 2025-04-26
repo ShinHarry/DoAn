@@ -10,7 +10,9 @@ import {
     faLocationDot,
     faPlus,
     faSignOutAlt,
+    faImage,
     faMobilePhone,
+
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
@@ -26,6 +28,7 @@ import Image from '~/components/Image';
 import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
 import { useEffect, useState } from 'react';
+
 
 const cx = classNames.bind(styles);
 
@@ -133,6 +136,12 @@ function Header() {
             to: '/addProduct',
         },
         {
+            icon: <FontAwesomeIcon icon={faImage} />,
+            title: 'Banner',
+            to: '/new',
+        },
+        {
+            icon: <FontAwesomeIcon icon={faSignOutAlt} />, // thêm icon logout
             icon: <FontAwesomeIcon icon={faSignOutAlt} />,
             title: 'Đăng xuất',
             separate: true,

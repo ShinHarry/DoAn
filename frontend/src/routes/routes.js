@@ -15,7 +15,10 @@ import UpdateProduct from '~/pages/UpdateProduct';
 import Category from '~/pages/Category';
 import Login from '~/pages/Login';
 import Register from '~/pages/Register';
+import Banner from '~/pages/Banner';
+import AddBanner from '~/pages/AddBanner';
 import ForgotPassword from '~/pages/ForgotPassword';
+
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
@@ -29,7 +32,11 @@ const publicRoutes = [
     { path: config.routes.category, component: Category },
     { path: config.routes.login, component: Login, layout: null },
     { path: config.routes.register, component: Register, layout: null },
+    { path: config.routes.new, component: Banner },
+    { path: config.routes.addNew, component: AddBanner },
+    
     { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
+
 ];
 
 const privateRoutes = [];
