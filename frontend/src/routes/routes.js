@@ -17,6 +17,8 @@ import Login from '~/pages/Login';
 import Register from '~/pages/Register';
 import Banner from '~/pages/Banner';
 import AddBanner from '~/pages/AddBanner';
+import ForgotPassword from '~/pages/ForgotPassword';
+
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
@@ -33,6 +35,8 @@ const publicRoutes = [
     { path: config.routes.new, component: Banner },
     { path: config.routes.addNew, component: AddBanner },
     
+    { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
+
 ];
 
 const privateRoutes = [];

@@ -13,10 +13,10 @@ const RouterManufacturer = require("./routes/routerManufacturer");
 const RouterOrigin = require("./routes/routerOrigin");
 const RouterUnit = require("./routes/routerUnit");
 const routerAuth = require("./routes/routerAuth");
+
 const RouterNew =  require("./routes/routerNew");
 
-
-
+const verifyToken = require("./middlewares/Auth/verifyToken");
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;

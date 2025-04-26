@@ -11,11 +11,13 @@ import {
     faPlus,
     faSignOutAlt,
     faImage,
+    faMobilePhone,
+
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
-
+import { jwtDecode } from 'jwt-decode';
 import config from '~/config';
 import Button from '~/components/Button';
 import styles from './Header.module.scss';
@@ -31,20 +33,19 @@ import { useEffect, useState } from 'react';
 const cx = classNames.bind(styles);
 
 function Header() {
-    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const getCategoryIdByName = (name) => {
-        const category = categories.find((cat) => cat.nameCategory.trim() === name);
-        return category?._id;
-    };
-    const laptopId = categories.length > 0 ? getCategoryIdByName('Laptop') : null;
+    const [categoryMap, setCategoryMap] = useState({});
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const categoryData = await categoryService.getCategories();
-                setCategories(categoryData);
+                const map = {};
+                categoryData.forEach((cat) => {
+                    map[cat.nameCategory.trim()] = cat._id;
+                });
+                setCategoryMap(map);
                 setLoading(true);
             } catch (error) {
                 setError('Không thể tải danh mục. Vui lòng thử lại.');
@@ -52,12 +53,29 @@ function Header() {
             }
         };
         fetchCategories();
-    }, [laptopId]);
+    }, []);
+
     const getToken = () => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        return token;
+        if (!token) return null;
+        try {
+            const decoded = jwtDecode(token);
+            return {
+                userId: decoded.userId,
+                userRole: decoded.userRole,
+                avatar: decoded.userAvatar || null,
+            };
+        } catch (error) {
+            console.error('Token decode error:', error);
+            return null;
+        }
     };
-    const currentUser = getToken() ? true : false;
+
+    const { userId, avatar } = getToken() || {};
+    console.log('userId:', userId);
+    console.log('avatarUser:', avatar);
+
+    const currentUser = !!userId;
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
@@ -67,27 +85,32 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faLaptop} />,
             title: 'Laptop',
-            to: `/category/${laptopId}`,
+            to: `/category/${categoryMap['Laptop'] || ''}`,
         },
         {
-            icon: <FontAwesomeIcon icon={faDesktop} height="16" width="20" />,
+            icon: <FontAwesomeIcon icon={faMobilePhone} />,
+            title: 'Điện thoại',
+            to: `/category/${categoryMap['Điện thoại'] || ''}`,
+        },
+        {
+            icon: <FontAwesomeIcon icon={faDesktop} />,
             title: 'PC',
-            to: '/pc',
+            to: `/category/${categoryMap['PC'] || ''}`,
         },
         {
-            icon: <ComponentElectronicIcon height="16" width="20" />,
+            icon: <ComponentElectronicIcon />,
             title: 'Electronic devices',
-            to: '/electronic-devices',
+            to: `/category/${categoryMap['Electronic devices'] || ''}`,
         },
         {
-            icon: <FontAwesomeIcon icon={faKeyboard} height="16" width="20" />,
+            icon: <FontAwesomeIcon icon={faKeyboard} />,
             title: 'Keyboards',
-            to: '/keyboards',
+            to: `/category/${categoryMap['Keyboards'] || ''}`,
         },
         {
-            icon: <FontAwesomeIcon icon={faHeadphones} height="16" width="20" />,
+            icon: <FontAwesomeIcon icon={faHeadphones} />,
             title: 'Headphones',
-            to: '/headphones',
+            to: `/category/${categoryMap['Headphones'] || ''}`,
         },
     ];
 
@@ -95,7 +118,7 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faUser} />,
             title: 'Thông tin cá nhân',
-            to: '/user',
+            to: `/profile/${userId}`,
         },
         {
             icon: <FontAwesomeIcon icon={faBoxes} />,
@@ -119,9 +142,10 @@ function Header() {
         },
         {
             icon: <FontAwesomeIcon icon={faSignOutAlt} />, // thêm icon logout
+            icon: <FontAwesomeIcon icon={faSignOutAlt} />,
             title: 'Đăng xuất',
-            separate: true, // nếu muốn có vạch ngăn cách
-            onClick: handleLogout, // gọi hàm logout
+            separate: true,
+            onClick: handleLogout,
         },
     ];
 
@@ -161,11 +185,7 @@ function Header() {
 
                         <Menu items={currentUser ? userMenu : MENU_ITEMS}>
                             {currentUser ? (
-                                <Image
-                                    className={cx('user-avatar')}
-                                    src="https://scontent.fhan4-3.fna.fbcdn.net/v/t39.30808-6/345436276_621172086598490_967795278169891486_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeF911cFQ6AhlrpQyyGpdwVpttJhKcBjCVC20mEpwGMJUFROXBFnCdYar10Do2pC8AssXZ9ceLvKEiRWyp7D9w1H&_nc_ohc=oizIRI8DkfcQ7kNvgGGX_BB&_nc_oc=AdmwkAZ6sLjC0AraaLY9ttj9zoCNh-2UwfK8A4RFQycJpGtrydfim_Qcp-BsEcjkx_U&_nc_zt=23&_nc_ht=scontent.fhan4-3.fna&_nc_gid=bYnb35aY-cePk6FB0YnO2Q&oh=00_AYEp5s2iglYeMUqrUhKoZ5Pcapnshi9UwtB5XioR0lGsRg&oe=67F425B8"
-                                    alt="Nguyen Van A"
-                                />
+                                <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />
                             ) : (
                                 <></>
                             )}

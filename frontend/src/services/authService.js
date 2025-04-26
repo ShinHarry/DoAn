@@ -20,7 +20,7 @@ export const register = async (registerData) => {
 
 export const forgotPassword = async (email) => {
     try {
-        const res = await httpRequest.post('auth/forgot-password', { email });
+        const res = await httpRequest.post('auth/forgot-password', email);
         return res;
     } catch (error) {
         throw error;
