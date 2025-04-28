@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const Product = require("../models/Product");
 const { uploadUser } = require("../middlewares/uploadImage/uploads");
+const verifyToken = require("../middlewares/Auth/verifyToken");
 
 // Get list of users
 router.get("/", async (req, res) => {
@@ -14,6 +15,16 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get user by ID
+router.get("/:userId", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 // Add new user
 router.post("/", uploadUser.single("avatar"), async (req, res) => {
   try {

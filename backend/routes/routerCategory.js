@@ -16,10 +16,6 @@ router.get("/:id", async (req, res) => {
     if (!categories) {
       return res.status(404).send("Không tìm thấy danh mục sản phẩm.");
     }
-    console.log("Name: ", req.params.name);
-    console.log("ID: ", req.params.id);
-    console.log("ID: ", req.params.id);
-    console.log("categories: ", categories);
 
     const products = await Product.find({ productCategory: categories })
       .populate("productCategory", "nameCategory")

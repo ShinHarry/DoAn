@@ -30,7 +30,7 @@ function Search() {
         }
         const fetchAPI = async () => {
             setLoading(true);
-            const result = await searchServices.search(debouncedValue);
+            const result = await searchServices.search({ debouncedValue });
             setSearchResult(result.products);
             setLoading(false);
         };
@@ -125,8 +125,6 @@ function Search() {
                     )}
                     {loading && <FontAwesomeIcon className={cx('loading')} icon={faSpinner} />}
                     <button className={cx('search-btn')} onClick={handleSearch}>
-                        {' '}
-                        {/* Khi bấm tìm kiếm */}
                         <SearchIcon />
                     </button>
                 </div>

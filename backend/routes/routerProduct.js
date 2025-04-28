@@ -7,8 +7,6 @@ const BASE_URL = process.env.BASE_URL;
 
 //API lấy danh sách sản phẩm
 router.get("/", async (req, res) => {
-  console.log("req.query", req.query);
-  console.log("req.params", req.params);
   try {
     const { page, limit } = req.query;
     const products = await Product.find()
@@ -29,7 +27,11 @@ router.get("/", async (req, res) => {
 // API tìm kiếm
 router.get("/search", async (req, res) => {
   try {
-    const { q } = req.query;
+    const { page, limit, q } = req.query;
+    console.log("query", req.query);
+    console.log("page", page);
+    console.log("limit", limit);
+    console.log("q", q);
 
     const query = q ? { productName: new RegExp(q, "i") } : {};
     const products = await Product.find(query)
@@ -37,13 +39,12 @@ router.get("/search", async (req, res) => {
       .populate("productUnit", "nameUnit")
       .populate("productManufacturer", "nameManufacturer")
       .populate("productOrigin", "nameOrigin")
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
       .lean();
     const total = await Product.countDocuments(query);
 
-    res.json({
-      products,
-      total,
-    });
+    res.json({ products, total, page: parseInt(page), limit: parseInt(limit) });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

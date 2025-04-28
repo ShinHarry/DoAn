@@ -23,7 +23,7 @@ function Category() {
         };
 
         fetchProducts();
-    }, [categoryId]); // Thêm dependency để gọi lại khi categoryId thay đổi
+    }, [categoryId]);
     return (
         <div className={cx('wrapper')}>
             <h2>Danh sách sản phẩm</h2>
@@ -36,7 +36,7 @@ function Category() {
                             {product._id}
                             <p>Name: {product.productName}</p>
                             {product.productUnitPrice}
-                            <img src={product.productImgs[0]?.link}></img>
+                            <img src={product.productImgs[0]?.link} alt={product.productImgs[0]?.alt}></img>
                         </div>
                     </div>
                 ))}

@@ -12,6 +12,9 @@ const cx = classNames.bind(styles);
 function Search() {
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(0);
+    const [total, setTotal] = useState(0);
 
     const location = useLocation();
     const query = new URLSearchParams(location.search).get('q');
@@ -20,8 +23,10 @@ function Search() {
         if (query) {
             const fetchSearchResults = async () => {
                 setLoading(true);
-                const result = await searchServices.search(query);
+                const result = await searchServices.search({ page: 1, limit: 12, q: query });
                 setSearchResult(result.products);
+                setLimit(result.limit);
+                setTotal(result.total);
                 setLoading(false);
             };
             fetchSearchResults();
@@ -73,6 +78,18 @@ function Search() {
                             );
                         })}
                     </div>
+                    {/* Phân trang */}
+                    <div className={cx('pagination')}>
+                        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                            Trước
+                        </button>
+                        <span>
+                            Trang {page} / {Math.ceil(total / limit)}
+                        </span>
+                        <button disabled={page * limit >= total} onClick={() => setPage(page + 1)}>
+                            Tiếp
+                        </button>
+                    </div>
                 </>
             )}
         </div>
@@ -80,20 +97,3 @@ function Search() {
 }
 
 export default Search;
-{
-    /* <div>
-            <h2>Search Results for: {query}</h2>
-            {loading ? (
-                <p>Loading...</p>
-            ) : (
-                <div>
-                    {searchResult.map((product) => (
-                        <div key={product._id}>
-                            <h3>{product.productName}</h3>
-                            <p>{product.productUnitPrice} VNĐ</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div> */
-}

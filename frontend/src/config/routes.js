@@ -2,10 +2,10 @@ const routes = {
     home: '/',
     search: '/search',
     product: '/product',
+    profile: '/profile/:userId',
     productDetail: '/product/:productId',
-    roductUpdate: '/product/:productId',
-    addProduct: '/addProduct',
     updateProduct: '/updateProduct/:productId',
+    addProduct: '/addProduct',
     cart: '/cart',
     checkout: '/checkout',
     admin: '/admin',
@@ -19,6 +19,7 @@ const routes = {
     updateNew : '/updateNew/:bannerId',
     sales : '/sales',
     addSale: '/addSale'
+    // forgotpassword: '/forgot-password',
 };
 
 export default routes;

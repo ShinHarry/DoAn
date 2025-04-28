@@ -1,4 +1,5 @@
 const express = require("express");
+const nodemailer = require("nodemailer");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -64,7 +65,6 @@ router.post("/login", async (req, res) => {
       {
         userId: user._id,
         role: user.userRole,
-        // idCard: null,
       },
       process.env.secret_token,
       { expiresIn: "1d" }
@@ -88,33 +88,48 @@ router.post("/login", async (req, res) => {
 });
 
 // Quên mật khẩu
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    console.log(email);
 
     const user = await User.findOne({ userEmail: email });
+
     if (!user) {
       return res
         .status(400)
         .json({ message: "Email không tồn tại trong hệ thống." });
     }
 
-    // Tạo mật khẩu mới ngẫu nhiên
     const newPassword = Math.random().toString(36).slice(-8);
 
-    // Hash mật khẩu mới
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Cập nhật mật khẩu
     user.userPassword = hashedPassword;
     await user.save();
 
-    // Gửi mật khẩu mới qua email (phần này bạn cần tích hợp email service như nodemailer)
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.userEmail,
+      subject: "Mật khẩu mới của bạn",
+      text: `Mật khẩu mới của bạn trên Smart Market là: ${newPassword}`,
+    });
+
     console.log(`Mật khẩu mới cho ${email} là: ${newPassword}`);
 
-    res
-      .status(200)
-      .json({ message: "Mật khẩu mới đã được tạo và gửi đến email." });
+    res.status(200).json({
+      message: "Mật khẩu mới đã được tạo và gửi đến email.",
+      newPassword,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Đã xảy ra lỗi máy chủ." });

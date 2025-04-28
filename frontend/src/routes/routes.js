@@ -20,6 +20,8 @@ import AddBanner from '~/pages/AddBanner';
 import UpdateBanner from '~/pages/UpdateBanner';
 import Sale from '~/pages/Sale';
 import AddSale from '~/pages/AddSale';
+import ForgotPassword from '~/pages/ForgotPassword';
+
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
@@ -39,6 +41,8 @@ const publicRoutes = [
     { path: config.routes.sales, component: Sale },
     { path: config.routes.addSale, component: AddSale },
     
+    { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
+
 ];
 
 const privateRoutes = [];
