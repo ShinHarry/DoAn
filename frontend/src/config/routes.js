@@ -18,6 +18,7 @@ const routes = {
     addNew : '/addNew',
     updateNew : '/updateNew/:bannerId',
     sales : '/sales',
+    updateSale: '/updateSale/:saleId',
     addSale: '/addSale'
     // forgotpassword: '/forgot-password',
 };

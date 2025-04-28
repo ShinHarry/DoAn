@@ -13,7 +13,7 @@ import {
     faImage,
     faStar,
     faMobilePhone,
-
+    faStar,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
