@@ -14,6 +14,19 @@ router.get("/", async (req, res) => {
   }
 });
 
+// lấy chi tiết
+router.get("/:id", async (req, res) => {
+  try {
+    const sales = await Sales.findById(req.params.id)
+
+    if (!sales) return res.status(404).json({ message: "Sales not found" });
+
+    res.json(sales);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Thêm mới khuyến mãi
 router.post("/", async (req, res) => {
   try {
@@ -43,6 +56,32 @@ router.post("/", async (req, res) => {
 });
 
 
+// Update sale Promise((resolve, reject) => {
+  
+  router.put("/:id", async (req, res) => {
+    try {
+      const { name, dateStart, dateEnd, discount, product } = req.body;
+  
+      const updateData = {
+        name,
+        dateStart,
+        dateEnd,
+        discount,
+        product,
+      };
+  
+      const updatedSale = await Sales.findByIdAndUpdate(req.params.id, updateData, { new: true });
+  
+      if (!updatedSale) {
+        return res.status(404).json({ message: "Sale not found" });
+      }
+  
+      res.json(updatedSale);
+    } catch (err) {
+      console.error(err);
+      res.status(400).json({ message: err.message });
+    }
+  });
 // Delete sales
 router.delete("/:id", async (req, res) => {
   try {

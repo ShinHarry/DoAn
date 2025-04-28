@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import * as newService from '~/services/newService';
 import classNames from 'classnames/bind';
 import styles from './AddBanner.module.scss';
+import { toast, ToastContainer  } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(styles);
 
@@ -66,8 +68,8 @@ function AddBanner() {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
     
-            alert('Thêm banner thành công!');
-            navigate('/news');
+            toast.success('Thêm banner thành công!');
+            setTimeout(() => navigate('/news'), 2000);
         } catch (err) {
             console.error(err);
             setError('Có lỗi xảy ra khi thêm banner. Vui lòng thử lại.');
@@ -78,7 +80,16 @@ function AddBanner() {
     
 
     return (
+        
         <div className={cx('wrapper')}>
+            <ToastContainer 
+                    position="bottom-right"  //  Đặt ở góc dưới bên trái
+                    autoClose={3000}         // Tự động tắt sau 3 giây (có thể chỉnh)
+                    hideProgressBar={true}  //  thanh tiến trình
+                    newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
+                    closeOnClick            //Cho phép đóng toast
+                    draggable
+                />
             <h2 className={cx('heading')}>Thêm Banner Mới</h2>
             {error && <p className={cx('error-message')}>{error}</p>}
 

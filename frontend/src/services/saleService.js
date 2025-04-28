@@ -19,7 +19,7 @@ export const addSale= async (sales) => {
     }
 };
 
-export const updateSale = async (id, sales) => {
+export const updateSaleById = async (id, sales) => {
     try {
         return await httpRequest.put(`/sales/${id}`, sales);
     } catch (err) {

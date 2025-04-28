@@ -3,6 +3,7 @@ import * as saleService from '~/services/saleService';
 import {  Link, useNavigate } from 'react-router-dom';
 import styles from './Sale.module.scss';
 import classNames from 'classnames/bind';
+import Swal from 'sweetalert2'; // thư viện hiện alert 
 
 const cx = classNames.bind(styles);
 
@@ -28,17 +29,34 @@ function Sale() {
         
       };
     const handleDelete = async (id) => {
-       const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa khuyến mãi này không?');
-               if (!confirmDelete) return;
-       
-               try {
-                   await saleService.deleteSaleById(id);
-                   alert('Khuyến mãi đã được xóa thành công!');
-                   setSales(sales.filter((sale) => sale._id !== id));
-                   // navigate('/new');
-               } catch (error) {
-                   console.error('Lỗi khi xóa khuyến mãi:', error);
-               }
+       const result = await Swal.fire({
+          title: 'Bạn có chắc chắn xóa?',
+          text: 'Banner sẽ bị xóa !',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',   // màu nút OK
+          cancelButtonColor: '#d33',        // màu nút Cancel
+          confirmButtonText: 'Xóa',
+          cancelButtonText: 'Hủy',
+       });
+       if (result.isConfirmed) {
+          try {
+          await saleService.deleteSaleById(id);
+          Swal.fire(
+            'Đã xóa!',
+            'Giảm giá đã được xóa thành công.',
+            'success'
+          );
+          // Ví dụ: gọi lại danh sách nếu cần
+            setSales(sales.filter((item) => item._id !== id));
+          } catch (error) {
+            Swal.fire(
+              'Lỗi!',
+              'Xóa giảm giá thất bại.',
+              'error'
+            );
+          }
+        }
       };
       
     const handleAddNew = async () => {
@@ -78,8 +96,11 @@ function Sale() {
                  <td>{sale.discount}%</td>
                  <td>{sale.product}</td>
                  <td>
-                     <button className={cx('edit-btn')} onClick={() => handleEdit(sale._id)}>Sửa</button>
-                     <button className={cx('delete-btn')} onClick={() => handleDelete(sale._id)}>Xóa</button>
+                    <div  className={cx('box-btn')}>
+                        <Link to={`/updateSale/${sale._id}`} className={cx('edit-btn')}>Sửa</Link> 
+                        <button className={cx('delete-btn')} onClick={() => handleDelete(sale._id)}>Xóa</button>
+                    </div>
+                    
                  </td>
                </tr>
              ))}

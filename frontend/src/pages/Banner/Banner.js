@@ -3,8 +3,7 @@ import * as newService from '~/services/newService';
 import { Link, useNavigate} from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './Banner.module.scss';
-import { toast, ToastContainer  } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2'; // thư viện hiện alert 
 
 
 const cx = classNames.bind(styles);
@@ -28,30 +27,39 @@ function Banner() {
     }, []);
 
     const handleDelete = async (id) => {
-        const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa banner này không?');
-        if (!confirmDelete) return;
-
-        try {
-            await newService.deleteNewById(id);
-            toast.success('Banner đã được xóa thành công!');
-            setBanners(news.filter((item) => item._id !== id));
-            // navigate('/new');
-        } catch (error) {
-            toast.error('Lỗi khi xóa banner:', error);
-        }
+        const result = await Swal.fire({
+            title: 'Bạn có chắc chắn xóa?',
+            text: 'Banner sẽ bị xóa !',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',   // màu nút OK
+            cancelButtonColor: '#d33',        // màu nút Cancel
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+          });
+        
+          if (result.isConfirmed) {
+            try {
+              await newService.deleteNewById(id);
+              Swal.fire(
+                'Đã xóa!',
+                'Banner đã được xóa thành công.',
+                'success'
+              );
+              // Ví dụ: gọi lại danh sách nếu cần
+              setBanners(news.filter((item) => item._id !== id));
+            } catch (error) {
+              Swal.fire(
+                'Lỗi!',
+                'Xóa banner thất bại.',
+                'error'
+              );
+            }
+          }
     };
 
     return (
         <div className={cx('new-manager')}>
-               <ToastContainer 
-                    position="bottom-right"  //  Đặt ở góc dưới bên trái
-                    autoClose={3000}         // Tự động tắt sau 3 giây (có thể chỉnh)
-                    hideProgressBar={false}  // Hiện thanh tiến trình
-                    newestOnTop={false}
-                    closeOnClick
-                    pauseOnHover
-                    draggable
-                />
             <h1>Quản lý Banner</h1>
             <div className={cx('actions')}>
                 <Link to="/addNew" className={cx('btn-add')}>

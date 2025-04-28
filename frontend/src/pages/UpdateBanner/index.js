@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import * as newService from '~/services/newService';
 import classNames from 'classnames/bind';
 import styles from './UpdateBanner.module.scss'; 
+import Swal from 'sweetalert2';
 
 const cx = classNames.bind(styles);
 
@@ -82,8 +83,14 @@ function UpdateBanner() {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            alert('Sửa banner thành công!');
-            navigate('/news');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Cập nhật thành công!',
+                text: 'Banner đã được cập nhật.',
+                confirmButtonText: 'OK',
+              });
+          
+              navigate('/sales');
         } catch (err) {
             console.error(err);
             setError('Có lỗi xảy ra khi sửa banner. Vui lòng thử lại.');

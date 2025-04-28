@@ -21,6 +21,7 @@ import ForgotPassword from '~/pages/ForgotPassword';
 import UpdateBanner from '~/pages/UpdateBanner';
 import Sale from '~/pages/Sale';
 import AddSale from '~/pages/AddSale';
+import UpdateSale from '~/pages/UpdateSale';
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
@@ -39,7 +40,7 @@ const publicRoutes = [
     { path: config.routes.updateNew, component: UpdateBanner },
     { path: config.routes.sales, component: Sale },
     { path: config.routes.addSale, component: AddSale },
-    
+    { path: config.routes.updateSale, component: UpdateSale },
     { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
 
 ];

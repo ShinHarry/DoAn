@@ -54,6 +54,13 @@
   }
   /* SaleList.module.scss */
 
+  .box-btn {
+    display: flex;
+    gap: 8px; /* Khoảng cách giữa 2 nút */
+    justify-content: center; /* Căn giữa các nút */
+    align-items: center; /* Căn dọc nút cho thẳng hàng */
+  }
+  
 .action-buttons {
   display: flex;
   gap: 8px;
@@ -67,6 +74,12 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  min-height: 20px;
+  min-width: 50px;
+}
+
+.delete-btn{
+  padding: 8px 12px;
 }
 .box-add-btn {
   display: flex;
