@@ -70,6 +70,7 @@ function AddBanner() {
     
             toast.success('Thêm banner thành công!');
             setTimeout(() => navigate('/news'), 2000);
+
         } catch (err) {
             console.error(err);
             setError('Có lỗi xảy ra khi thêm banner. Vui lòng thử lại.');
@@ -80,7 +81,6 @@ function AddBanner() {
     
 
     return (
-        
         <div className={cx('wrapper')}>
             <ToastContainer 
                     position="bottom-right"  //  Đặt ở góc dưới bên trái

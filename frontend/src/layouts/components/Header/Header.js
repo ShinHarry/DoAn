@@ -11,6 +11,7 @@ import {
     faPlus,
     faSignOutAlt,
     faImage,
+    faStar,
     faMobilePhone,
     faStar,
 } from '@fortawesome/free-solid-svg-icons';

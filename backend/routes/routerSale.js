@@ -55,7 +55,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 // Update sale Promise((resolve, reject) => {
   
   router.put("/:id", async (req, res) => {
@@ -82,6 +81,7 @@ router.post("/", async (req, res) => {
       res.status(400).json({ message: err.message });
     }
   });
+
 // Delete sales
 router.delete("/:id", async (req, res) => {
   try {

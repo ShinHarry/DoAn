@@ -14,13 +14,13 @@ const routes = {
     address: '/address',
     category: '/category/:categoryId',
     register: '/register',
-    forgotpassword: '/forgot-password',
     news : '/news',
     addNew : '/addNew',
     updateNew : '/updateNew/:bannerId',
     sales : '/sales',
-    addSale: '/addSale',
     updateSale: '/updateSale/:saleId',
+    addSale: '/addSale'
+    // forgotpassword: '/forgot-password',
 };
 
 export default routes;
