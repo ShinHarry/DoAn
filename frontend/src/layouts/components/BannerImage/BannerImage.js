@@ -2,9 +2,9 @@ import classNames from 'classnames/bind';
 import styles from './BannerImage.module.scss';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
-import 'swiper/scss';
-import 'swiper/scss/pagination';
-import 'swiper/scss/navigation';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 import * as newService from '~/services/newService';
 import { useEffect, useState } from 'react';
 
@@ -44,9 +44,11 @@ function BannerImage() {
                         className={cx('mySwiper')}>
                         
                         {news.map((item) => (
+                            item.state && (
                             <SwiperSlide key={item._id}>
-                                <img src={item.newImage?.link} alt={item.newImage?.alt} />
+                                <img src={item.newImage?.link} alt={item.newImage?.alt || 'image'} />
                             </SwiperSlide>
+                            )
                         ))}
                         
                 </Swiper>

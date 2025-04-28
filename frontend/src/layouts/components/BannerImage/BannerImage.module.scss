@@ -6,8 +6,9 @@
 .mySwiper img {
     display: block;
     width: 100%;
-    max-height: 400px;
-    object-fit: cover;
+    // max-height: 400px; 
+    height: 400px;
+    object-fit: contain;
     overflow: inherit;
   }
   .swiper-button-prev, .swiper-button-next {
@@ -27,3 +28,29 @@
     }
   }
 
+  @media (max-width: 768px) {
+    .mySwiper {
+      img {
+        height: 250px;
+      }
+    }
+  }
+  
+  // Mobile responsive
+  @media (max-width: 480px) {
+    .mySwiper {
+      img {
+        height: 180px;
+      }
+  
+      .swiper-button-prev,
+      .swiper-button-next {
+        width: 30px;
+        height: 30px;
+  
+        &::after {
+          font-size: 12px;
+        }
+      }
+    }
+  }

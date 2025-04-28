@@ -11,6 +11,7 @@ import {
     faPlus,
     faSignOutAlt,
     faImage,
+    faStar,
     faMobilePhone,
 
 } from '@fortawesome/free-solid-svg-icons';
@@ -138,7 +139,12 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faImage} />,
             title: 'Banner',
-            to: '/new',
+            to: '/news',
+        },
+        {
+            icon: <FontAwesomeIcon icon={faStar} />,
+            title: 'Khuyến mãi',
+            to: '/sales',
         },
         {
             icon: <FontAwesomeIcon icon={faSignOutAlt} />, // thêm icon logout
@@ -147,6 +153,7 @@ function Header() {
             separate: true,
             onClick: handleLogout,
         },
+        
     ];
 
     return (

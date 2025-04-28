@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import * as newService from '~/services/newService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './Banner.module.scss';
+import { toast, ToastContainer  } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const cx = classNames.bind(styles);
 
 function Banner() {
     const [news, setBanners] = useState([]);
     const [error, setError] = useState(null);
+    // const navigate = useNavigate();
 
     useEffect(() => {
         const fetchBanners = async () => {
@@ -29,14 +33,25 @@ function Banner() {
 
         try {
             await newService.deleteNewById(id);
+            toast.success('Banner đã được xóa thành công!');
             setBanners(news.filter((item) => item._id !== id));
+            // navigate('/new');
         } catch (error) {
-            console.error('Lỗi khi xóa banner:', error);
+            toast.error('Lỗi khi xóa banner:', error);
         }
     };
 
     return (
         <div className={cx('new-manager')}>
+               <ToastContainer 
+                    position="bottom-right"  //  Đặt ở góc dưới bên trái
+                    autoClose={3000}         // Tự động tắt sau 3 giây (có thể chỉnh)
+                    hideProgressBar={false}  // Hiện thanh tiến trình
+                    newestOnTop={false}
+                    closeOnClick
+                    pauseOnHover
+                    draggable
+                />
             <h1>Quản lý Banner</h1>
             <div className={cx('actions')}>
                 <Link to="/addNew" className={cx('btn-add')}>
@@ -56,7 +71,7 @@ function Banner() {
                         <p><strong>Trạng thái:</strong> {item.state ? 'Hiển thị' : 'Ẩn'}</p>
                         <p><strong>Ngày tạo:</strong> {new Date(item.createdAt).toLocaleString()}</p>
                         <div className={cx('buttons')}>
-                            <Link to={`/edit-item/${item._id}`} className={cx('btn-edit')}>Sửa</Link>
+                            <Link to={`/updateNew/${item._id}`} className={cx('btn-edit')}>Sửa</Link>
                             <button onClick={() => handleDelete(item._id)} className={cx('btn-delete')}>Xóa</button>
                         </div>
                     </div>
