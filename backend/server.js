@@ -17,6 +17,7 @@ const routerAuth = require("./routes/routerAuth");
 const RouterNew =  require("./routes/routerNew");
 const verifyToken = require("./middlewares/Auth/verifyToken");
 const RouterSale =  require("./routes/routerSale");
+const RouterSale =  require("./routes/routerSale");
 
 dotenv.config();
 const app = express();
