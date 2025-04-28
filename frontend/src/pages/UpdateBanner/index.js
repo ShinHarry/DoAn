@@ -1,33 +1,48 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import * as newService from '~/services/newService';
 import classNames from 'classnames/bind';
-import styles from './AddBanner.module.scss';
+import styles from './UpdateBanner.module.scss'; 
 
 const cx = classNames.bind(styles);
 
-function AddBanner() {
+function UpdateBanner() {
+    const { bannerId } = useParams();
     const navigate = useNavigate();
-    const [banner, setBanner] = useState({
-        title: '',
-        summary: '',
-        content: '',
-        newImage: null, // chỉ 1 file
-        author: '',
-        state: true,
-    });
 
-    const [loading, setLoading] = useState(false);
+    const [banner, setBanner] = useState([]);
+
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchBannerDetails = async () => {
+            try {
+                const result = await newService.getNewById(bannerId); // Cần có API get 1 banner
+                setBanner(result); 
+               // newImage: null, // ảnh đang là link, ko phải file, nên để null để upload mới nếu cần
+
+            } catch (err) {
+                console.error('Error fetching banner details:', err);
+                setError('Không thể tải banner. Vui lòng thử lại.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBannerDetails();
+    }, [bannerId]);
 
     const handleChange = (e) => {
         const { name, value, type, checked, files } = e.target;
 
         if (type === 'file') {
-            setBanner((prev) => ({
-                ...prev,
-                newImage: files[0], // chỉ lấy file đầu tiên
-            }));
+            if (files && files.length > 0) {
+                setBanner((prev) => ({
+                    ...prev,
+                    newImage: files[0], // Chỉ lấy 1 file
+                }));
+            }
         } else if (type === 'checkbox') {
             setBanner((prev) => ({
                 ...prev,
@@ -45,7 +60,7 @@ function AddBanner() {
         e.preventDefault();
         setLoading(true);
         setError('');
-    
+
         try {
             const formData = new FormData();
             formData.append('title', banner.title);
@@ -57,29 +72,33 @@ function AddBanner() {
             if (banner.newImage) {
                 formData.append('newImage', banner.newImage);
             }
-            // console log form-data
+
+            // Log kiểm tra dữ liệu gửi đi
             for (let pair of formData.entries()) {
-             console.log(pair[0] + ':', pair[1]);
+                console.log(pair[0] + ':', pair[1]);
             }
-            //
-            await newService.addNew(formData, {
+
+            await newService.updateNews(bannerId, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-    
-            alert('Thêm banner thành công!');
+
+            alert('Sửa banner thành công!');
             navigate('/news');
         } catch (err) {
             console.error(err);
-            setError('Có lỗi xảy ra khi thêm banner. Vui lòng thử lại.');
+            setError('Có lỗi xảy ra khi sửa banner. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
     };
-    
+
+    if (loading) {
+        return <p>Đang tải dữ liệu...</p>;
+    }
 
     return (
         <div className={cx('wrapper')}>
-            <h2 className={cx('heading')}>Thêm Banner Mới</h2>
+            <h2 className={cx('heading')}>Sửa Banner</h2>
             {error && <p className={cx('error-message')}>{error}</p>}
 
             <form onSubmit={handleSubmit} className={cx('form')}>
@@ -130,7 +149,7 @@ function AddBanner() {
                 </div>
 
                 <div className={cx('form-group')}>
-                    <label className={cx('label')}>Ảnh banner:</label>
+                    <label className={cx('label')}>Ảnh banner mới (nếu muốn thay đổi):</label>
                     <input
                         type="file"
                         accept="image/*"
@@ -139,12 +158,12 @@ function AddBanner() {
                     />
                     {banner.newImage && (
                         <div className={cx('preview')}>
-                            <img
-                                src={URL.createObjectURL(banner.newImage)}
-                                alt="Preview"
-                                className={cx('preview-img')}
-                            />
-                        </div>
+                        {banner.newImage instanceof File ? (
+                          <img src={URL.createObjectURL(banner.newImage)} alt="Preview" />
+                        ) : (
+                          <img src={banner.newImage?.link} alt={banner.newImage?.alt || 'Preview'} />
+                        )}
+                      </div>
                     )}
                 </div>
 
@@ -159,12 +178,11 @@ function AddBanner() {
                 </div>
 
                 <button type="submit" className={cx('submit-button')} disabled={loading}>
-                    {loading ? 'Đang thêm...' : 'Thêm Banner'
-                    }
+                    {loading ? 'Đang sửa...' : 'Sửa Banner'}
                 </button>
             </form>
         </div>
     );
 }
 
-export default AddBanner;
+export default UpdateBanner;

@@ -35,7 +35,10 @@ function Home() {
 
     return (
         <div className={cx('wrapper')}>
-            <Banner />
+            
+            <div className= {cx('slide')}>
+                <Banner />  
+            </div>
 
             <br /><h2>Danh sách sản phẩm</h2>
            

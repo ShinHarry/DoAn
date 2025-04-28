@@ -17,7 +17,11 @@ const routes = {
     new : '/new',
     addnew : '/addNew'
     forgotpassword: '/forgot-password',
-
+    news : '/news',
+    addNew : '/addNew',
+    updateNew : '/updateNew/:bannerId',
+    sales : '/sales',
+    addSale: '/addSale'
 };
 
 export default routes;

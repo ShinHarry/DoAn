@@ -15,8 +15,9 @@ const RouterUnit = require("./routes/routerUnit");
 const routerAuth = require("./routes/routerAuth");
 
 const RouterNew =  require("./routes/routerNew");
-
 const verifyToken = require("./middlewares/Auth/verifyToken");
+const RouterSale =  require("./routes/routerSale");
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use("/api/origins", RouterOrigin);
 app.use("/api/units", RouterUnit);
 app.use("/api/auth", routerAuth);
 app.use("/api/news", RouterNew);
+app.use("/api/sales", RouterSale);
 
 
 app.use("/public", express.static(path.join(__dirname, "public")));

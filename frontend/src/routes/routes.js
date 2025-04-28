@@ -18,7 +18,9 @@ import Register from '~/pages/Register';
 import Banner from '~/pages/Banner';
 import AddBanner from '~/pages/AddBanner';
 import ForgotPassword from '~/pages/ForgotPassword';
-
+import UpdateBanner from '~/pages/UpdateBanner';
+import Sale from '~/pages/Sale';
+import AddSale from '~/pages/AddSale';
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
@@ -32,8 +34,11 @@ const publicRoutes = [
     { path: config.routes.category, component: Category },
     { path: config.routes.login, component: Login, layout: null },
     { path: config.routes.register, component: Register, layout: null },
-    { path: config.routes.new, component: Banner },
+    { path: config.routes.news, component: Banner },
     { path: config.routes.addNew, component: AddBanner },
+    { path: config.routes.updateNew, component: UpdateBanner },
+    { path: config.routes.sales, component: Sale },
+    { path: config.routes.addSale, component: AddSale },
     
     { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
 

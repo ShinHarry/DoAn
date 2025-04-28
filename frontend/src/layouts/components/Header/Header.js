@@ -12,7 +12,7 @@ import {
     faSignOutAlt,
     faImage,
     faMobilePhone,
-
+    faStar,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
@@ -138,7 +138,12 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faImage} />,
             title: 'Banner',
-            to: '/new',
+            to: '/news',
+        },
+        {
+            icon: <FontAwesomeIcon icon={faStar} />,
+            title: 'Khuyến mãi',
+            to: '/sales',
         },
         {
             icon: <FontAwesomeIcon icon={faSignOutAlt} />, // thêm icon logout
@@ -147,6 +152,7 @@ function Header() {
             separate: true,
             onClick: handleLogout,
         },
+        
     ];
 
     return (

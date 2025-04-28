@@ -28,6 +28,18 @@ const userStorage = multer.diskStorage({
     cb(null, `user-${Date.now()}${ext}`);
   },
 });
+// Cấu hình lưu ảnh banner
+const bannerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/banners');
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, `banner-${Date.now()}${ext}`);
+  }
+});
+
+const uploadBanner = multer({ storage: bannerStorage, fileFilter: isImage });
 
 // Tạo hai middleware riêng biệt
 const uploadProduct = multer({
@@ -40,4 +52,5 @@ const uploadUser = multer({ storage: userStorage, fileFilter: isImage });
 module.exports = {
   uploadProduct,
   uploadUser,
+  uploadBanner,
 };
