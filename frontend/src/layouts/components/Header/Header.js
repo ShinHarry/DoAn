@@ -35,6 +35,7 @@ import Drawer from '@mui/material/Drawer';
 import { IoCloseSharp } from "react-icons/io5";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import * as cartService from '~/services/cartService';
+import Swal from 'sweetalert2'; // thư viện hiện alert 
 //cart
 
 const cx = classNames.bind(styles);
@@ -160,19 +161,55 @@ function Header() {
 
      // hàm xử lý cập nhật lại số lượng khi ấn + -
      const handleUpdateQuantity = async (id, newQuantity) => {
-        
+        if (!currentUser || newQuantity < 1) return;
+
+        const itemToUpdate = cartItems.find(item => item._id === id);
+        if (!itemToUpdate) return;
+
+        // Ngăn vượt số lượng hàng còn 
+        if (newQuantity > itemToUpdate.availableQuantity) {
+            Swal.fire(
+                'Thất bại',
+                `Số lượng tồn kho không đủ. Chỉ còn ${itemToUpdate.availableQuantity} sản phẩm.`,
+                'warning'
+                );
+            setCartItems([...cartItems]);
+            return;
+        }
+
+        try {
+            const response = await cartService.updateCartItemQuantity(id, newQuantity);
+            if (response.success && response.cartItem) {
+                // cập nhật lại
+                setCartItems((prevItems) =>
+                    prevItems.map((item) =>
+                        item._id === id
+                         ? { ...item, quantity: response.cartItem.quantity, selected: item.selected } 
+                         : item,
+                    ),
+                );
+            } else {
+                Swal.fire('Thất bại', response.message || 'Lỗi khi cập nhật số lượng.','error');
+                fetchCart(); // gọi lại cart
+            }
+        } catch (error) {
+             Swal.fire('Thất bại', 'Đã xảy ra lỗi khi cập nhật số lượng.','error');
+             fetchCart();
+        }
     };
 
     // tăng số lượng sản phẩm +
     const handleIncrease = (id) => {
-        
+        const item = cartItems.find(item => item._id === id);
+        if (item) {
+            handleUpdateQuantity(id, item.quantity + 1);
+        }
     };
 
     //giảm số lượng sản phẩm -
     const handleDecrease = (id) => {
         const item = cartItems.find(item => item._id === id);
-        if (item && item.quantity > 1) { // Prevent going below 1
-            // Call the function that updates backend
+        if (item && item.quantity > 1) { // ngăn nhỏ hơn 1
             handleUpdateQuantity(id, item.quantity - 1);
         }
     };
@@ -353,23 +390,19 @@ function Header() {
                                                 <input
                                                     type="number"
                                                     value={item.quantity}
-                                                    // // Call handleUpdateQuantity directly on change
-                                                    // onChange={(e) => handleUpdateQuantity(item._id, Math.max(1, parseInt(e.target.value) || 1))}
-                                                    // // Keep onBlur for validation if needed, but primary update is onChange
-                                                    // onBlur={(e) => {
-                                                    //     const validatedQuantity = Math.max(1, parseInt(e.target.value) || 1);
-                                                    //      // Only call update again if the validated value is different AND less than/equal to stock
-                                                    //     if (validatedQuantity !== item.quantity && validatedQuantity <= item.availableQuantity) {
-                                                    //         handleUpdateQuantity(item._id, validatedQuantity);
-                                                    //      } else if (validatedQuantity > item.availableQuantity) {
-                                                    //         // If user leaves input with invalid qty > stock, maybe reset to max stock?
-                                                    //         // Or rely on the alert within handleUpdateQuantity
-                                                    //         // For simplicity, we might just let handleUpdateQuantity handle the alert on the next attempt.
-                                                    //      }
-                                                    // }}
+                                                    // đamr bảo ko nhâp < 1
+                                                    onChange={(e) => handleUpdateQuantity(item._id, Math.max(1, parseInt(e.target.value) || 1))}
+                                                    //kiểm tra lại giá trị tránh bug do onChange không cập nhật đúng
+                                                    onBlur={(e) => {
+                                                        const validatedQuantity = Math.max(1, parseInt(e.target.value) || 1);
+                                                        //Chỉ gọi lại cập nhật nếu giá trị được xác thực khác
+                                                        if (validatedQuantity !== item.quantity && validatedQuantity <= item.availableQuantity) {
+                                                            handleUpdateQuantity(item._id, validatedQuantity);
+                                                         }
+                                                    }}
                                                     className={cx('quantityInput')}
                                                     min="1"
-                                                    max={item.availableQuantity} // Set max based on stock
+                                                    max={item.availableQuantity} // để max = số lượng hàng còn
                                                 />
                                                 <button onClick={() => handleIncrease(item._id)} disabled={item.quantity >= item.availableQuantity}>+</button>
                                             </div>

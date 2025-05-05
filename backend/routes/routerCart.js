@@ -130,6 +130,62 @@ router.post("/", async (req, res) => {
 });
 
 
+// cập nhật lại số lượng sản phẩm trong giỏ
+router.put("/:itemId", async (req, res) => {
+    const userId = req.user.id;
+    const { itemId } = req.params;
+    const { quantity } = req.body;
+
+    if (!quantity || quantity < 1) {
+        return res.status(400).json({ success: false, message: 'Số lượng không hợp lệ.' });
+    }
+
+    try {
+        const cartItem = await CartProduct.findOne({ _id: itemId, userId: userId }).populate('product', 'productQuantity productStatus');
+
+        if (!cartItem) {
+            return res.status(404).json({ success: false, message: 'Sản phẩm không tồn tại trong giỏ hàng.' });
+        }
+
+        if (!cartItem.product || cartItem.product.productStatus !== 'available') {
+             return res.status(400).json({ success: false, message: 'Sản phẩm này đã hết hàng hoặc không tồn tại.' });
+        }
+
+         if (quantity > cartItem.product.productQuantity) {
+            return res.status(400).json({ success: false, message: `Số lượng tồn kho không đủ. Chỉ còn ${cartItem.product.productQuantity} sản phẩm.` });
+        }
+
+        cartItem.quantity = quantity;
+        await cartItem.save();
+
+        // truy vấn thông tin sản phẩm từ bẳng khác
+        await cartItem.populate({
+                path: 'product',
+                select: 'productName productImgs productUnitPrice productQuantity'
+            });
+
+        res.json({
+            success: true,
+            message: 'Cập nhật số lượng thành công!',
+            cartItem: { // trả về get /
+                _id: cartItem._id.toString(),
+                productId: cartItem.product._id.toString(),
+                name: cartItem.product.productName,
+                image: cartItem.product.productImgs?.[0]?.link || '',
+                quantity: cartItem.quantity,
+                unitPrice: cartItem.product.productUnitPrice,
+                availableQuantity: cartItem.product.productQuantity,
+                selected: true,
+            }
+        });
+    } catch (err) {
+        console.error("Update Cart Item Quantity Error:", err);
+         if (err.name === 'CastError') { 
+            return res.status(400).json({ success: false, message: 'ID sản phẩm giỏ hàng không hợp lệ.' });
+        }
+        res.status(500).json({ success: false, message: 'Lỗi khi cập nhật giỏ hàng.' });
+    }
+});
 
 
 module.exports = router;

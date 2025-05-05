@@ -21,3 +21,15 @@ export const addToCart = async (productId, quantity = 1) => {
         throw err;
     }
 };
+
+
+// Cập nhật số lượng 1 sản phẩm trong giỏ hàng
+export const updateCartItemQuantity = async (itemId, quantity) => {
+    try {
+        // dùng PUT /carts/:itemId
+        return await httpRequest.put(`/carts/${itemId}`, { quantity });
+    } catch (err) {
+        console.error('Error updating cart item quantity:', err);
+        throw err;
+    }
+};
