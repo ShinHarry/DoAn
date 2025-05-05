@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as productServices from '~/services/productService';
+import * as cartService from '~/services/cartService';
 import classNames from 'classnames/bind';
 import styles from './ProductDetail.module.scss';
 import config from '~/config';
@@ -12,6 +13,19 @@ function ProductDetail() {
     const [loading, setLoading] = useState(true);
     const [isLiked, setIsLiked] = useState(false);
     const navigate = useNavigate();
+
+    const [userData, setUserData] = useState(null);
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+        if (storedUser) {
+            try {
+                setUserData(JSON.parse(storedUser));
+            } catch (error) {
+                console.error('Failed to parse user data:', error);
+            }
+        }
+    }, []);
+    
     useEffect(() => {
         const fetchProductDetails = async () => {
             setLoading(true);
