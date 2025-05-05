@@ -41,7 +41,7 @@ function ProductDetail() {
         fetchProductDetails();
     }, [productId]);
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!userData) {
             Swal.fire({
                 icon: 'warning',
@@ -64,18 +64,26 @@ function ProductDetail() {
             return;
         }
 
-        // try {
-        //     const response = await cartService.addToCart(productId, 1);
-        //     if (response.success) {
-        //         alert('Sản phẩm đã được thêm vào giỏ hàng!');
-        //     } else {
-        //         alert(response.message || 'Không thể thêm sản phẩm vào giỏ hàng.');
-        //     }
-        // } catch (error) {
-        //     console.error('Error adding to cart:', error);
-        //     const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.';
-        //     alert(errorMessage);
-        // }
+        try {
+            const response = await cartService.addToCart(productId, 1);
+            if (response.success) {
+                Swal.fire('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng', 'success');
+            } else {
+                Swal.fire(
+                    ' Thêm thất bại',
+                    response.message || 'Không thể thêm sản phẩm vào giỏ hàng.',
+                    'error'
+                  );
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.';
+            Swal.fire(
+                'Thất bại',
+                errorMessage,
+                'error'
+              );
+        }
     };
 
     const handleLike = () => {
