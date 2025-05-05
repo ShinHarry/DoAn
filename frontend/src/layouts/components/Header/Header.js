@@ -390,7 +390,7 @@ function Header() {
                         hideProgressBar={true}  //  thanh tiến trình
                         newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
                         closeOnClick            //Cho phép đóng toast
-                        draggable             // cho phép kéo
+                        draggable             // kéo 
                     />
                     <div className={cx('cartHeader')}>
                     <h1 className={cx('cartTitle')} >{`Giỏ hàng(${totalQuantity})` }</h1>
