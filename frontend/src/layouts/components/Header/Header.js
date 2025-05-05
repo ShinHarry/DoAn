@@ -166,7 +166,7 @@ function Header() {
         const itemToUpdate = cartItems.find(item => item._id === id);
         if (!itemToUpdate) return;
 
-        // Ngăn vượt số lượng hàng còn 
+        // Ngăn vượt số lượng hàng còn sẵn
         if (newQuantity > itemToUpdate.availableQuantity) {
             Swal.fire(
                 'Thất bại',
