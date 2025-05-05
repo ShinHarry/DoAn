@@ -22,6 +22,11 @@ import UpdateBanner from '~/pages/UpdateBanner';
 import Sale from '~/pages/Sale';
 import AddSale from '~/pages/AddSale';
 import UpdateSale from '~/pages/UpdateSale';
+// import Checkout from '~/pages/Checkout';
+import CartDetail from '~/pages/CartDetail/CartDetail';
+// import OrderSuccess from '~/pages/OrderSuccess/OrderSuccess';
+// import PaymentReturn from '~/pages/PaymentReturn/PaymentReturn';
+
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
@@ -42,7 +47,10 @@ const publicRoutes = [
     { path: config.routes.addSale, component: AddSale },
     { path: config.routes.updateSale, component: UpdateSale },
     { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
-
+    // { path: config.routes.checkout, component: Checkout },
+    { path: '/cart-detail', component: CartDetail },
+    // { path: '/order-success/:orderId?', component: OrderSuccess },
+    // { path: '/payment-return', component: PaymentReturn },
 ];
 
 const privateRoutes = [];

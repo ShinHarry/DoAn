@@ -13,7 +13,7 @@ import {
     faImage,
     faStar,
     faMobilePhone,
-    faStar,
+    faCartPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
@@ -28,8 +28,17 @@ import { InboxIcon, CartIcons, BarsIcon, ComponentElectronicIcon } from '~/compo
 import Image from '~/components/Image';
 import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
+// cart
+import Drawer from '@mui/material/Drawer';
+import { IoCloseSharp } from "react-icons/io5";
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import * as cartService from '~/services/cartService';
+import Swal from 'sweetalert2'; // thư viện hiện alert 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+//cart
 
 const cx = classNames.bind(styles);
 
@@ -37,8 +46,30 @@ function Header() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [categoryMap, setCategoryMap] = useState({});
+    const [userData, setUserData] = useState(null);
+
+    //cart
+    const [cartItems, setCartItems] = useState([]);
+    const [openCartPanel, setOpenCartPanel] = useState(false);
+    const [isCartLoading, setIsCartLoading] = useState(false);
+    const [cartError, setCartError] = useState(null);
+    const [totalQuantity, setTotalQuantity] = useState(0);
+    const [totalPrice, setTotalPrice] = useState(0);
+    //cart
 
     useEffect(() => {
+        // lấy user data từ storage
+        const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+        if (storedUser) {
+            try {
+                setUserData(JSON.parse(storedUser));
+            } catch (error) {
+                console.error('Failed to parse user data from storage:', error);
+                localStorage.removeItem('user');
+                sessionStorage.removeItem('user');
+            }
+        }
+
         const fetchCategories = async () => {
             try {
                 const categoryData = await categoryService.getCategories();
@@ -53,35 +84,179 @@ function Header() {
                 setLoading(true);
             }
         };
+
         fetchCategories();
     }, []);
 
-    const getToken = () => {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) return null;
-        try {
-            const decoded = jwtDecode(token);
-            return {
-                userId: decoded.userId,
-                userRole: decoded.userRole,
-                avatar: decoded.userAvatar || null,
-            };
-        } catch (error) {
-            console.error('Token decode error:', error);
-            return null;
-        }
-    };
+    const currentUser = !!userData;
+    const userId = userData?.id;
+    const avatar = userData?.avatar;
 
-    const { userId, avatar } = getToken() || {};
-    console.log('userId:', userId);
-    console.log('avatarUser:', avatar);
-
-    const currentUser = !!userId;
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
+        setUserData(null);
+        setCartItems([]);
         window.location.reload();
     };
+
+    //cart // hàm lấy cart, thay đổi theo currentUser
+    const fetchCart = useCallback(async () => {
+        if (!currentUser) return;
+        setIsCartLoading(true);
+        setCartError(null);
+        try {
+            const data = await cartService.getCart();
+            console.log("Dữ liệu cart từ server:", data);
+            setCartItems(data.cart || []);
+        } catch (error) {
+            console.error('Lỗi lấy cart:', error);
+            setCartError('Không thể tải giỏ hàng. Vui lòng thử lại.');
+            setCartItems([]);
+        } finally {
+            setIsCartLoading(false);
+        }
+    }, [currentUser]);
+
+    useEffect(() => {
+        if (currentUser) {
+            fetchCart();
+        }
+    }, [currentUser, fetchCart]);
+
+    useEffect(() => {
+        let quantity = 0;
+        let price = 0;
+        cartItems.forEach(item => {
+            if (item.selected) {
+                price += (item.unitPrice * item.quantity);
+            }
+            quantity += item.quantity;
+        });
+        setTotalQuantity(quantity);
+        setTotalPrice(price);
+    }, [cartItems]);
+
+    // hàm xử lý đóng mở giỏ hàng drawer
+    const handleOpenCart = () => {
+        if (currentUser) {
+            fetchCart(); // làm mới lại giỏ hàng khi mở
+        }
+        setOpenCartPanel(true);
+    };
+
+    // hàm xử lý khi ấn checkbox
+    const handleToggleSelect = (id) => {
+        setCartItems((prevItems) =>
+            prevItems.map((item) =>
+                item._id === id ? { ...item, selected: !item.selected } : item
+            )
+        );
+    };
+
+    const showDrawerMessage = (title, message, type) => {
+        const event = new CustomEvent('showDrawerNotification', {
+          detail: { title, message, type },
+        });
+        window.dispatchEvent(event);
+      };
+      
+    // hàm xóa sản phẩm khỏi giỏ
+    const handleDeleteItem = async (id) => {
+        if (!currentUser) return;
+
+        const result = await Swal.fire({
+            title: 'Bạn có chắc muốn xóa sản phẩm này?',
+            text: 'Thao tác này không thể hoàn tác.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+          });
+        
+        if (!result.isConfirmed) return; // Nếu không xác nhận thì không làm gì
+
+        try {
+            const response = await cartService.removeCartItem(id);
+            if (response.success) {
+                setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
+               toast.success('Đã xóa sản phẩm khỏi giỏ hàng.');
+            } else {
+                toast.error('Lỗi khi xóa sản phẩm!');
+            }
+        } catch (error) {
+            console.error('Lỗi xóa sản phẩm khỏi giỏ:', error);
+            toast.error('Đã xảy ra lỗi khi xóa sản phẩm.');
+        }
+    };
+
+     // hàm xử lý cập nhật lại số lượng khi ấn + -
+     const handleUpdateQuantity = async (id, newQuantity) => {
+        if (!currentUser || newQuantity < 1) return;
+
+        const itemToUpdate = cartItems.find(item => item._id === id);
+        if (!itemToUpdate) return;
+
+        // Ngăn vượt số lượng hàng còn sẵn
+        if (newQuantity > itemToUpdate.availableQuantity) {
+            Swal.fire(
+                'Thất bại',
+                `Số lượng tồn kho không đủ. Chỉ còn ${itemToUpdate.availableQuantity} sản phẩm.`,
+                'warning'
+                );
+            setCartItems([...cartItems]);
+            return;
+        }
+
+        try {
+            const response = await cartService.updateCartItemQuantity(id, newQuantity);
+            if (response.success && response.cartItem) {
+                // cập nhật lại
+                setCartItems((prevItems) =>
+                    prevItems.map((item) =>
+                        item._id === id
+                         ? { ...item, quantity: response.cartItem.quantity, selected: item.selected } 
+                         : item,
+                    ),
+                );
+            } else {
+                Swal.fire('Thất bại', response.message || 'Lỗi khi cập nhật số lượng.','error');
+                fetchCart(); // gọi lại cart
+            }
+        } catch (error) {
+             Swal.fire('Thất bại', 'Đã xảy ra lỗi khi cập nhật số lượng.','error');
+             fetchCart();
+        }
+    };
+
+    // tăng số lượng sản phẩm +
+    const handleIncrease = (id) => {
+        const item = cartItems.find(item => item._id === id);
+        if (item) {
+            handleUpdateQuantity(id, item.quantity + 1);
+        }
+    };
+
+    //giảm số lượng sản phẩm -
+    const handleDecrease = (id) => {
+        const item = cartItems.find(item => item._id === id);
+        if (item && item.quantity > 1) { // ngăn nhỏ hơn 1
+            handleUpdateQuantity(id, item.quantity - 1);
+        }
+    };
+
+    //hàm xử lý khi nhấn thanh toán
+    const handleCheckout = () => {
+        const selectedItems = cartItems.filter(item => item.selected);
+        if (selectedItems.length === 0) {
+            toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+            return;
+        }
+        setOpenCartPanel(false);
+    };
+
     const MENU_ITEMS = [
         {
             icon: <FontAwesomeIcon icon={faLaptop} />,
@@ -158,6 +333,7 @@ function Header() {
 
     return (
         <header className={cx('wrapper')}>
+            
             {!error && !loading ? (
                 <div className={cx('loading')}>Loading...</div>
             ) : (
@@ -198,13 +374,120 @@ function Header() {
                             )}
                         </Menu>
                         <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
-                            <button className={cx('action-btn')}>
+                            <button className={cx('action-btn')} onClick={handleOpenCart}>
                                 <CartIcons />
+                                {/* hiển thị badge trên icon giỏ hàng */}
+                                {currentUser && totalQuantity > 0 && (
+                                     <span className={cx('badge')}>{totalQuantity}</span>
+                                )}
                             </button>
                         </Tippy>
                     </div>
                 </div>
             )}
+
+            <Drawer open={openCartPanel} onClose={() => setOpenCartPanel(false)} anchor="right"  style={{ zIndex: 10}} >
+                <div className={cx('cartDrawer')}>
+                    <ToastContainer 
+                        position="top-center" 
+                        autoClose={3000}         // Tự động tắt
+                        hideProgressBar={true}  //  thanh tiến trình
+                        newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
+                        closeOnClick            //Cho phép đóng toast
+                        draggable             // kéo 
+                    />
+                    <div className={cx('cartHeader')}>
+                    <h1 className={cx('cartTitle')} >{`Giỏ hàng(${totalQuantity})` }</h1>
+                    <IoCloseSharp
+                            className={cx('cartClose')}
+                            onClick={() => setOpenCartPanel(false)}
+                        />
+                    </div>
+                    <div className={cx('cartItems')}>
+                        {isCartLoading ? (
+                            <p>Đang tải giỏ hàng...</p>
+                        ) : cartError ? (
+                            <p className={cx('error-message')}>{cartError}</p>
+                        ) : cartItems.length === 0 ? (
+                            <div className={cx('emptyCart')}>
+                            <FontAwesomeIcon icon={faCartPlus} className={cx('emptyCartIcon')} />
+                            <p className={cx('emptyCartText')}>
+                                {!currentUser ? 'Vui lòng đăng nhập để xem giỏ hàng' : 'Giỏ hàng của bạn đang trống'}
+                            </p>
+                        </div>
+                        ) : (
+                            cartItems.map((item) => (
+                                <div key={item._id} className={cx('cartItem', { 'not-available': item.quantity > item.availableQuantity })}>
+                                    <input
+                                        type="checkbox"
+                                        checked={!!item.selected}
+                                        onChange={() => handleToggleSelect(item._id)}
+                                        className={cx('cartItemCheckbox')}
+                                    />
+                                    <Image
+                                        src={item.image || images.noImage}
+                                        alt={item.name}
+                                        className={cx('cartItemImage')}
+                                    />
+                                    <div className={cx('cartItemInfo')}>
+                                        <span className={cx('cartItemName')}>{item.name}</span>
+                                        <div className={cx('cartItemDetails')}>
+                                            <div className={cx('quantityControl')}>
+                                                <button onClick={() => handleDecrease(item._id)} disabled={item.quantity <= 1}>-</button>
+                                                <input
+                                                    type="number"
+                                                    value={item.quantity}
+                                                    // đamr bảo ko nhâp < 1
+                                                    onChange={(e) => handleUpdateQuantity(item._id, Math.max(1, parseInt(e.target.value) || 1))}
+                                                    //kiểm tra lại giá trị tránh bug do onChange không cập nhật đúng
+                                                    onBlur={(e) => {
+                                                        const validatedQuantity = Math.max(1, parseInt(e.target.value) || 1);
+                                                        //Chỉ gọi lại cập nhật nếu giá trị được xác thực khác
+                                                        if (validatedQuantity !== item.quantity && validatedQuantity <= item.availableQuantity) {
+                                                            handleUpdateQuantity(item._id, validatedQuantity);
+                                                         }
+                                                    }}
+                                                    className={cx('quantityInput')}
+                                                    min="1"
+                                                    max={item.availableQuantity} // để max = số lượng hàng còn
+                                                />
+                                                <button onClick={() => handleIncrease(item._id)} disabled={item.quantity >= item.availableQuantity}>+</button>
+                                            </div>
+                                            <span>Đơn giá: {item.unitPrice.toLocaleString()} VND</span>
+                                           
+                                        </div>
+                                    </div>
+                                    <RiDeleteBin5Fill
+                                        className={cx('cartItemDelete')}
+                                        onClick={() => handleDeleteItem(item._id)}
+                                    />
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    {currentUser && cartItems.length > 0 && (
+                        <div className={cx('cartFooter')}>
+                            <div className={cx('cartTotal')}>
+                                <span className={cx('totalLabel')}>Tạm tính ({cartItems.filter(i => i.selected).length} sản phẩm): </span>
+                                <span className={cx('totalValue')}>
+                                    {totalPrice.toLocaleString()} VND
+                                </span>
+                            </div>
+                            <Link to="/cart-detail" className={cx('view-detail-link')} onClick={() => setOpenCartPanel(false)}>
+                                <Button className={cx('view-detail-btn')} outline>
+                                    Xem chi tiết
+                                </Button>
+                            </Link>
+                            <Link to="/checkout" onClick={() => setOpenCartPanel(false)}>
+                                <Button className={cx('checkout-btn')} primary onClick={handleCheckout} >
+                                    Thanh toán
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            </Drawer>
+
         </header>
     );
 }

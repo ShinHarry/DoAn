@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as productServices from '~/services/productService';
+import * as cartService from '~/services/cartService';
 import classNames from 'classnames/bind';
 import styles from './ProductDetail.module.scss';
 import config from '~/config';
 import Image from '~/components/Image';
+import Swal from 'sweetalert2'; // thư viện hiện alert 
 const cx = classNames.bind(styles);
 function ProductDetail() {
     const { productId } = useParams();
@@ -12,6 +14,19 @@ function ProductDetail() {
     const [loading, setLoading] = useState(true);
     const [isLiked, setIsLiked] = useState(false);
     const navigate = useNavigate();
+
+    const [userData, setUserData] = useState(null);
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+        if (storedUser) {
+            try {
+                setUserData(JSON.parse(storedUser));
+            } catch (error) {
+                console.error('Failed to parse user data:', error);
+            }
+        }
+    }, []);
+    
     useEffect(() => {
         const fetchProductDetails = async () => {
             setLoading(true);
@@ -26,8 +41,49 @@ function ProductDetail() {
         fetchProductDetails();
     }, [productId]);
 
-    const handleAddToCart = () => {
-        alert('Sản phẩm đã được thêm vào giỏ hàng!');
+    const handleAddToCart = async () => {
+        if (!userData) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Bạn chưa đăng nhập',
+                text: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
+                confirmButtonText: 'Đăng nhập',
+            }).then(() => {
+                navigate('/login'); // chuyển sang trang đăng nhập
+            });
+            return;
+        }
+
+        if (!product || product.productStatus !== 'available') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Không thể thêm sản phẩm',
+                text: 'Sản phẩm hiện không có sẵn hoặc đã hết hàng.',
+                confirmButtonText: 'OK',
+            });
+            return;
+        }
+
+        try {
+            const response = await cartService.addToCart(productId, 1);
+            if (response.success) {
+                Swal.fire('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng', 'success');
+            } else {
+                Swal.fire(
+                    ' Thêm thất bại',
+                    response.message || 'Không thể thêm sản phẩm vào giỏ hàng.',
+                    'error'
+                  );
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.';
+            Swal.fire(
+                'Thất bại',
+                errorMessage,
+                'error'
+              );
+        }
     };
 
     const handleLike = () => {

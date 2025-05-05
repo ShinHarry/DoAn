@@ -7,6 +7,7 @@ const routes = {
     updateProduct: '/updateProduct/:productId',
     addProduct: '/addProduct',
     cart: '/cart',
+    cartsId: '/carts/:id',
     checkout: '/checkout',
     admin: '/admin',
     login: '/login',
@@ -19,8 +20,9 @@ const routes = {
     updateNew : '/updateNew/:bannerId',
     sales : '/sales',
     updateSale: '/updateSale/:saleId',
-    addSale: '/addSale'
+    addSale: '/addSale',
     // forgotpassword: '/forgot-password',
+    checkout: '/checkout',
 };
 
 export default routes;
