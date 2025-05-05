@@ -27,7 +27,6 @@ import CartDetail from '~/pages/CartDetail/CartDetail';
 // import OrderSuccess from '~/pages/OrderSuccess/OrderSuccess';
 // import PaymentReturn from '~/pages/PaymentReturn/PaymentReturn';
 
-
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
