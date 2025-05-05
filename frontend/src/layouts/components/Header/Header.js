@@ -15,7 +15,7 @@ import {
     faMobilePhone,
     faCartPlus,
 } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { jwtDecode } from 'jwt-decode';
@@ -43,6 +43,9 @@ import 'react-toastify/dist/ReactToastify.css';
 const cx = classNames.bind(styles);
 
 function Header() {
+
+    const navigate = useNavigate();
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [categoryMap, setCategoryMap] = useState({});
@@ -100,6 +103,7 @@ function Header() {
         setUserData(null);
         setCartItems([]);
         window.location.reload();
+        navigate('/');
     };
 
     //cart // hàm lấy cart, thay đổi theo currentUser

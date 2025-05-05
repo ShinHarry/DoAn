@@ -1,0 +1,219 @@
+/* Variables (Optional - Define if needed or use existing CSS vars) */
+:root {
+    --checkout-border-color: #e0e0e0;
+    --checkout-bg-light: #f8f9fa;
+    --checkout-text-secondary: #6c757d;
+}
+
+.checkoutWrapper {
+    padding: 20px;
+    background-color: var(--checkout-bg-light);
+    min-height: calc(100vh - var(--default-layout-header-height, 60px)); // Adjust based on actual header height
+
+    @media (min-width: 768px) {
+        padding: 40px;
+    }
+}
+
+.checkoutContainer {
+    display: flex;
+    flex-direction: column; // Stack columns by default
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    @media (min-width: 992px) {
+        flex-direction: row; // Side-by-side on larger screens
+        gap: 40px;
+    }
+}
+
+/* Common Section Styling */
+.section {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid var(--checkout-border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    h2 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--checkout-border-color);
+        color: #333;
+    }
+}
+
+.checkoutLeft {
+    flex: 1 1 60%; // Takes more space on larger screens
+    order: 1; // Ensure it appears first on mobile when stacking
+
+     @media (min-width: 992px) {
+        order: 0; // Reset order for desktop
+    }
+}
+
+.checkoutRight {
+    flex: 1 1 40%; // Takes less space
+    height: fit-content; // Stick to content height
+    position: sticky; // Make summary sticky on large screens
+    top: 20px; // Adjust top position as needed
+    order: 0; // Ensure it appears first on mobile when stacking
+
+     @media (min-width: 992px) {
+        order: 1; // Reset order for desktop
+    }
+}
+
+/* Checkout Item Styling */
+.checkoutItem {
+    display: flex;
+    gap: 15px;
+    padding: 15px 0;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid #f0f0f0; // Lighter border between items
+    }
+}
+
+.checkoutItemImage {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--checkout-border-color);
+    flex-shrink: 0; // Prevent image from shrinking
+}
+
+.checkoutItemInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1; // Allow info to take remaining space
+    gap: 4px; // Space between info lines
+}
+
+.checkoutItemName {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.3;
+}
+
+.checkoutItemQuantity,
+.checkoutItemPrice {
+    font-size: 1.3rem;
+    color: var(--checkout-text-secondary);
+}
+
+.checkoutItemPrice {
+    font-weight: 500;
+    color: #444; // Slightly darker price
+}
+
+/* Checkout Summary Styling */
+.checkoutSummary {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; // Slightly reduce gap
+}
+
+.summaryItem,
+.summaryItemTotal {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.5rem;
+    padding: 8px 0;
+
+    span:first-child {
+        color: var(--checkout-text-secondary);
+    }
+    span:last-child {
+        font-weight: 500;
+        color: #333;
+    }
+}
+
+.summaryItemTotal {
+    font-size: 1.8rem;
+    font-weight: 600; // Make total bolder
+    color: var(--primary); // Use primary color for total text
+    padding-top: 15px;
+    margin-top: 10px;
+    border-top: 1px solid var(--checkout-border-color);
+
+     span:first-child {
+         font-weight: 600;
+        color: #333; // Darker label for total
+    }
+     span:last-child {
+        color: var(--primary); // Ensure price uses primary color
+    }
+}
+
+/* Form Section Styling (Selects) */
+.summarySection {
+    margin: 8px 0;
+
+    span {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1.4rem;
+        font-weight: 500;
+        color: #555;
+    }
+
+    select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 1.5rem;
+        background-color: #fff;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+        &:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 0, 123, 255), 0.25); // Adjust primary-rgb if needed
+        }
+    }
+
+    p { // Style for the 'add address' message
+         font-size: 1.3rem;
+         color: #dc3545; // Warning color
+         margin-top: 5px;
+    }
+}
+
+/* Place Order Button Styling */
+.checkoutButtonContainer {
+    margin-top: 25px;
+    border-top: 1px solid var(--checkout-border-color);
+    padding-top: 20px;
+}
+
+.checkoutButton {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+/* Loading/Error States */
+.loading,
+.error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    font-size: 1.6rem;
+    color: var(--checkout-text-secondary);
+}
+
+.error {
+    color: #dc3545;
+}

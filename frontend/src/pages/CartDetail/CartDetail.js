@@ -138,8 +138,17 @@ function CartDetail() {
 
     return (
         <div className={cx('wrapper')}>
-            <h1 className={cx('title')}>Chi Tiết Giỏ Hàng</h1>
+            <ToastContainer 
+                position="top-center" 
+                autoClose={3000}         // Tự động tắt
+                hideProgressBar={true}  //  thanh tiến trình
+                newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
+                closeOnClick            //Cho phép đóng toast
+                draggable             // kéo 
+            />
 
+            <h1 className={cx('title')}>Chi Tiết Giỏ Hàng</h1>
+            
             <div className={cx('cart-content')}>
                 {/* Danh sách */}
                 <div className={cx('cart-items-list')}>
@@ -222,7 +231,9 @@ function CartDetail() {
                     >
                         Tiến hành thanh toán
                     </Button>
+                  
                      <Link to="/" className={cx('continue-shopping')}>
+
                         <Button text>Tiếp tục mua sắm</Button>
                     </Link>
                 </div>
