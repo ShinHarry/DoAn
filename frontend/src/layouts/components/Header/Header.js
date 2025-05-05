@@ -329,14 +329,7 @@ function Header() {
 
     return (
         <header className={cx('wrapper')}>
-            <ToastContainer  // hiện thông báo
-            position="top-center" 
-            autoClose={3000}         // Tự động tắt
-            hideProgressBar={true}  //  thanh tiến trình
-            newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
-            closeOnClick            //Cho phép đóng toast
-            draggable               // cho phép kéo
-            />
+            
             {!error && !loading ? (
                 <div className={cx('loading')}>Loading...</div>
             ) : (
@@ -389,10 +382,18 @@ function Header() {
                 </div>
             )}
 
-            <Drawer open={openCartPanel} onClose={() => setOpenCartPanel(false)} anchor="right"  style={{ zIndex: 2 }} >
+            <Drawer open={openCartPanel} onClose={() => setOpenCartPanel(false)} anchor="right"  style={{ zIndex: 10}} >
                 <div className={cx('cartDrawer')}>
+                    <ToastContainer 
+                        position="top-center" 
+                        autoClose={3000}         // Tự động tắt
+                        hideProgressBar={true}  //  thanh tiến trình
+                        newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
+                        closeOnClick            //Cho phép đóng toast
+                        draggable             // cho phép kéo
+                    />
                     <div className={cx('cartHeader')}>
-                    <h1 className={cx('cartTitle')}>{`Giỏ hàng (${totalQuantity})`}</h1>
+                    <h1 className={cx('cartTitle')} >{`Giỏ hàng(${totalQuantity})` }</h1>
                     <IoCloseSharp
                             className={cx('cartClose')}
                             onClick={() => setOpenCartPanel(false)}
