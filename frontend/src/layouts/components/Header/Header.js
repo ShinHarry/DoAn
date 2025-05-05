@@ -189,7 +189,6 @@ function Header() {
         } catch (error) {
             console.error('Lỗi xóa sản phẩm khỏi giỏ:', error);
             toast.error('Đã xảy ra lỗi khi xóa sản phẩm.');
-
         }
     };
 
@@ -250,7 +249,12 @@ function Header() {
 
     //hàm xử lý khi nhấn thanh toán
     const handleCheckout = () => {
-       
+        const selectedItems = cartItems.filter(item => item.selected);
+        if (selectedItems.length === 0) {
+            toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+            return;
+        }
+        setOpenCartPanel(false);
     };
 
     const MENU_ITEMS = [
@@ -474,8 +478,8 @@ function Header() {
                                     Xem chi tiết
                                 </Button>
                             </Link>
-                            <Link to="/checkout" className={cx('checkout-link')} onClick={() => setOpenCartPanel(false)}>
-                                <Button className={cx('checkout-btn')} primary onClick={handleCheckout} disabled={cartItems.filter(i => i.selected).length === 0}>
+                            <Link to="/checkout" onClick={() => setOpenCartPanel(false)}>
+                                <Button className={cx('checkout-btn')} primary onClick={handleCheckout} >
                                     Thanh toán
                                 </Button>
                             </Link>
