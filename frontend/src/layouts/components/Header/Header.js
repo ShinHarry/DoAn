@@ -13,6 +13,7 @@ import {
     faImage,
     faStar,
     faMobilePhone,
+    faCartPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
@@ -324,7 +325,12 @@ function Header() {
                         ) : cartError ? (
                             <p className={cx('error-message')}>{cartError}</p>
                         ) : cartItems.length === 0 ? (
-                            <p>Giỏ hàng của bạn đang trống.</p>
+                            <div className={cx('emptyCart')}>
+                            <FontAwesomeIcon icon={faCartPlus} className={cx('emptyCartIcon')} />
+                            <p className={cx('emptyCartText')}>
+                                {!currentUser ? 'Vui lòng đăng nhập để xem giỏ hàng' : 'Giỏ hàng của bạn đang trống'}
+                            </p>
+                        </div>
                         ) : (
                             cartItems.map((item) => (
                                 <div key={item._id} className={cx('cartItem', { 'not-available': item.quantity > item.availableQuantity })}>

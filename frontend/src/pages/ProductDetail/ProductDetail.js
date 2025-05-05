@@ -6,6 +6,7 @@ import classNames from 'classnames/bind';
 import styles from './ProductDetail.module.scss';
 import config from '~/config';
 import Image from '~/components/Image';
+import Swal from 'sweetalert2'; // thư viện hiện alert 
 const cx = classNames.bind(styles);
 function ProductDetail() {
     const { productId } = useParams();
@@ -41,7 +42,40 @@ function ProductDetail() {
     }, [productId]);
 
     const handleAddToCart = () => {
-        alert('Sản phẩm đã được thêm vào giỏ hàng!');
+        if (!userData) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Bạn chưa đăng nhập',
+                text: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
+                confirmButtonText: 'Đăng nhập',
+            }).then(() => {
+                navigate('/login'); // chuyển sang trang đăng nhập
+            });
+            return;
+        }
+
+        if (!product || product.productStatus !== 'available') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Không thể thêm sản phẩm',
+                text: 'Sản phẩm hiện không có sẵn hoặc đã hết hàng.',
+                confirmButtonText: 'OK',
+            });
+            return;
+        }
+
+        // try {
+        //     const response = await cartService.addToCart(productId, 1);
+        //     if (response.success) {
+        //         alert('Sản phẩm đã được thêm vào giỏ hàng!');
+        //     } else {
+        //         alert(response.message || 'Không thể thêm sản phẩm vào giỏ hàng.');
+        //     }
+        // } catch (error) {
+        //     console.error('Error adding to cart:', error);
+        //     const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.';
+        //     alert(errorMessage);
+        // }
     };
 
     const handleLike = () => {
