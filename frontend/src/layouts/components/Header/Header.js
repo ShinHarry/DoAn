@@ -36,6 +36,8 @@ import { IoCloseSharp } from "react-icons/io5";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import * as cartService from '~/services/cartService';
 import Swal from 'sweetalert2'; // thư viện hiện alert 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 //cart
 
 const cx = classNames.bind(styles);
@@ -154,9 +156,41 @@ function Header() {
         );
     };
 
+    const showDrawerMessage = (title, message, type) => {
+        const event = new CustomEvent('showDrawerNotification', {
+          detail: { title, message, type },
+        });
+        window.dispatchEvent(event);
+      };
+      
     // hàm xóa sản phẩm khỏi giỏ
     const handleDeleteItem = async (id) => {
-  
+        if (!currentUser) return;
+
+        const result = await Swal.fire({
+            title: 'Bạn có chắc muốn xóa sản phẩm này?',
+            text: 'Thao tác này không thể hoàn tác.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+          });
+        
+        if (!result.isConfirmed) return; // Nếu không xác nhận thì không làm gì
+
+        try {
+            const response = await cartService.removeCartItem(id);
+            if (response.success) {
+                setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
+               toast.success('Đã xóa sản phẩm khỏi giỏ hàng.');
+            } else {
+                toast.error('Lỗi khi xóa sản phẩm!');
+            }
+        } catch (error) {
+            console.error('Lỗi xóa sản phẩm khỏi giỏ:', error);
+            toast.error('Đã xảy ra lỗi khi xóa sản phẩm.');
+
+        }
     };
 
      // hàm xử lý cập nhật lại số lượng khi ấn + -
@@ -295,6 +329,14 @@ function Header() {
 
     return (
         <header className={cx('wrapper')}>
+            <ToastContainer  // hiện thông báo
+            position="top-center" 
+            autoClose={3000}         // Tự động tắt
+            hideProgressBar={true}  //  thanh tiến trình
+            newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
+            closeOnClick            //Cho phép đóng toast
+            draggable               // cho phép kéo
+            />
             {!error && !loading ? (
                 <div className={cx('loading')}>Loading...</div>
             ) : (
@@ -347,7 +389,7 @@ function Header() {
                 </div>
             )}
 
-            <Drawer open={openCartPanel} onClose={() => setOpenCartPanel(false)} anchor="right">
+            <Drawer open={openCartPanel} onClose={() => setOpenCartPanel(false)} anchor="right"  style={{ zIndex: 2 }} >
                 <div className={cx('cartDrawer')}>
                     <div className={cx('cartHeader')}>
                     <h1 className={cx('cartTitle')}>{`Giỏ hàng (${totalQuantity})`}</h1>
@@ -407,9 +449,7 @@ function Header() {
                                                 <button onClick={() => handleIncrease(item._id)} disabled={item.quantity >= item.availableQuantity}>+</button>
                                             </div>
                                             <span>Đơn giá: {item.unitPrice.toLocaleString()} VND</span>
-                                            {/* {item.quantity > item.availableQuantity && (
-                                                <span className={cx('stockWarning')}> (Chỉ còn {item.availableQuantity})</span>
-                                            )} */}
+                                           
                                         </div>
                                     </div>
                                     <RiDeleteBin5Fill

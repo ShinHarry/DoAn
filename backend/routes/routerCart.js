@@ -188,4 +188,28 @@ router.put("/:itemId", async (req, res) => {
 });
 
 
+// xóa sản phẩm khỏi giỏ
+router.delete("/:itemId", async (req, res) => {
+    const userId = req.user.id;
+    const { itemId } = req.params;
+
+    try {
+        const result = await CartProduct.findOneAndDelete({ _id: itemId, userId: userId });
+
+        if (!result) {
+            return res.status(404).json({ success: false, message: 'Sản phẩm không tồn tại trong giỏ hàng hoặc bạn không có quyền xóa.' });
+        }
+
+        res.json({ success: true, message: 'Xóa sản phẩm khỏi giỏ hàng thành công!' });
+    } catch (err) {
+        console.error("Delete Cart Item Error:", err);
+         if (err.name === 'CastError') { // Handle invalid itemId format
+            return res.status(400).json({ success: false, message: 'ID sản phẩm giỏ hàng không hợp lệ.' });
+        }
+        res.status(500).json({ success: false, message: 'Lỗi khi xóa sản phẩm khỏi giỏ hàng.' });
+    }
+});
+
+
+
 module.exports = router;
