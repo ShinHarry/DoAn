@@ -15,8 +15,7 @@ const verifyToken = (req, res, next) => {
     req.user = {
       id: decoded.userId,
       role: decoded.role,
-      avatar: decoded.userAvatar || null, // phòng trường hợp không có
-      idCard: decoded.idCard || null, // phòng trường hợp không có
+      avatar: decoded.avatar || null,
     };
 
     next();

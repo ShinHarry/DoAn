@@ -6,7 +6,18 @@ const UserSchema = new mongoose.Schema(
     userEmail: { type: String },
     userNameAccount: { type: String },
     userPassword: { type: String },
-    userPhone: { type: Number },
+    userPhone: { type: String },
+    userAddress: {
+      type: [
+        {
+          province: { type: String },
+          district: { type: String },
+          street: { type: String },
+          houseNumber: { type: String },
+        },
+      ],
+      default: [],
+    },
     userBirthday: { type: Date },
     userGender: { type: String },
     userRole: { type: String },

@@ -26,7 +26,7 @@ router.post("/register", async (req, res) => {
       userEmail,
       userNameAccount,
       userPassword: hashedPassword,
-      userRole: "CUS",
+      userRole: "cus",
       userStatus: "active",
       userPoint: 0,
       cart: [],
@@ -59,12 +59,17 @@ router.post("/login", async (req, res) => {
       console.log(userPassword, user.userPassword);
       return res.status(400).json({ message: "Mật khẩu không đúng." });
     }
-
+    console.log(
+      "avatar: ",
+      user.userAvatar ? user.userAvatar : "Không có avatar"
+    );
+    console.log("userAvatar:", user.userAvatar);
     // Tạo token
     const token = jwt.sign(
       {
         userId: user._id,
         role: user.userRole,
+        avatar: user.userAvatar,
       },
       process.env.secret_token,
       { expiresIn: "1d" }

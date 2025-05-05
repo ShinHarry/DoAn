@@ -20,19 +20,41 @@ function Login() {
 
         try {
             const res = await authService.login({ userNameAccount: username, userPassword: password });
-
             const token = res.token;
+            console.log('token', token);
 
             if (rememberMe) {
+<<<<<<< HEAD
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(res.user));
             } else {
                 sessionStorage.setItem('token', token);
                 sessionStorage.setItem('user', JSON.stringify(res.user));
             }
+=======
+                if (res.user.role === 'admin') {
+                    localStorage.setItem('token', token);
+                    console.log('admin', localStorage.getItem('token'));
+                    navigate('/homeadmin');
+                }
+                if (res.user.role === 'cus') {
+                    localStorage.setItem('token', token);
+                    navigate('/');
+                }
+            } else {
+                if (res.user.role === 'admin') {
+                    sessionStorage.setItem('token', token);
+                    console.log('admin', sessionStorage.getItem('token'));
+>>>>>>> e1e5f9d (user page)
 
+                    navigate('/homeadmin');
+                }
+                if (res.user.role === 'cus') {
+                    sessionStorage.setItem('token', token);
+                    // navigate('/');
+                }
+            }
             alert('Đăng nhập thành công!');
-            navigate('/');
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 setError(err.response.data.message);

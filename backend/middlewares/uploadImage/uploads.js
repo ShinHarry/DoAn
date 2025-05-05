@@ -21,7 +21,7 @@ const productStorage = multer.diskStorage({
 // Cấu hình lưu ảnh user
 const userStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/user");
+    cb(null, "public/users");
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);

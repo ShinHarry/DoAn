@@ -26,18 +26,20 @@ function BannerImage() {
         };
         fetchNews();
     }, []);
-   
+
     return (
         <div className={cx('slide')}>
             <div className={cx('container')}>
-                <Swiper spaceBetween={30}
-                        centeredSlides={true}
-                        autoplay={{
+                <Swiper
+                    spaceBetween={30}
+                    centeredSlides={true}
+                    autoplay={{
                         delay: 3000,
                         disableOnInteraction: false,
-                        }}
-                        pagination={{
+                    }}
+                    pagination={{
                         clickable: true,
+<<<<<<< HEAD
                         }}
                         navigation={true}
                         modules={[Autoplay, Pagination, Navigation]}
@@ -51,10 +53,22 @@ function BannerImage() {
                             )
                         ))}
                         
+=======
+                    }}
+                    navigation={true}
+                    modules={[Autoplay, Pagination, Navigation]}
+                    className={cx('mySwiper')}
+                >
+                    {news.map((item) => (
+                        <SwiperSlide key={item._id}>
+                            <img src={item.newImage?.link} alt={item.newImage?.alt} />
+                        </SwiperSlide>
+                    ))}
+>>>>>>> e1e5f9d (user page)
                 </Swiper>
             </div>
         </div>
-    )
+    );
 }
 
 export default BannerImage;

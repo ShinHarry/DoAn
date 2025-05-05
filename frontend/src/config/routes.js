@@ -1,8 +1,9 @@
 const routes = {
     home: '/',
+    homeadmin: '/homeadmin',
     search: '/search',
+    //product
     product: '/product',
-    profile: '/profile/:userId',
     productDetail: '/product/:productId',
     updateProduct: '/updateProduct/:productId',
     addProduct: '/addProduct',
@@ -10,11 +11,10 @@ const routes = {
     cartsId: '/carts/:id',
     checkout: '/checkout',
     admin: '/admin',
+    //login
     login: '/login',
-    order: '/order',
-    address: '/address',
-    category: '/category/:categoryId',
     register: '/register',
+<<<<<<< HEAD
     news : '/news',
     addNew : '/addNew',
     updateNew : '/updateNew/:bannerId',
@@ -23,6 +23,17 @@ const routes = {
     addSale: '/addSale',
     // forgotpassword: '/forgot-password',
     checkout: '/checkout',
+=======
+    forgotpassword: '/forgot-password',
+    order: '/order',
+    category: '/category/:categoryId',
+    new: '/new',
+    addNew: '/addNew',
+    //profile
+    profile: '/profile/:userId',
+    address: '/profile/:userId/address',
+    changepassword: '/profile/:userId/changepassword',
+>>>>>>> e1e5f9d (user page)
 };
 
 export default routes;

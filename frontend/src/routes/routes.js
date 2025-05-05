@@ -1,7 +1,7 @@
 import config from '~/config';
 
 // Layouts
-import { HeaderOnly } from '~/layouts';
+import { HeaderSideBar } from '~/layouts';
 
 // Pages
 import Home from '~/pages/Home/Home';
@@ -18,6 +18,7 @@ import Register from '~/pages/Register';
 import Banner from '~/pages/Banner';
 import AddBanner from '~/pages/AddBanner';
 import ForgotPassword from '~/pages/ForgotPassword';
+<<<<<<< HEAD
 import UpdateBanner from '~/pages/UpdateBanner';
 import Sale from '~/pages/Sale';
 import AddSale from '~/pages/AddSale';
@@ -27,17 +28,20 @@ import CartDetail from '~/pages/CartDetail/CartDetail';
 // import OrderSuccess from '~/pages/OrderSuccess/OrderSuccess';
 // import PaymentReturn from '~/pages/PaymentReturn/PaymentReturn';
 
+=======
+import HomeAdmin from '~/pages/HomeAdmin';
+import ChangePassword from '~/pages/ChangePassword';
+>>>>>>> e1e5f9d (user page)
 // Public routes
 const publicRoutes = [
     { path: config.routes.home, component: Home },
     { path: config.routes.order, component: Order },
-    { path: config.routes.profile, component: Profile },
-    { path: config.routes.address, component: Address, layout: HeaderOnly },
     { path: config.routes.search, component: Search },
     { path: config.routes.productDetail, component: ProductDetail },
     { path: config.routes.addProduct, component: AddProduct },
     { path: config.routes.updateProduct, component: UpdateProduct },
     { path: config.routes.category, component: Category },
+<<<<<<< HEAD
     { path: config.routes.login, component: Login, layout: null },
     { path: config.routes.register, component: Register, layout: null },
     { path: config.routes.news, component: Banner },
@@ -51,6 +55,19 @@ const publicRoutes = [
     { path: '/cart-detail', component: CartDetail },
     // { path: '/order-success/:orderId?', component: OrderSuccess },
     // { path: '/payment-return', component: PaymentReturn },
+=======
+    { path: config.routes.new, component: Banner },
+    { path: config.routes.addNew, component: AddBanner },
+    { path: config.routes.homeadmin, component: HomeAdmin },
+
+    { path: config.routes.profile, component: Profile, layout: HeaderSideBar },
+    { path: config.routes.address, component: Address, layout: HeaderSideBar },
+    { path: config.routes.changepassword, component: ChangePassword, layout: HeaderSideBar },
+
+    { path: config.routes.login, component: Login, layout: null },
+    { path: config.routes.register, component: Register, layout: null },
+    { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
+>>>>>>> e1e5f9d (user page)
 ];
 
 const privateRoutes = [];

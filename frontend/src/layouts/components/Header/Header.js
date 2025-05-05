@@ -13,9 +13,12 @@ import {
     faImage,
     faStar,
     faMobilePhone,
+<<<<<<< HEAD
     faCartPlus,
+=======
+>>>>>>> e1e5f9d (user page)
 } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { jwtDecode } from 'jwt-decode';
@@ -30,6 +33,7 @@ import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
 import { useEffect, useState, useCallback } from 'react';
 
+<<<<<<< HEAD
 // cart
 import Drawer from '@mui/material/Drawer';
 import { IoCloseSharp } from "react-icons/io5";
@@ -40,12 +44,15 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 //cart
 
+=======
+>>>>>>> e1e5f9d (user page)
 const cx = classNames.bind(styles);
 
 function Header() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [categoryMap, setCategoryMap] = useState({});
+<<<<<<< HEAD
     const [userData, setUserData] = useState(null);
 
     //cart
@@ -56,6 +63,9 @@ function Header() {
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [totalPrice, setTotalPrice] = useState(0);
     //cart
+=======
+    const navigate = useNavigate();
+>>>>>>> e1e5f9d (user page)
 
     useEffect(() => {
         // lấy user data từ storage
@@ -87,7 +97,9 @@ function Header() {
 
         fetchCategories();
     }, []);
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
+<<<<<<< HEAD
     const currentUser = !!userData;
     const userId = userData?.id;
     const avatar = userData?.avatar;
@@ -100,6 +112,35 @@ function Header() {
         setUserData(null);
         setCartItems([]);
         window.location.reload();
+=======
+    if (token) {
+        const decoded = jwtDecode(token);
+        console.log('Thông tin trong token:', decoded);
+    }
+    const getToken = () => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        console.log('token', token);
+        if (!token) return null;
+        try {
+            const decoded = jwtDecode(token);
+            return {
+                userId: decoded.userId,
+                userRole: decoded.role,
+                avatar: decoded.avatar || null,
+            };
+        } catch (error) {
+            console.error('Token decode error:', error);
+            return null;
+        }
+    };
+
+    const { userId, avatar } = getToken() || {};
+    const currentUser = !!userId;
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        navigate('/');
+>>>>>>> e1e5f9d (user page)
     };
 
     //cart // hàm lấy cart, thay đổi theo currentUser
@@ -322,7 +363,6 @@ function Header() {
             to: '/sales',
         },
         {
-            icon: <FontAwesomeIcon icon={faSignOutAlt} />, // thêm icon logout
             icon: <FontAwesomeIcon icon={faSignOutAlt} />,
             title: 'Đăng xuất',
             separate: true,
@@ -368,7 +408,7 @@ function Header() {
 
                         <Menu items={currentUser ? userMenu : MENU_ITEMS}>
                             {currentUser ? (
-                                <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />
+                                <Image className={cx('user-avatar')} src={avatar[0].link} alt="Avatar User" />
                             ) : (
                                 <></>
                             )}

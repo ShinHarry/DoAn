@@ -13,7 +13,13 @@ const RouterManufacturer = require("./routes/routerManufacturer");
 const RouterOrigin = require("./routes/routerOrigin");
 const RouterUnit = require("./routes/routerUnit");
 const routerAuth = require("./routes/routerAuth");
+<<<<<<< HEAD
 const RouterNew =  require("./routes/routerNew");
+=======
+
+const RouterNew = require("./routes/routerNew");
+
+>>>>>>> e1e5f9d (user page)
 const verifyToken = require("./middlewares/Auth/verifyToken");
 const RouterSale =  require("./routes/routerSale");
 // const orderRouter = require('./routes/routerOrder');
@@ -27,7 +33,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-// Connect to MongoDB
+// Connect to MongoDBs
 db.connect();
 
 // Use routes
@@ -43,7 +49,6 @@ app.use("/api/news", RouterNew);
 app.use("/api/sales", RouterSale);
 // app.use("/api/orders", orderRouter);
 // app.use("/api/payments", paymentRouter);
-
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 
