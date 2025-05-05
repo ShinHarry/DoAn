@@ -145,7 +145,11 @@ function Header() {
 
     // hàm xử lý khi ấn checkbox
     const handleToggleSelect = (id) => {
-
+        setCartItems((prevItems) =>
+            prevItems.map((item) =>
+                item._id === id ? { ...item, selected: !item.selected } : item
+            )
+        );
     };
 
     // hàm xóa sản phẩm khỏi giỏ
@@ -295,6 +299,10 @@ function Header() {
                         <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
                             <button className={cx('action-btn')} onClick={handleOpenCart}>
                                 <CartIcons />
+                                {/* hiển thị badge trên icon giỏ hàng */}
+                                {currentUser && totalQuantity > 0 && (
+                                     <span className={cx('badge')}>{totalQuantity}</span>
+                                )}
                             </button>
                         </Tippy>
                     </div>
@@ -304,8 +312,8 @@ function Header() {
             <Drawer open={openCartPanel} onClose={() => setOpenCartPanel(false)} anchor="right">
                 <div className={cx('cartDrawer')}>
                     <div className={cx('cartHeader')}>
-                        <h1 className={cx('cartTitle')}></h1>
-                        <IoCloseSharp
+                    <h1 className={cx('cartTitle')}>{`Giỏ hàng (${totalQuantity})`}</h1>
+                    <IoCloseSharp
                             className={cx('cartClose')}
                             onClick={() => setOpenCartPanel(false)}
                         />
@@ -323,7 +331,7 @@ function Header() {
                                     <input
                                         type="checkbox"
                                         checked={!!item.selected}
-                                        // onChange={() => handleToggleSelect(item._id)}
+                                        onChange={() => handleToggleSelect(item._id)}
                                         className={cx('cartItemCheckbox')}
                                     />
                                     <Image
