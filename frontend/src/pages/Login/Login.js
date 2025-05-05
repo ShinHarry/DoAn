@@ -25,8 +25,10 @@ function Login() {
 
             if (rememberMe) {
                 localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(res.user));
             } else {
                 sessionStorage.setItem('token', token);
+                sessionStorage.setItem('user', JSON.stringify(res.user));
             }
 
             alert('Đăng nhập thành công!');
