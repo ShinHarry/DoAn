@@ -76,12 +76,12 @@ router.post('/vnpay/create_payment_url', async (req, res) => {
     res.status(200).json({ success: true, paymentUrl: paymentUrl });
 });
 
-// GET /api/payments/vnpay/vnpay_return - Verify VNPay return URL
+// GET /api/payments/vnpay/vnpay_return
 router.get('/vnpay/vnpay_return', async (req, res) => {
     const vnp_Params = req.query;
     const secureHash = vnp_Params['vnp_SecureHash'];
 
-    // Remove hash fields before sorting/hashing
+    // xoá các trường băm trc khi sắp xếp/băm
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
 
@@ -91,7 +91,7 @@ router.get('/vnpay/vnpay_return', async (req, res) => {
         return res.status(500).json({ success: false, message: 'Lỗi cấu hình.' });
     }
 
-    // Sort parameters
+    // sắp xêp parameters
     const sortedParams = Object.keys(vnp_Params)
         .sort()
         .reduce((acc, key) => {
@@ -99,35 +99,27 @@ router.get('/vnpay/vnpay_return', async (req, res) => {
             return acc;
         }, {});
     
-    // Create sign data string
+    // tạo chữ ký
     const signData = new URLSearchParams(sortedParams).toString();
     
-    // Recalculate hash
+    // tính toán băm lại
     const hmac = crypto.createHmac("sha512", secretKey);
     const calculatedHash = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
 
     const responseCode = vnp_Params['vnp_ResponseCode'];
-    const transactionRef = vnp_Params['vnp_TxnRef']; // Should map to your order reference
+    const transactionRef = vnp_Params['vnp_TxnRef']; // orderId
 
     if (secureHash === calculatedHash) {
-        if (responseCode === '00') {
-            // TODO: 
-            // 1. Check if transactionRef (vnp_TxnRef) exists in your database.
-            // 2. Check if the order associated with transactionRef is already marked as completed.
-            // 3. If not completed, update order status (paymentStatus = 'completed', orderStatus = 'processing' or 'confirmed').
-            //    const order = await Order.findOneAndUpdate({ /* find criteria based on vnp_TxnRef */ }, { paymentStatus: 'completed', orderStatus: 'processing' });
-            
-            console.log("VNPay Return SUCCESS - TxnRef:", transactionRef, "Code:", responseCode);
-            // Send success response to frontend
+        if (responseCode === '00') {            
+            // console.log("VNPay Return SUCCESS - TxnRef:", transactionRef, "Code:", responseCode);
             res.status(200).json({ 
                 success: true, 
                 message: 'Xác thực thanh toán thành công.', 
                 code: '00', 
-                orderId: transactionRef // Send back the reference
+                orderId: transactionRef 
             });
         } else {
-             // TODO: Optionally update order status to failed based on transactionRef
-            console.log("VNPay Return FAILED - TxnRef:", transactionRef, "Code:", responseCode);
+            // console.log("VNPay Return FAILED - TxnRef:", transactionRef, "Code:", responseCode);
             res.status(200).json({ 
                 success: false, 
                 message: 'Thanh toán không thành công theo VNPay.', 
@@ -144,6 +136,5 @@ router.get('/vnpay/vnpay_return', async (req, res) => {
     }
 });
 
-// TODO: Implement IPN listener endpoint later (/vnpay/ipn)
 
 module.exports = router; 

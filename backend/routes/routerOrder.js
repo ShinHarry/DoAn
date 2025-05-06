@@ -76,7 +76,7 @@ router.post('/', verifyToken, async (req, res) => {
             totalAmount: calculatedSubtotal + shippingFee,
             paymentMethod,
             orderStatus: 'processing',
-            paymentStatus: paymentMethod === 'vnpay' ? 'complete' : 'pending',
+            paymentStatus: paymentMethod === 'vnpay' ? 'completed' : 'pending',
         });
 
         const savedOrder = await newOrder.save();
