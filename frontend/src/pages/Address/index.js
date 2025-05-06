@@ -6,6 +6,7 @@ import Button from '~/components/Button';
 import * as userService from '~/services/userService';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2'; // thư viện hiện alert 
 
 const cx = classNames.bind(styles);
 
@@ -101,7 +102,17 @@ function AddressUI() {
     // xử lý xóa address
     const handleDeleteAddress = async (addressId) => {
         if (!user) return;
-        if (window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
+         const result = await Swal.fire({
+                    title: 'Bạn có chắc muốn xóa đia chỉ này?',
+                    text: 'Thao tác này không thể hoàn tác.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy',
+                  });
+                
+        if (!result.isConfirmed) return;
+        if (result.isConfirmed) {
             setIsLoading(true);
             try {
                 await userService.deleteAddress(addressId); 
