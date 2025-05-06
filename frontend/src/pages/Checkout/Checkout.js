@@ -6,6 +6,7 @@ import styles from './Checkout.module.scss';
 import * as cartService from '~/services/cartService';
 import * as userService from '~/services/userService';
 import * as paymentMethodService from '~/services/paymentMethodService';
+import * as orderService from '~/services/orderService';
 
 // import * as checkoutService from '~/services/checkoutService';
 import { toast, ToastContainer  } from 'react-toastify';
@@ -25,8 +26,8 @@ function Checkout() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState(null);
-    const [paymentMethod, setPaymentMethod] = useState([]);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+    const [paymentMethods, setPaymentMethods] = useState([]);
+    const [paymentMethod, setPaymentMethod] = useState('cod');
 
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
@@ -88,7 +89,7 @@ function Checkout() {
             try {
               const response = await paymentMethodService.getPaymentMethod(); 
               console.log(response)
-              setPaymentMethod(response);
+              setPaymentMethods(response);
             } catch (error) {
               console.error('Lỗi lấy danh sách phương thức thanh toán', error);
             }
@@ -121,7 +122,7 @@ function Checkout() {
     };
 
     const handlePaymentChange = (e) => {
-        setSelectedPaymentMethod(e.target.value);
+        setPaymentMethod(e.target.value);
     };
 
     const handleAddressChange = (e) => {
@@ -129,7 +130,50 @@ function Checkout() {
     };
 
     const handlePlaceOrder = async () => {
-     
+        if (!selectedAddress) {
+            toast.warning('Vui lòng chọn địa chỉ giao hàng!');
+            return;
+        }
+        if (cartItems.some(item => item.quantity > item.availableQuantity)) { // duyệt qua mảng nếu có sl lớn hơn trả về true
+            toast.error('Một số sản phẩm trong giỏ hàng không đủ số lượng tồn kho. Vui lòng kiểm tra lại giỏ hàng.');
+            navigate('/cart-detail');
+            return;
+        }
+
+        const orderDetails = {
+            orderItems: cartItems.map(item => ({
+                product: item.productId,
+                quantity: item.quantity,
+                price: item.unitPrice,
+            })),
+            shippingAddress: selectedAddress,
+            shippingMethod,
+            shippingFee,
+            totalPrice: total,
+            totalAmount: finalTotal,
+            paymentMethod,
+            user: userData?.id,
+        };
+
+        console.log('Placing Order:', orderDetails);
+        // setIsLoading(true);
+
+        if (paymentMethod === 'cod') {
+            try {
+                const response = await orderService.createOrder(orderDetails);
+                console.log("COD Order Response:", response);
+                // toast.error('Đặt hàng COD thành công!');
+                if (response.order?._id) {
+                    navigate(`/order-success/${response.order._id}`);
+                } else {
+                    navigate('/order-success');
+                }
+            } catch (err) {
+                console.error("COD Order Error:", err);
+                toast.error(err.response?.data?.message || 'Đặt hàng COD thất bại. Vui lòng thử lại.');
+            }
+        }
+
     };
 
     if (isLoading) {
@@ -205,8 +249,8 @@ function Checkout() {
 
                             <div className={cx('summarySection')}>
                                 <span>Chọn phương thức thanh toán:</span>
-                                <select value={selectedPaymentMethod} onChange={handlePaymentChange}>
-                                    {paymentMethod.map((method) => (
+                                <select value={paymentMethod} onChange={handlePaymentChange}>
+                                    {paymentMethods.map((method) => (
                                         <option key={method._id} value={method.paymentType}>
                                             {method.name}
                                         </option>

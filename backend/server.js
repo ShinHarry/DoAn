@@ -17,7 +17,7 @@ const RouterNew =  require("./routes/routerNew");
 const verifyToken = require("./middlewares/Auth/verifyToken");
 const RouterSale =  require("./routes/routerSale");
 const paymentMethodRouter = require('./routes/routerPaymentMethod');
-// const orderRouter = require('./routes/routerOrder');
+const orderRouter = require('./routes/routerOrder');
 // const paymentRouter = require('./routes/routerPayment');
 
 dotenv.config();
@@ -43,7 +43,7 @@ app.use("/api/auth", routerAuth);
 app.use("/api/news", RouterNew);
 app.use("/api/sales", RouterSale);
 app.use('/api/', paymentMethodRouter);
-// app.use("/api/orders", orderRouter);
+app.use("/api/orders", orderRouter);
 // app.use("/api/payments", paymentRouter);
 
 

@@ -14,35 +14,31 @@ const OrderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
-        productName: { type: String, required: true }, // Lưu tên sản phẩm tại thời điểm đặt hàng
-        productImage: { type: String, required: true }, // Lưu ảnh sản phẩm
+        productName: { type: String, required: true },
+        productImage: { type: String },
         quantity: { type: Number, required: true, min: 1 },
-        unitPrice: { type: Number, required: true }, // Lưu giá tại thời điểm đặt hàng
-        totalPrice: { type: Number, required: true }, // = quantity * unitPrice
+        unitPrice: { type: Number, required: true },
       },
     ],
-    totalAmount: { type: Number, required: true }, // Tổng tiền của đơn hàng
+    shippingAddress: { type: String, required: true },
+    shippingMethod: { type: String, required: true },
+    shippingFee: { type: Number, required: true, default: 0 },
+    subTotalPrice: { type: Number, required: true },
+    totalAmount: { type: Number, required: true },
     orderStatus: {
       type: String,
-      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "processing", "confirmed", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
     paymentMethod: {
       type: String,
-      enum: ["COD", "Credit Card", "PayPal"],
-      default: "COD",
+      enum: ["cod", "vnpay"],
+      required: true,
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "processing", "completed", "failed"],
+      enum: ["pending", "completed", "failed"],
       default: "pending",
-    },
-    shippingAddress: {
-      fullName: { type: String, required: true },
-      phoneNumber: { type: String, required: true },
-      address: { type: String, required: true },
-      city: { type: String, required: true },
-      country: { type: String, required: true },
     },
   },
   { timestamps: true }
