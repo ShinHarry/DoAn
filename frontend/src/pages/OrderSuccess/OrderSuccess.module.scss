@@ -1,0 +1,60 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+    font-size: 5rem; // Adjust size as needed
+    color: #28a745; // Success green color
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.message {
+    font-size: 1.6rem;
+    color: #555;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.orderId {
+    font-size: 1.4rem;
+    color: #777;
+    margin-bottom: 30px;
+    code {
+        background-color: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+
+    // Stack buttons on smaller screens if needed
+    @media (max-width: 480px) {
+        flex-direction: column;
+        width: 100%;
+        button {
+            width: 100%;
+        }
+    }
+} 

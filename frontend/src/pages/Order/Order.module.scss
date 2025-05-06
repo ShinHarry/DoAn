@@ -1,0 +1,112 @@
+
+  .title  {
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #e31b1b;
+  }
+  
+  .order-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(27, 25, 25, 0.05);
+    table-layout: fixed;
+  
+    th, td {
+      padding: 12px 16px;
+      text-align: center;
+      border-bottom: 3px solid #f0f0f0;
+      vertical-align: top;
+      word-break: break-word;
+    }
+  
+    th {
+        background-color: #f1f3f5;
+        font-weight: 700;
+        font-size: 15px;
+        color: #1e1e1e;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+        padding: 14px 18px;
+        white-space: nowrap;
+    }
+    tr:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+  
+    tr:nth-child(even) {
+      background-color: #f8f3f3;
+    }
+
+    td {
+      font-size: 14px;
+      color: #000;
+    }
+  
+    // Nút thao tác
+    .detail-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 3px 12px;
+      border-radius:6px;
+      text-decoration: none;
+      font-size: 13px;
+      transition: background-color 0.2s ease;
+  
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
+  
+    th:nth-child(1), td:nth-child(1) { width: 10%; } // Người đặt
+    th:nth-child(2), td:nth-child(2) { width: 25%; } // Địa chỉ - DÀI HƠN
+    th:nth-child(3), td:nth-child(3) { width: 11%; } // Điện thoại
+    th:nth-child(4), td:nth-child(4) { width: 12%; } // Mã đơn
+    th:nth-child(5), td:nth-child(5) { width: 10%; } // Ngày đặt
+    th:nth-child(6), td:nth-child(6) { width: 12%; } // Tổng tiền
+    th:nth-child(7), td:nth-child(7) { width: 10%; } // Trạng thái
+    th:nth-child(8), td:nth-child(8) { width: 10%; } // Thao tác
+  
+
+    // Trạng thái
+    .status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+  
+      &.processing {
+        background-color: #2d1fef;
+        color: #fff;
+      }
+
+      &.confirmed {
+        background-color: #2b88bb;
+        color: #fff;
+      }
+
+      &.shipped {
+        background-color: #c5d11b;
+        color: #fff;
+      }
+  
+      &.completed {
+        background-color: #278c49;
+        color: #fff;
+      }
+  
+      &.cancelled {
+        background-color: #d93025;
+        color: #fff;
+      }
+    }
+  }
+  

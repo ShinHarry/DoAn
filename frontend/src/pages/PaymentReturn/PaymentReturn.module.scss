@@ -1,0 +1,84 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+
+    &.success {
+        color: #28a745;
+    }
+    &.error {
+        color: #dc3545;
+    }
+    &.loading {
+        color: #ffc107; // Or a neutral color
+        // Optional: Add animation for loading
+        animation: spin 1s linear infinite;
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.message {
+    font-size: 1.6rem;
+    color: #555;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.details {
+    font-size: 1.4rem;
+    color: #777;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 400px;
+
+    p {
+        margin-bottom: 5px;
+    }
+
+    code {
+        background-color: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        word-break: break-all; // Prevent long strings from breaking layout
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+
+    @media (max-width: 480px) {
+        flex-direction: column;
+        width: 100%;
+        button,
+        a > button { // Target button inside Link
+            width: 100%;
+        }
+    }
+} 
