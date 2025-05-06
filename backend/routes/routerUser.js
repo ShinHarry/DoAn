@@ -149,4 +149,41 @@ router.post('/me/addresses', verifyToken, async (req, res) => {
 });
 
 
+// DELETE /api/users/me/addresses
+router.delete('/me/addresses', verifyToken, async (req, res) => {
+  // lấy addressId từ request body
+  const { addressId } = req.body; 
+
+  if (!addressId) {
+       return res.status(400).json({ success: false, message: 'Thiếu ID địa chỉ trong yêu cầu.'});
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      return res.status(400).json({ success: false, message: 'ID địa chỉ không hợp lệ.'});
+  }
+
+  try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
+      }
+
+      const initialLength = user.userAddress.length;
+      // lọc address cần xóa
+      user.userAddress = user.userAddress.filter(addr => addr._id.toString() !== addressId);
+
+      // kiểm tra xem có thật sự bị xóa không
+      if (user.userAddress.length === initialLength) {
+           return res.status(404).json({ success: false, message: 'Không tìm thấy địa chỉ để xóa.' });
+      }
+
+      await user.save();
+      res.json({ success: true, message: 'Xóa địa chỉ thành công!' });
+
+  } catch (error) {
+      console.error("Delete Address Error:", error);
+      res.status(500).json({ success: false, message: 'Lỗi khi xóa địa chỉ.' });
+  }
+});
+
 module.exports = router;

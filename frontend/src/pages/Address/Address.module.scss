@@ -90,6 +90,16 @@
     button {
         padding: 6px 12px;
         font-size: 1.3rem;
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    
+        &:hover {
+          background-color: #c0392b;
+          cursor: pointer;
+        }
     }
 }
 

@@ -88,6 +88,24 @@ function AddressUI() {
         }
     };
 
+    // xử lý xóa address
+    const handleDeleteAddress = async (addressId) => {
+        if (!user) return;
+        if (window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
+            setIsLoading(true);
+            try {
+                await userService.deleteAddress(addressId); 
+                toast.success('Xóa địa chỉ thành công!');
+                await fetchAddresses(); 
+            } catch (err) {
+                console.error("Error deleting address:", err);
+                toast.error(err.response?.data?.message || 'Xóa địa chỉ thất bại.');
+            } finally {
+                 setIsLoading(false);
+            }
+        }
+    };
+
     // Render logic
     if (!user) {
         return null; 
@@ -170,8 +188,7 @@ function AddressUI() {
                         <div className={cx('addressActions')}>
                             <Button 
                                 small 
-                                danger 
-                                // onClick={() => handleDeleteAddress(addr._id)} 
+                                onClick={() => handleDeleteAddress(addr._id)} 
                                 disabled={isLoading}
                             >
                                 Xóa

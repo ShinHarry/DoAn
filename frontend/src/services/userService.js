@@ -39,3 +39,16 @@ export const addAddress = async (addressData) => {
         throw err;
     }
 };
+
+// xóa địa chỉ 
+export const deleteAddress = async (addressId) => {
+    try {
+        const response = await httpRequest.del('/users/me/addresses', { 
+            data: { addressId: addressId } 
+        });
+        return response;
+    } catch (err) {
+        console.error('Error deleting address:', err);
+        throw err;
+    }
+};
