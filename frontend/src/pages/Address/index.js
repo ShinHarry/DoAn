@@ -25,6 +25,8 @@ function AddressUI() {
     const [formData, setFormData] = useState(initialFormData);
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingId, setEditingId] = useState(null);
 
      // lấy userdata
      useEffect(() => {
@@ -70,19 +72,27 @@ function AddressUI() {
     };
 
     // xử lý thêm địa chỉ mới
-    const handleAddAddress = async (e) => {
+    const handleAddOrUpdateAddress  = async (e) => {
         e.preventDefault();
         if (!user) return;
         setIsLoading(true);
         try {
-            await userService.addAddress(formData); 
-            toast.success('Thêm địa chỉ thành công!');
+            if (isEditing && editingId) {
+                await userService.updateAddress({ ...formData, addressId: editingId });
+                toast.success('Cập nhật địa chỉ thành công!');
+            } else {
+                await userService.addAddress(formData);
+                toast.success('Thêm địa chỉ thành công!');
+            }
+
             setFormData(initialFormData); // Reset form
+            setEditingId(null);
+            setIsEditing(false);
             setShowForm(false); // Ẩn form
             await fetchAddresses(); // làm mới lại address list
         } catch (err) {
-            console.error("Error adding address:", err);
-            toast.error(err.response?.data?.message || 'Thêm địa chỉ thất bại.');
+            console.error("Error handle address:", err);
+            toast.error(err.response?.data?.message || 'Thất bại.');
         } finally {
             setIsLoading(false);
         }
@@ -129,20 +139,26 @@ function AddressUI() {
                         closeOnClick            //Cho phép đóng toast
                         draggable             // kéo 
                     />
+            <br/>
             <h1 className={cx('title')}>Sổ Địa Chỉ</h1>
 
             <Button 
                 primary 
                 className={cx('addAddressBtn')}
-                onClick={() => setShowForm(!showForm)}
+                onClick={() => {
+                    setFormData(initialFormData);
+                    setShowForm(!showForm)
+                    setIsEditing(false);
+                    setEditingId(null);
+                }}
             >
                 {showForm ? 'Đóng Form' : 'Thêm địa chỉ mới'}
             </Button>
 
             {/* Address Form */}
             {showForm && (
-                <form className={cx('addressForm')} onSubmit={handleAddAddress}>
-                    <h3>Thêm địa chỉ mới</h3> 
+                <form className={cx('addressForm')} onSubmit={handleAddOrUpdateAddress }>
+                    <h3>{isEditing ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ'}</h3>                
                     <div className={cx('formGroup')}>
                         <label htmlFor="fullName">Họ và tên</label>
                         <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleInputChange} required />
@@ -164,9 +180,16 @@ function AddressUI() {
                         <input type="text" id="country" name="country" value={formData.country} onChange={handleInputChange} required />
                     </div>
                     <div className={cx('formActions')}>
-                        <Button type="button" onClick={() => { setShowForm(false); setFormData(initialFormData); }}>Hủy</Button>
+                        <Button type="button" onClick={() => { 
+                                setShowForm(false); 
+                                setFormData(initialFormData); 
+                                setIsEditing(false);
+                                setEditingId(null);
+                            }}>
+                                Hủy
+                        </Button>
                         <Button primary type="submit" disabled={isLoading}>
-                            {isLoading ? 'Đang lưu...' : 'Lưu địa chỉ'}
+                        {isLoading ? 'Đang lưu...' : isEditing ? 'Cập nhật' : 'Lưu địa chỉ'}
                         </Button>
                     </div>
                 </form>
@@ -187,11 +210,26 @@ function AddressUI() {
                         </div>
                         <div className={cx('addressActions')}>
                             <Button 
-                                small 
                                 onClick={() => handleDeleteAddress(addr._id)} 
                                 disabled={isLoading}
                             >
                                 Xóa
+                            </Button>
+                            <Button 
+                                onClick={() => {
+                                    setFormData({
+                                    fullName: addr.fullName,
+                                    phoneNumber: addr.phoneNumber,
+                                    address: addr.address,
+                                    city: addr.city,
+                                    country: addr.country,
+                                    });
+                                    setShowForm(true);
+                                    setIsEditing(true);
+                                    setEditingId(addr._id);
+                                }}
+                                >
+                                Sửa
                             </Button>
                         </div>
                     </li> 

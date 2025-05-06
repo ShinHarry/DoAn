@@ -186,4 +186,33 @@ router.delete('/me/addresses', verifyToken, async (req, res) => {
   }
 });
 
+// PUT /api/users/me/addresses
+router.put('/me/addresses', verifyToken, async (req, res) => {
+  const { addressId, fullName, phoneNumber, address, city, country } = req.body;
+
+  if (!addressId) {
+      return res.status(400).json({ success: false, message: 'Thiếu ID địa chỉ.' });
+  }
+
+  try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
+      }
+
+      const addressIndex = user.userAddress.findIndex(addr => addr._id.toString() === addressId);
+      if (addressIndex === -1) {
+          return res.status(404).json({ success: false, message: 'Địa chỉ không tồn tại.' });
+      }
+
+      user.userAddress[addressIndex] = { _id: addressId, fullName, phoneNumber, address, city, country };
+      await user.save();
+
+      res.json({ success: true, message: 'Cập nhật địa chỉ thành công!', address: user.userAddress[addressIndex] });
+  } catch (error) {
+      console.error("Update Address Error:", error);
+      res.status(500).json({ success: false, message: 'Lỗi khi cập nhật địa chỉ.' });
+  }
+});
+
 module.exports = router;

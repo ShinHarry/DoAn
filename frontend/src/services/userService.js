@@ -52,3 +52,14 @@ export const deleteAddress = async (addressId) => {
         throw err;
     }
 };
+
+export const updateAddress = async (updatedData) => {
+    console.log(updatedData);
+    try {
+        const response = await httpRequest.put('/users/me/addresses', updatedData)
+        return response;
+    } catch (err) {
+        console.error('Error deleting address:', err);
+        throw err;
+    }
+};
