@@ -7,8 +7,7 @@ import * as cartService from '~/services/cartService';
 import * as userService from '~/services/userService';
 import * as paymentMethodService from '~/services/paymentMethodService';
 import * as orderService from '~/services/orderService';
-
-// import * as checkoutService from '~/services/checkoutService';
+import * as paymentService from '~/services/paymentService';
 import { toast, ToastContainer  } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -156,7 +155,7 @@ function Checkout() {
         };
 
         console.log('Placing Order:', orderDetails);
-        // setIsLoading(true);
+        setIsLoading(true);
 
         if (paymentMethod === 'cod') {
             try {
@@ -172,7 +171,31 @@ function Checkout() {
                 console.error("COD Order Error:", err);
                 toast.error(err.response?.data?.message || 'Đặt hàng COD thất bại. Vui lòng thử lại.');
             }
+        }else if (paymentMethod === 'vnpay') {
+            try {
+                const returnUrl = `${window.location.origin}/payment-return`;
+                
+                const orderInfo = `Thanh toan don hang checkout #${Date.now()}`;
+                
+                const response = await paymentService.createVnpayPaymentUrl(
+                    finalTotal,
+                    orderInfo, 
+                    returnUrl
+                );
+                
+                console.log("VNPay URL Response:", response);
+                if (response.success && response.paymentUrl) {
+                    console.log("VNPay URL Response: thành công");
+                    window.location.href = response.paymentUrl; 
+                } else {
+                    toast.error(response.message || 'Không thể tạo link thanh toán VNPay. Vui lòng thử lại hoặc chọn phương thức khác.');
+                }
+            } catch (err) {
+                console.error("VNPay Error:", err);
+                toast.error(err.response?.data?.message || 'Tạo thanh toán VNPay thất bại. Vui lòng thử lại hoặc chọn phương thức khác.');
+            }
         }
+        setIsLoading(false);
 
     };
 

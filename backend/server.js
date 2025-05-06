@@ -18,7 +18,7 @@ const verifyToken = require("./middlewares/Auth/verifyToken");
 const RouterSale =  require("./routes/routerSale");
 const paymentMethodRouter = require('./routes/routerPaymentMethod');
 const orderRouter = require('./routes/routerOrder');
-// const paymentRouter = require('./routes/routerPayment');
+const paymentRouter = require('./routes/routerPayment');
 
 dotenv.config();
 const app = express();
@@ -44,7 +44,7 @@ app.use("/api/news", RouterNew);
 app.use("/api/sales", RouterSale);
 app.use('/api/', paymentMethodRouter);
 app.use("/api/orders", orderRouter);
-// app.use("/api/payments", paymentRouter);
+app.use("/api/payments", paymentRouter);
 
 
 app.use("/public", express.static(path.join(__dirname, "public")));
