@@ -4,10 +4,10 @@ import classNames from 'classnames/bind';
 import Button from '~/components/Button';
 import styles from './Checkout.module.scss';
 import * as cartService from '~/services/cartService';
-
+import * as userService from '~/services/userService';
+// import * as checkoutService from '~/services/checkoutService';
 import { toast, ToastContainer  } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// import * as checkoutService from '~/services/checkoutService';
 
 const cx = classNames.bind(styles);
 
@@ -18,10 +18,38 @@ function Checkout() {
     const [shippingMethod, setShippingMethod] = useState('standard');
     const [shippingFee, setShippingFee] = useState(0);
     const [finalTotal, setFinalTotal] = useState(0);
+    const [addresses, setAddresses] = useState([]);
     const [selectedAddress, setSelectedAddress] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cod');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userData, setUserData] = useState(null);
+
+    //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
+    const fetchUserDataAndAddresses = useCallback(async () => {
+        try {
+            const userFromStorage = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
+            if (!userFromStorage?.id) {
+                throw new Error("User not logged in");
+            }
+            setUserData(userFromStorage);
+            const fetchedAddresses = await userService.getUserAddresses();
+            setAddresses(fetchedAddresses || []);
+            
+            if (fetchedAddresses && fetchedAddresses.length > 0) {
+                const firstAddress = fetchedAddresses[0];
+                const firstAddressString = `${firstAddress.address}, ${firstAddress.city}, ${firstAddress.country}`;
+                setSelectedAddress(firstAddressString);
+            } else {
+                setSelectedAddress('');
+            }
+        } catch (err) {
+            console.error("Error fetching user data/addresses:", err);
+            if (err.message === "User not logged in" || err.response?.status === 401 || err.response?.status === 403) {
+                navigate('/login');
+            }
+        }
+    }, [navigate]);
 
     const fetchCart = useCallback(async () => {
         setError(null);
@@ -53,12 +81,12 @@ function Checkout() {
     useEffect(() => {
         const loadCheckoutData = async () => {
             setIsLoading(true);
-            // await fetchUserDataAndAddresses();
+            await fetchUserDataAndAddresses();
             await fetchCart();
             setIsLoading(false);
         };
         loadCheckoutData();
-    }, [fetchCart]);
+    }, [fetchCart, fetchUserDataAndAddresses]);
 
     useEffect(() => {
         let fee = 0;
@@ -75,6 +103,10 @@ function Checkout() {
 
     const handlePaymentChange = (e) => {
         setPaymentMethod(e.target.value);
+    };
+
+    const handleAddressChange = (e) => {
+        setSelectedAddress(e.target.value);
     };
 
     const handlePlaceOrder = async () => {
@@ -129,8 +161,18 @@ function Checkout() {
                         <div className={cx('formGroup')}>
                             <div className={cx('summarySection')}>
                                 <span>Chọn địa chỉ giao hàng:</span>
-                                <select value={selectedAddress} required>
-                                    
+                                <select className={cx('selectSmall')} value={selectedAddress}  onChange={handleAddressChange} required>
+                                    <option value="" disabled={addresses.length > 0}>-- Chọn địa chỉ --</option>
+                                    {
+                                        addresses.map((addr, index) => {
+                                            const addressString = `${addr.address}, ${addr.city}, ${addr.country}`;
+                                            return (
+                                                <option key={index} value={addressString}>
+                                                    {addressString}
+                                                </option>
+                                            );
+                                        })
+                                    }
                                 </select>
                             </div>
 

@@ -167,6 +167,9 @@
 
     select {
         width: 100%;
+        white-space: nowrap;     // Không cho xuống dòng
+        overflow: hidden;        // Ẩn phần tràn
+        text-overflow: ellipsis; // Hiển thị dấu "..."
         padding: 10px 12px;
         border-radius: 6px;
         border: 1px solid #ccc;
@@ -181,6 +184,7 @@
             box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 0, 123, 255), 0.25); // Adjust primary-rgb if needed
         }
     }
+    
 
     p { // Style for the 'add address' message
          font-size: 1.3rem;
