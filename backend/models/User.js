@@ -30,6 +30,19 @@ const UserSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    userAddress: {
+      type: [
+        {
+          fullName: { type: String, required: true },
+          phoneNumber: { type: String, required: true },
+          address: { type: String, required: true },
+          city: { type: String, required: true },
+          country: { type: String, required: true },
+          _id: false
+        }
+      ],
+      default: [],
+    }
   },
   { timestamps: true }
 );

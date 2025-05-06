@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const { uploadUser } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
+const mongoose = require("mongoose");
 
 // Get list of users
 router.get("/", async (req, res) => {
@@ -91,6 +92,23 @@ router.delete("/:userId", async (req, res) => {
     res.json({ message: "User deleted successfully", deletedUser });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+
+// ---  Routes quản lý Address--- //
+
+// GET /api/users/me/addresses 
+router.get('/me/addresses', verifyToken, async (req, res) => {
+  try {
+      const user = await User.findById(req.user.id).select('userAddress'); // chỉ lấy addresses
+      if (!user) {
+          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
+      }
+      res.json({ success: true, addresses: user.userAddress || [] });
+  } catch (error) {
+      console.error("Get Addresses Error:", error);
+      res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách địa chỉ.' });
   }
 });
 
