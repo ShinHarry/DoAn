@@ -5,6 +5,32 @@ const Product = require("../models/Product");
 const CartProduct = require("../models/CartProduct");
 const verifyToken = require('../middlewares/Auth/verifyToken');
 
+// Get all 
+router.get("/", verifyToken, async (req, res) => {
+    try {
+        console.log("vao day r")
+      const userId = req.user.id;
+      const orderList = await Order.find({ user: userId })
+        .populate('user', 'userName userPhone')
+        .lean();
+  
+        console.log(orderList);
+  
+        const order = orderList.map(item => ({
+          name: item.user.userName,
+          address: item.shippingAddress,
+          phone: item.user.userPhone,
+          _id: item._id,
+          date: item.createdAt,
+          totalAmount: item.totalAmount,
+          orderStatus: item.orderStatus,
+        }));
+      res.json(order);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
 // POST /api/orders - tạo 1 đơn hàng mới
 router.post('/', verifyToken, async (req, res) => {
     const { 
