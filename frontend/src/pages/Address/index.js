@@ -172,23 +172,62 @@ function AddressUI() {
                     <h3>{isEditing ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ'}</h3>                
                     <div className={cx('formGroup')}>
                         <label htmlFor="fullName">Họ và tên</label>
-                        <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleInputChange} required />
+                        <input type="text" 
+                            id="fullName" 
+                            name="fullName" 
+                            value={formData.fullName} 
+                            onChange={handleInputChange} 
+                            placeholder="Nhập họ và tên"
+                            required />
                     </div>
                     <div className={cx('formGroup')}>
                         <label htmlFor="phoneNumber">Số điện thoại</label>
-                        <input type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} required />
+                        <input type="text" 
+                            id="phoneNumber" 
+                            name="phoneNumber" 
+                            value={formData.phoneNumber} 
+                            onChange={(e) =>{
+                                 // Chỉ giữ lại ký tự số
+                                const numericValue = e.target.value.replace(/\D/g, '');
+                                // Đảm bảo bắt đầu bằng 0 hoặc rỗng (để cho phép người dùng gõ dần)
+                                if (numericValue === '' || numericValue.startsWith('0')) {
+                                    setFormData((prev) => ({ ...prev, phoneNumber: numericValue }));
+                                }
+                            }} 
+                            pattern="0\d{9}"
+                            maxLength="10"
+                            placeholder="SDT bắt đầu bằng số 0 VD : 0348274919"
+                            required />
                     </div>
                     <div className={cx('formGroup')}>
                         <label htmlFor="address">Địa chỉ cụ thể (Số nhà, tên đường, phường/xã)</label>
-                        <input type="text" id="address" name="address" value={formData.address} onChange={handleInputChange} required />
+                        <input type="text" 
+                            id="address"
+                            name="address" 
+                            value={formData.address}
+                            onChange={handleInputChange} 
+                            placeholder="Nhập địa chỉ cụ thể"
+                            required />
                     </div>
                     <div className={cx('formGroup')}>
                         <label htmlFor="city">Tỉnh/Thành phố</label>
-                        <input type="text" id="city" name="city" value={formData.city} onChange={handleInputChange} required />
+                        <input type="text" 
+                            id="city" 
+                            name="city" 
+                            value={formData.city} 
+                            onChange={handleInputChange} 
+                            placeholder="Nhập tỉnh/thành phố"
+                            required />
                     </div>
                     <div className={cx('formGroup')}>
                         <label htmlFor="country">Quốc gia</label>
-                        <input type="text" id="country" name="country" value={formData.country} onChange={handleInputChange} required />
+                        <input type="text" 
+                            id="country" 
+                            name="country" 
+                            value={formData.country} 
+                            onChange={handleInputChange} 
+                            placeholder="Nhập quốc gia"
+                            required />
                     </div>
                     <div className={cx('formActions')}>
                         <Button type="button" onClick={() => { 
