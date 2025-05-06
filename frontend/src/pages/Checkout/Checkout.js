@@ -5,6 +5,8 @@ import Button from '~/components/Button';
 import styles from './Checkout.module.scss';
 import * as cartService from '~/services/cartService';
 import * as userService from '~/services/userService';
+import * as paymentMethodService from '~/services/paymentMethodService';
+
 // import * as checkoutService from '~/services/checkoutService';
 import { toast, ToastContainer  } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,10 +22,11 @@ function Checkout() {
     const [finalTotal, setFinalTotal] = useState(0);
     const [addresses, setAddresses] = useState([]);
     const [selectedAddress, setSelectedAddress] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('cod');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState([]);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
 
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
@@ -51,6 +54,7 @@ function Checkout() {
         }
     }, [navigate]);
 
+    //lấy sản phẩm trong giỏ
     const fetchCart = useCallback(async () => {
         setError(null);
         try {
@@ -78,6 +82,21 @@ function Checkout() {
         }
     }, [navigate]);
 
+    // lấy paymment method
+    useEffect(() => {
+        const fetchMethod= async () => {
+            try {
+              const response = await paymentMethodService.getPaymentMethod(); 
+              console.log(response)
+              setPaymentMethod(response);
+            } catch (error) {
+              console.error('Lỗi lấy danh sách phương thức thanh toán', error);
+            }
+        }
+        fetchMethod();
+
+        }, []);
+
     useEffect(() => {
         const loadCheckoutData = async () => {
             setIsLoading(true);
@@ -102,7 +121,7 @@ function Checkout() {
     };
 
     const handlePaymentChange = (e) => {
-        setPaymentMethod(e.target.value);
+        setSelectedPaymentMethod(e.target.value);
     };
 
     const handleAddressChange = (e) => {
@@ -186,9 +205,12 @@ function Checkout() {
 
                             <div className={cx('summarySection')}>
                                 <span>Chọn phương thức thanh toán:</span>
-                                <select value={paymentMethod} onChange={handlePaymentChange}>
-                                    <option value="cod">Thanh toán khi nhận hàng (COD)</option>
-                                    <option value="vnpay">Thanh toán qua VNPay</option>
+                                <select value={selectedPaymentMethod} onChange={handlePaymentChange}>
+                                    {paymentMethod.map((method) => (
+                                        <option key={method._id} value={method.paymentType}>
+                                            {method.name}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
