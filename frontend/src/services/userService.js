@@ -27,3 +27,15 @@ export const getUserAddresses = async () => {
         throw err;
     }
 };
+
+// thêm địa chỉ mới người dùng hiện tại
+export const addAddress = async (addressData) => {
+    console.log(addressData);
+    try {
+        const response = await httpRequest.post('/users/me/addresses', addressData);
+        return response;
+    } catch (err) {
+        console.error('Error adding address:', err);
+        throw err;
+    }
+};

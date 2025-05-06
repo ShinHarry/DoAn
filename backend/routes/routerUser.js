@@ -112,4 +112,41 @@ router.get('/me/addresses', verifyToken, async (req, res) => {
   }
 });
 
+// POST /api/users/me/addresses 
+router.post('/me/addresses', verifyToken, async (req, res) => {
+  const { fullName, phoneNumber, address, city, country } = req.body;
+
+  if (!fullName || !phoneNumber || !address || !city || !country) {
+      return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ thông tin địa chỉ.' });
+  }
+
+  try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
+      }
+
+      const newAddress = {
+          fullName,
+          phoneNumber,
+          address,
+          city,
+          country
+      };
+
+      user.userAddress.push(newAddress);
+      await user.save();
+      res.status(201).json({ 
+          success: true, 
+          message: 'Thêm địa chỉ thành công!', 
+          address: user.userAddress[user.userAddress.length - 1] 
+      });
+
+  } catch (error) {
+      console.error("Add Address Error:", error);
+      res.status(500).json({ success: false, message: 'Lỗi khi thêm địa chỉ.' });
+  }
+});
+
+
 module.exports = router;
