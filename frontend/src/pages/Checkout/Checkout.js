@@ -12,17 +12,14 @@ import 'react-toastify/dist/ReactToastify.css';
 const cx = classNames.bind(styles);
 
 function Checkout() {
-    const location = useLocation();
     const navigate = useNavigate();
-
     const [cartItems, setCartItems] = useState([]);
     const [total, setTotal] = useState(0);
     const [shippingMethod, setShippingMethod] = useState('standard');
-    const [shippingFee, setShippingFee] = useState(20000);
+    const [shippingFee, setShippingFee] = useState(0);
     const [finalTotal, setFinalTotal] = useState(0);
     const [selectedAddress, setSelectedAddress] = useState('');
-
-    const [paymentMethod, setPaymentMethod] = useState([]);
+    const [paymentMethod, setPaymentMethod] = useState('cod');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -62,6 +59,27 @@ function Checkout() {
         };
         loadCheckoutData();
     }, [fetchCart]);
+
+    useEffect(() => {
+        let fee = 0;
+        if (shippingMethod === 'standard') fee = 20000;
+        else if (shippingMethod === 'express') fee = 50000;
+        setShippingFee(fee);
+        setFinalTotal(total + fee);
+    }, [shippingMethod, total]);
+
+    
+    const handleShippingChange = (e) => {
+        setShippingMethod(e.target.value);
+    };
+
+    const handlePaymentChange = (e) => {
+        setPaymentMethod(e.target.value);
+    };
+
+    const handlePlaceOrder = async () => {
+     
+    };
 
     if (isLoading) {
         return <div className={cx('loading')}>Đang tải trang thanh toán...</div>;
@@ -104,56 +122,62 @@ function Checkout() {
                     ))}
                 </section>
 
-                <div className={cx('checkoutRight')}>
+                <section className={cx('checkoutRight', 'section')}>
                     <div className={cx('checkoutSummary')}>
                         <h2>Tóm tắt đơn hàng</h2>
 
-                        <div className={cx('summaryItem')}>
-                            <span>Tạm tính:</span>
-                            <span> VND</span>
-                        </div>
+                        <div className={cx('formGroup')}>
+                            <div className={cx('summarySection')}>
+                                <span>Chọn địa chỉ giao hàng:</span>
+                                <select value={selectedAddress} required>
+                                    
+                                </select>
+                            </div>
 
-                        <div className={cx('summarySection')}>
-                            <span>Chọn phương thức giao hàng:</span>
-                            <select value={shippingMethod} >
-                                <option value="standard">Giao hàng tiêu chuẩn (20,000 VND)</option>
-                                <option value="express">Giao hàng nhanh (50,000 VND)</option>
-                            </select>
-                        </div>
+                            <div className={cx('summarySection')}>
+                                <span>Chọn phương thức giao hàng:</span>
+                                <select value={shippingMethod} onChange={handleShippingChange}>
+                                    <option value="standard">Giao hàng tiêu chuẩn ({ (20000).toLocaleString() } VND)</option>
+                                    <option value="express">Giao hàng nhanh ({ (50000).toLocaleString() } VND)</option>
+                                </select>
+                            </div>
 
-                        <div className={cx('summarySection')}>
-                            <span>Chọn địa chỉ giao hàng:</span>
-                            <select value={selectedAddress} >
-                                <option value="">-- Chọn địa chỉ --</option>
-                            </select>
-                        </div>
-
-                        <div className={cx('summarySection')}>
-                            <span>Chọn phương thức thanh toán:</span>
-                            <select value={paymentMethod} >
+                            <div className={cx('summarySection')}>
+                                <span>Chọn phương thức thanh toán:</span>
+                                <select value={paymentMethod} onChange={handlePaymentChange}>
                                     <option value="cod">Thanh toán khi nhận hàng (COD)</option>
                                     <option value="vnpay">Thanh toán qua VNPay</option>
                                 </select>
+                            </div>
                         </div>
 
-                        <div className={cx('summaryItem')}>
-                            <span>Phí vận chuyển:</span>
-                            <span> VND</span>
+                        <div className={cx('calculationSummary')}>
+                            <div className={cx('summaryItem')}>
+                                <span>Tạm tính:</span>
+                                <span>{total.toLocaleString()} VND</span>
+                            </div>
+                            <div className={cx('summaryItem')}>
+                                <span>Phí vận chuyển:</span>
+                                <span>{shippingFee.toLocaleString()} VND</span>
+                            </div>
+                            <div className={cx('summaryItemTotal')}>
+                                <span>Thành tiền:</span>
+                                <span>{finalTotal.toLocaleString()} VND</span>
+                            </div>
                         </div>
 
-                        <div className={cx('summaryItemTotal')}>
-                            <span>Thành tiền:</span>
-                            <span> VND</span>
+                        <div className={cx('checkoutButtonContainer')}>
+                            <Button
+                                primary
+                                className={cx('checkoutButton')}
+                                onClick={handlePlaceOrder}
+                                disabled={!selectedAddress || isLoading || cartItems.some(item => item.quantity > item.availableQuantity)}
+                            >
+                                {isLoading ? 'Đang xử lý...' : (paymentMethod === 'vnpay' ? 'Thanh toán VNPay' : 'Đặt hàng COD')}
+                            </Button>
                         </div>
-                       
-                        
-                        <Button primary >
-                            Đặt hàng
-                        </Button>
-                        
-                        
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     );
