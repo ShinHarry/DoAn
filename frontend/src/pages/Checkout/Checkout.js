@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import classNames from 'classnames/bind';
-import { jwtDecode } from 'jwt-decode';
-
 import Button from '~/components/Button';
 import styles from './Checkout.module.scss';
+import * as cartService from '~/services/cartService';
+
 import { toast, ToastContainer  } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // import * as checkoutService from '~/services/checkoutService';
@@ -23,33 +23,53 @@ function Checkout() {
     const [selectedAddress, setSelectedAddress] = useState('');
 
     const [paymentMethod, setPaymentMethod] = useState([]);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const getToken = () => {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            if (!token) return null;
-            try {
-                const decoded = jwtDecode(token);
-                return {
-                    userId: decoded.userId,
-                    userRole: decoded.userRole,
-                    avatar: decoded.userAvatar || null,
-                };
-            } catch (error) {
-                 console.error('Token decode error:', error);
-                return null;
+    const fetchCart = useCallback(async () => {
+        setError(null);
+        try {
+            const data = await cartService.getCart();
+            // console.log("Cart data for checkout:", data);
+            if (!data.cart || data.cart.length === 0) {
+                toast.warning("Giỏ hàng của bạn đang trống. Không thể thanh toán.");
+                navigate('/');
+                return;
             }
+            setCartItems(data.cart || []);
+            const tempTotal = (data.cart || []).reduce(
+                (sum, item) => sum + item.unitPrice * item.quantity,
+                0
+            );
+            setTotal(tempTotal);
+        } catch (err) {
+            console.error('Error fetching cart for checkout:', err);
+            setError('Không thể tải giỏ hàng. Vui lòng thử lại.');
+            setCartItems([]);
+            setTotal(0);
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                navigate('/login');
+            }
+        }
+    }, [navigate]);
+
+    useEffect(() => {
+        const loadCheckoutData = async () => {
+            setIsLoading(true);
+            // await fetchUserDataAndAddresses();
+            await fetchCart();
+            setIsLoading(false);
         };
-        
-        const { userId, avatar } = getToken() || {};
+        loadCheckoutData();
+    }, [fetchCart]);
 
+    if (isLoading) {
+        return <div className={cx('loading')}>Đang tải trang thanh toán...</div>;
+    }
 
-    const addresses = [
-        '123 Đường A, Quận 1, TP.HCM',
-        '456 Đường B, Quận 2, TP.HCM',
-        '789 Đường C, Hà Nội',
-    ];
-
+    if (error) {
+        return <div className={cx('error')}>{error}</div>;
+    }
 
     return (
         <div className={cx('checkoutWrapper')}>
@@ -62,31 +82,27 @@ function Checkout() {
                     draggable
                 />
             <div className={cx('checkoutContainer')}>
-                <div className={cx('checkoutLeft')}>
-                    <h2>Đơn hàng của bạn</h2>
-                    {/* {cartItems.length > 0 ? ( */}
-                        {/* cartItems.map((item) => ( */}
-                            <div className={cx('checkoutItem')}>
-                                <img
-                                    // src={item.image}
-                                    // alt={item.name}
-                                    className={cx('checkoutItemImage')}
-                                />
-                                <div className={cx('checkoutItemInfo')}>
-                                    <span className={cx('checkoutItemName')}>name</span>
-                                    <span className={cx('checkoutItemQuantity')}>
-                                        Số lượng: 
-                                    </span>
-                                    <span className={cx('checkoutItemPrice')}>
-                                        Giá:  VND
-                                    </span>
-                                </div>
+                        <section className={cx('checkoutLeft', 'section')}>
+                    <h2>Đơn hàng của bạn ({cartItems.length} sản phẩm)</h2>
+                    {cartItems.map((item) => (
+                        <div key={item._id} className={cx('checkoutItem')}>
+                            <img
+                                src={item.image || 'https://via.placeholder.com/80'}
+                                alt={item.name}
+                                className={cx('checkoutItemImage')}
+                            />
+                            <div className={cx('checkoutItemInfo')}>
+                                <span className={cx('checkoutItemName')}>{item.name}</span>
+                                <span className={cx('checkoutItemQuantity')}>
+                                    Số lượng: {item.quantity}
+                                </span>
+                                <span className={cx('checkoutItemPrice')}>
+                                    {(item.unitPrice * item.quantity).toLocaleString()} VND
+                                </span>
                             </div>
-                        {/* )) */}
-                    {/* ) : (
-                        <p>Không có sản phẩm nào.</p>
-                    )} */}
-                </div>
+                        </div>
+                    ))}
+                </section>
 
                 <div className={cx('checkoutRight')}>
                     <div className={cx('checkoutSummary')}>
