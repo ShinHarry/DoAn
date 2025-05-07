@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
       const cartItems = await CartProduct.find({ userId: userId }) // tim theo userId
           .populate({
               path: 'product',
-              select: 'productName productImgs productUnitPrice productQuantity productStatus', // truy vấn qua các bảng
+              select: 'productName productImgs productUnitPrice productQuantity productStatus productSupPrice', // truy vấn qua các bảng
               match: { productStatus: 'available' } // chỉ lấy các sp còn hàng
           })
           .lean();
@@ -30,7 +30,7 @@ router.get("/", async (req, res) => {
           name: item.product.productName,
           image: item.product.productImgs?.[0]?.link || '',
           quantity: item.quantity,
-          unitPrice: item.product.productUnitPrice,
+          unitPrice: item.product.productUnitPrice  * (1 - (item.product.productSupPrice || 0) / 100),
           availableQuantity: item.product.productQuantity, // thêm số lượng còn hàng
           selected: true,
       }));
@@ -79,7 +79,7 @@ router.post("/", async (req, res) => {
              // truy vấn thông tin sản phẩm từ bẳng khác
             await cartItem.populate({
                 path: 'product',
-                select: 'productName productImgs productUnitPrice productQuantity'
+                select: 'productName productImgs productUnitPrice productQuantity productSupPrice'
             });
              res.json({
                 success: true,
@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
                      name: cartItem.product.productName,
                      image: cartItem.product.productImgs?.[0]?.link || '',
                      quantity: cartItem.quantity,
-                     unitPrice: cartItem.product.productUnitPrice,
+                     unitPrice: cartItem.product.productUnitPrice  * (1 - (cartItem.product.productSupPrice || 0) / 100),
                      availableQuantity: cartItem.product.productQuantity,
                      selected: true,
                 }
@@ -106,7 +106,7 @@ router.post("/", async (req, res) => {
              // truy vấn thông tin sản phẩm từ bẳng khác
              await cartItem.populate({
                 path: 'product',
-                select: 'productName productImgs productUnitPrice productQuantity'
+                select: 'productName productImgs productUnitPrice productQuantity productSupPrice'
             });
             res.status(201).json({
                 success: true,
@@ -117,7 +117,7 @@ router.post("/", async (req, res) => {
                     name: cartItem.product.productName,
                     image: cartItem.product.productImgs?.[0]?.link || '',
                     quantity: cartItem.quantity,
-                    unitPrice: cartItem.product.productUnitPrice,
+                    unitPrice: cartItem.product.productUnitPrice  * (1 - (cartItem.product.productSupPrice || 0) / 100),
                     availableQuantity: cartItem.product.productQuantity,
                     selected: true,
                 }
@@ -161,7 +161,7 @@ router.put("/:itemId", async (req, res) => {
         // truy vấn thông tin sản phẩm từ bẳng khác
         await cartItem.populate({
                 path: 'product',
-                select: 'productName productImgs productUnitPrice productQuantity'
+                select: 'productName productImgs productUnitPrice productQuantity productSupPrice'
             });
 
         res.json({
@@ -173,7 +173,7 @@ router.put("/:itemId", async (req, res) => {
                 name: cartItem.product.productName,
                 image: cartItem.product.productImgs?.[0]?.link || '',
                 quantity: cartItem.quantity,
-                unitPrice: cartItem.product.productUnitPrice,
+                unitPrice: cartItem.product.productUnitPrice  * (1 - (cartItem.product.productSupPrice || 0) / 100),
                 availableQuantity: cartItem.product.productQuantity,
                 selected: true,
             }
