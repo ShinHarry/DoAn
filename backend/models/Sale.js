@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const SalesSchema = new mongoose.Schema(
   {
-    name: { type: String ,required: true},
+    name: { type: String ,required: true , unique: true},
     dateStart : { type: Date , required: true },
     dateEnd: { type: Date , required: true },
     discount:{ type: Number , required: true },

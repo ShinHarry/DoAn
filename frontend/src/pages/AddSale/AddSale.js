@@ -52,7 +52,15 @@ function AddSale() {
             setTimeout(() => navigate('/sales'), 1500); // Chờ toast hiện rồi chuyển trang
         } catch (error) {
             console.error('Lỗi thêm khuyến mãi:', error);
-            toast.error('Đã xảy ra lỗi khi thêm khuyến mãi!');
+                // Kiểm tra lỗi nếu tên đã tồn tại
+            if (error.response?.status === 409) {
+                toast.error('Tên khuyến mãi đã tồn tại!');
+            }else if (error.response?.status === 402){
+                toast.error("Ngày kết thúc phải sau ngày bắt đầu.");
+            }
+             else {
+                toast.error('Đã xảy ra lỗi khi thêm khuyến mãi!');
+            }
         }
     };
     
@@ -109,7 +117,7 @@ function AddSale() {
                         type="number"
                         name="discount"
                         min="0"
-                        max="100"
+                        max="99"
                         value={formData.discount}
                         onChange={handleChange}
                         required
