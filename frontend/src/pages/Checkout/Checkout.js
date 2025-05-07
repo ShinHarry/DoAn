@@ -30,8 +30,8 @@ function Checkout() {
     const [phone, setPhone] = useState('');
     const [name, setName] = useState('');
     const [address, setAddress] = useState('');
-
-
+    const [discountCode, setDiscountCode] = useState('');
+    const [discountAmount, setDiscountAmount] = useState(0);
 
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
@@ -300,6 +300,23 @@ function Checkout() {
                                     ))}
                                 </select>
                             </div>
+
+                            <div className={cx('summarySection')}>
+                                <span>Nhập mã giảm giá:</span>
+                                <div className={cx('discountWrapper')}>
+                                    <input
+                                        type="text"
+                                        value={discountCode}
+                                        // onChange={(e) => setDiscountCode(e.target.value)}
+                                        placeholder="Nhập mã giảm giá"
+                                        className={cx('discountInput')}
+                                    />
+                                    <button className={cx('discountButton')} >Áp dụng</button>
+                               
+                                    {/* onClick={handleApplyDiscount} */}
+                                </div>
+                            </div>
+
                         </div>
 
                         <div className={cx('calculationSummary')}>
@@ -307,6 +324,12 @@ function Checkout() {
                                 <span>Tạm tính:</span>
                                 <span>{total.toLocaleString()} VND</span>
                             </div>
+                            {discountAmount > 0 && (
+                                <div className={cx('summaryItem')}>
+                                    <span>Giảm giá:</span>
+                                    <span>-{discountAmount.toLocaleString()} VND</span>
+                                </div>
+                            )}
                             <div className={cx('summaryItem')}>
                                 <span>Phí vận chuyển:</span>
                                 <span>{shippingFee.toLocaleString()} VND</span>
