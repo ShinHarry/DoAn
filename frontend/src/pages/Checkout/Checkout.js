@@ -141,8 +141,8 @@ function Checkout() {
         if (shippingMethod === 'standard') fee = 20000;
         else if (shippingMethod === 'express') fee = 50000;
         setShippingFee(fee);
-        setFinalTotal(total + fee);
-    }, [shippingMethod, total]);
+        setFinalTotal(total - discountAmount + fee);
+    }, [shippingMethod, total, discountAmount]);
 
     
     const handleShippingChange = (e) => {
@@ -226,6 +226,7 @@ function Checkout() {
             shippingFee,
             totalPrice: total,
             totalAmount: finalTotal,
+            discount: discountAmount || 0,
             paymentMethod,
             user: userData?.id,
         };
@@ -252,9 +253,9 @@ function Checkout() {
                 const returnUrl = `${window.location.origin}/payment-return`;
                 
                 const orderInfo = `Thanh toan don hang checkout #${Date.now()}`;
-                
+                const amountVnpay = Math.round(finalTotal); // hoặc Math.floor
                 const response = await paymentService.createVnpayPaymentUrl(
-                    finalTotal,
+                    amountVnpay,
                     orderInfo, 
                     returnUrl
                 );
@@ -363,7 +364,24 @@ function Checkout() {
                                     <input
                                         type="text"
                                         value={discountCode}
-                                        onChange={(e) => setDiscountCode(e.target.value)}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDiscountCode(value);
+                                            if (value.trim() === '') {
+                                            setDiscountAmount(0);
+                                            setFinalTotal(total + shippingFee);
+                                            setDiscountMessage('');
+                                            setDiscountMessageType('');
+                                            } else {
+                                                // Nếu mã đang hiển thị "thành công", mà user gõ lại không trùng nữa → reset message
+                                                const found = discount.find(item => item.name === value.trim());
+                                                if (!found || new Date() > new Date(found.dateEnd)) {
+                                                  setDiscountMessage('');
+                                                  setDiscountMessageType('');
+                                                  setDiscountAmount(0);
+                                                }
+                                              }
+                                        }}
                                         placeholder="Nhập mã giảm giá"
                                         className={cx('discountInput')}
                                     />

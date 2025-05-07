@@ -65,10 +65,10 @@ function PaymentReturn() {
 
                         // 4.chuẩn bị thông tin chi tiết đơn hàng
                         const currentSubtotal = cartData.cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-
+                        const discount = 200000;
                         const hardcodedShippingMethod = (paramsObject.vnp_Amount - currentSubtotal === 20000) ? 'standard' : 'express';
-                        const finalAmountFromVnpay = parseInt(paramsObject.vnp_Amount) / 100;
-                        const hardcodedShippingFee = finalAmountFromVnpay - currentSubtotal;
+                        const finalAmountFromVnpay = parseInt(paramsObject.vnp_Amount) / 100 - discount;
+                        const hardcodedShippingFee = parseInt(paramsObject.vnp_Amount) / 100 - currentSubtotal;
                         const orderDetails = {
                             orderItems: cartData.cart.map(item => ({
                                 product: item.productId,
@@ -82,6 +82,7 @@ function PaymentReturn() {
                             shippingFee: hardcodedShippingFee,
                             totalPrice: currentSubtotal, 
                             totalAmount: finalAmountFromVnpay, 
+                            discount: discount,
                             paymentMethod: 'vnpay',
                             user: userFromStorage.id,
                             paymentStatus: 'completed', 
