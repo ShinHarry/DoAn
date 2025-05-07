@@ -37,6 +37,16 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
     }
 
+     // Kiểm tra dateEnd phải sau dateStart
+     if (new Date(dateEnd) <= new Date(dateStart)) {
+      return res.status(402).json({ message: "Ngày kết thúc phải sau ngày bắt đầu." });
+    }
+
+    const existingSale = await Sales.findOne({ name });
+    if (existingSale) {
+      return res.status(409).json({ message: "Tên khuyến mãi đã tồn tại." });
+    }
+
     // Tạo mới Sale
     const newSale = new Sales({
       name,
@@ -60,6 +70,11 @@ router.post("/", async (req, res) => {
   router.put("/:id", async (req, res) => {
     try {
       const { name, dateStart, dateEnd, discount, product } = req.body;
+      
+    // Validate dữ liệu
+    if (!name || !dateStart || !dateEnd || !discount || !product) {
+      return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
+    }
   
       const updateData = {
         name,

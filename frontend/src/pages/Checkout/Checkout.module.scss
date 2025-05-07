@@ -183,9 +183,9 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 0, 123, 255), 0.25); // Adjust primary-rgb if needed
         }
+
     }
     
-
     p { // Style for the 'add address' message
          font-size: 1.3rem;
          color: #dc3545; // Warning color
@@ -193,6 +193,64 @@
     }
 }
 
+// discount
+.discountWrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+
+    .discountInput {
+        flex: 1;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    
+        &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+          }
+      }
+
+    .discountButton {
+        background-color: #5f62eb;
+        color: rgb(248, 248, 248);
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        align-items: center;
+        justify-content: center;          // Căn giữa ngang
+        height: 100%;  
+        transition: background-color 0.3s ease;
+      
+        &:hover {
+          background-color: #2419c1;
+        }
+      }
+  }
+  //mess discount
+.discountMessage {
+    margin-top: 8px;
+    font-size: 14px;
+    max-height: 8px;
+    min-height: 5px;
+}
+
+.discountMessage.successMessage {
+    color: green;
+}
+
+.discountMessage.errorMessage  {
+    color: red;
+}
+
+.discountMessage.infoMessage {
+    color: gray;
+}
+  
+//
 /* Place Order Button Styling */
 .checkoutButtonContainer {
     margin-top: 25px;

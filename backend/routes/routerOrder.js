@@ -76,6 +76,7 @@ router.post('/', verifyToken, async (req, res) => {
         shippingFee,
         totalPrice,
         totalAmount,
+        discount,
         paymentMethod
     } = req.body;
     const userId = req.user.id;
@@ -137,7 +138,8 @@ router.post('/', verifyToken, async (req, res) => {
             shippingMethod,
             shippingFee,
             subTotalPrice: calculatedSubtotal, 
-            totalAmount: calculatedSubtotal + shippingFee,
+            totalAmount: calculatedSubtotal + shippingFee - discount,
+            discount,
             paymentMethod,
             orderStatus: 'processing',
             paymentStatus: paymentMethod === 'vnpay' ? 'completed' : 'pending',
