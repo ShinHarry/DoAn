@@ -37,6 +37,7 @@ function Checkout() {
     const [name, setName] = useState('');
     const [address, setAddress] = useState('');
     //giam gia
+    const [discountValue, setDiscountValue] = useState(0);
     const [discountCode, setDiscountCode] = useState('');
     const [discountAmount, setDiscountAmount] = useState(0);
     const [discountMessage, setDiscountMessage] = useState('');
@@ -192,7 +193,7 @@ function Checkout() {
         }
         
         // Áp dụng giảm giá
-        const discountValue = foundDiscount.discount; // ví dụ: 10 (%)
+        setDiscountValue(foundDiscount.discount)
         const discountAmountCalc = (total * discountValue) / 100;
 
         setDiscountAmount(discountAmountCalc);
@@ -251,7 +252,12 @@ function Checkout() {
         }else if (paymentMethod === 'vnpay') {
             try {
                 const returnUrl = `${window.location.origin}/payment-return`;
-                
+                sessionStorage.setItem('shippingFee', shippingFee);
+                sessionStorage.setItem('shippingAddress', address);
+                sessionStorage.setItem('discountValue', discountValue);
+                sessionStorage.setItem('name', name);
+                sessionStorage.setItem('phone', phone);
+
                 const orderInfo = `Thanh toan don hang checkout #${Date.now()}`;
                 const amountVnpay = Math.round(finalTotal); // hoặc Math.floor
                 const response = await paymentService.createVnpayPaymentUrl(

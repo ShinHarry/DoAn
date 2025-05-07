@@ -59,16 +59,21 @@ function PaymentReturn() {
                              throw new Error('Không tìm thấy thông tin người dùng.');
                         }
                         const userData = await userService.getUserById(userFromStorage.id);
-                        const shippingAddress = userData?.userAddress?.[0] 
-                            ? `${userData.userAddress[0].address}, ${userData.userAddress[0].city}, ${userData.userAddress[0].country}`
-                            : 'Địa chỉ mặc định không tìm thấy'; 
+                        // const shippingAddress = userData?.userAddress?.[0] 
+                        //     ? `${userData.userAddress[0].address}, ${userData.userAddress[0].city}, ${userData.userAddress[0].country}`
+                        //     : 'Địa chỉ mặc định không tìm thấy'; 
 
                         // 4.chuẩn bị thông tin chi tiết đơn hàng
+                        const shippingFee = parseInt(sessionStorage.getItem('shippingFee')) || 0;
+                        const shippingAddress =sessionStorage.getItem('shippingAddress');
+                        const discountValue = parseInt(sessionStorage.getItem('discountValue')) || 0;
+                        const name = sessionStorage.getItem('name');
+                        const phone = sessionStorage.getItem('phone');
+                        console.log(discountValue)
                         const currentSubtotal = cartData.cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-                        const discount = 200000;
-                        const hardcodedShippingMethod = (paramsObject.vnp_Amount - currentSubtotal === 20000) ? 'standard' : 'express';
+                        const hardcodedShippingMethod = (shippingFee === 20000) ? 'standard' : 'express';
+                        const discount = (currentSubtotal * discountValue) / 100;
                         const finalAmountFromVnpay = parseInt(paramsObject.vnp_Amount) / 100 - discount;
-                        const hardcodedShippingFee = parseInt(paramsObject.vnp_Amount) / 100 - currentSubtotal;
                         const orderDetails = {
                             orderItems: cartData.cart.map(item => ({
                                 product: item.productId,
@@ -76,10 +81,10 @@ function PaymentReturn() {
                                 price: item.unitPrice,
                             })),
                             shippingAddress: shippingAddress, 
-                            phone : "0324354325",
-                            name : "dsfvdsv",
+                            phone : phone,
+                            name : name,
                             shippingMethod: hardcodedShippingMethod,
-                            shippingFee: hardcodedShippingFee,
+                            shippingFee: shippingFee,
                             totalPrice: currentSubtotal, 
                             totalAmount: finalAmountFromVnpay, 
                             discount: discount,
