@@ -8,8 +8,6 @@ import Button from '~/components/Button';
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import images from '~/assets/images'; 
 import Swal from 'sweetalert2'; // thư viện hiện alert 
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(styles);
 
@@ -57,13 +55,12 @@ function CartDetail() {
                const response = await cartService.removeCartItem(id);
                if (response.success) {
                    setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
-                  toast.success('Đã xóa sản phẩm khỏi giỏ hàng.');
+                   Swal.fire('Thành công', 'Đã xóa sản phẩm khỏi giỏ hàng.', 'success');
                } else {
-                   toast.error('Lỗi khi xóa sản phẩm!');
-               }
+                Swal.fire('Lỗi', 'Lỗi khi xóa sản phẩm!', 'error');
+            }
            } catch (error) {
                console.error('Lỗi xóa sản phẩm khỏi giỏ:', error);
-               toast.error('Đã xảy ra lỗi khi xóa sản phẩm.');
            }
        };
    
@@ -138,15 +135,6 @@ function CartDetail() {
 
     return (
         <div className={cx('wrapper')}>
-            <ToastContainer 
-                position="top-center" 
-                autoClose={3000}         // Tự động tắt
-                hideProgressBar={true}  //  thanh tiến trình
-                newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
-                closeOnClick            //Cho phép đóng toast
-                draggable             // kéo 
-            />
-
             <h1 className={cx('title')}>Chi Tiết Giỏ Hàng</h1>
             
             <div className={cx('cart-content')}>
