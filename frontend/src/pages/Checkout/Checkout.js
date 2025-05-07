@@ -8,6 +8,7 @@ import * as userService from '~/services/userService';
 import * as paymentMethodService from '~/services/paymentMethodService';
 import * as orderService from '~/services/orderService';
 import * as paymentService from '~/services/paymentService';
+import * as saleService from '~/services/saleService';
 import { toast, ToastContainer  } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,22 +17,31 @@ const cx = classNames.bind(styles);
 function Checkout() {
     const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
-    const [total, setTotal] = useState(0);
+    const [discount, setDiscount] = useState([]);
     const [shippingMethod, setShippingMethod] = useState('standard');
+    const [addresses, setAddresses] = useState([]);
+    const [paymentMethods, setPaymentMethods] = useState([]);
+    
+    const [total, setTotal] = useState(0);
     const [shippingFee, setShippingFee] = useState(0);
     const [finalTotal, setFinalTotal] = useState(0);
-    const [addresses, setAddresses] = useState([]);
-    const [selectedAddress, setSelectedAddress] = useState('');
+
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState(null);
-    const [paymentMethods, setPaymentMethods] = useState([]);
+    // payment method
     const [paymentMethod, setPaymentMethod] = useState('cod');
+    // address
+    const [selectedAddress, setSelectedAddress] = useState('');
     const [phone, setPhone] = useState('');
     const [name, setName] = useState('');
     const [address, setAddress] = useState('');
+    //giam gia
     const [discountCode, setDiscountCode] = useState('');
     const [discountAmount, setDiscountAmount] = useState(0);
+    const [discountMessage, setDiscountMessage] = useState('');
+    const [discountMessageType, setDiscountMessageType] = useState('');
+    //
 
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
@@ -91,7 +101,7 @@ function Checkout() {
         }
     }, [navigate]);
 
-    // lấy paymment method
+    // lấy paymment method và discount
     useEffect(() => {
         const fetchMethod= async () => {
             try {
@@ -102,8 +112,18 @@ function Checkout() {
               console.error('Lỗi lấy danh sách phương thức thanh toán', error);
             }
         }
+        const fetchSales = async () => {
+                try {
+                  const response = await saleService.getSale(); // API lấy danh sách discount
+                  console.log("response :", response);
+                  setDiscount(response);
+                } catch (error) {
+                  console.error('Lỗi lấy danh sách khuyến mãi', error);
+                }
+              };
+              
+        fetchSales();
         fetchMethod();
-
         }, []);
 
     useEffect(() => {
@@ -145,6 +165,42 @@ function Checkout() {
             setName(selectedAddr.fullName);
         }
     };
+
+    const handleApplyDiscount = (e) => {
+        if (!discountCode.trim()) {
+            setDiscountAmount(0);
+            setFinalTotal(total + shippingFee);
+            setDiscountMessage('Không áp dụng mã giảm giá.');
+            setDiscountMessageType('infoMessage');         
+            return;
+        }
+    
+        const foundDiscount = discount.find(item => item.name === discountCode.trim());
+    
+        if (!foundDiscount) {
+            setDiscountMessage('Mã giảm giá đã hết hạn.');
+            setDiscountMessageType('errorMessage');            
+            return;
+        }
+        const now = new Date();
+        const discountEnd = new Date(foundDiscount.dateEnd);
+    
+        if (now > discountEnd) {
+            setDiscountMessage('Mã giảm giá đã hết hạn.');
+            setDiscountMessageType('errorMessage');
+            return;        
+        }
+        
+        // Áp dụng giảm giá
+        const discountValue = foundDiscount.discount; // ví dụ: 10 (%)
+        const discountAmountCalc = (total * discountValue) / 100;
+
+        setDiscountAmount(discountAmountCalc);
+        setFinalTotal((total + shippingFee) - discountAmountCalc);
+
+        setDiscountMessage('Áp dụng mã giảm giá thành công!');
+        setDiscountMessageType('successMessage');    
+    }
 
     const handlePlaceOrder = async () => {
         if (!selectedAddress) {
@@ -307,14 +363,23 @@ function Checkout() {
                                     <input
                                         type="text"
                                         value={discountCode}
-                                        // onChange={(e) => setDiscountCode(e.target.value)}
+                                        onChange={(e) => setDiscountCode(e.target.value)}
                                         placeholder="Nhập mã giảm giá"
                                         className={cx('discountInput')}
                                     />
-                                    <button className={cx('discountButton')} >Áp dụng</button>
-                               
-                                    {/* onClick={handleApplyDiscount} */}
+                                    <button className={cx('discountButton')} onClick={handleApplyDiscount} >Áp dụng</button>
                                 </div>
+                                {discountMessage && (
+                                    <div
+                                        className={cx('discountMessage', {
+                                            successMessage: discountMessageType === 'successMessage',
+                                            errorMessage: discountMessageType === 'errorMessage',
+                                            infoMessage: discountMessageType === 'infoMessage'
+                                        })}
+                                    >
+                                        {discountMessage}
+                                    </div>
+                                )}
                             </div>
 
                         </div>

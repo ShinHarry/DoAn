@@ -230,8 +230,25 @@
         }
       }
   }
-  
+  //mess discount
+.discountMessage {
+    margin-top: 8px;
+    font-size: 14px;
+    max-height: 8px;
+    min-height: 5px;
+}
 
+.discountMessage.successMessage {
+    color: green;
+}
+
+.discountMessage.errorMessage  {
+    color: red;
+}
+
+.discountMessage.infoMessage {
+    color: gray;
+}
   
 //
 /* Place Order Button Styling */
