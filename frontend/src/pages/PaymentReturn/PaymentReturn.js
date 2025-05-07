@@ -76,6 +76,8 @@ function PaymentReturn() {
                                 price: item.unitPrice,
                             })),
                             shippingAddress: shippingAddress, 
+                            phone : "0324354325",
+                            name : "dsfvdsv",
                             shippingMethod: hardcodedShippingMethod,
                             shippingFee: hardcodedShippingFee,
                             totalPrice: currentSubtotal, 

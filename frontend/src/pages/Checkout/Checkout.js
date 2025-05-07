@@ -27,6 +27,11 @@ function Checkout() {
     const [userData, setUserData] = useState(null);
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [paymentMethod, setPaymentMethod] = useState('cod');
+    const [phone, setPhone] = useState('');
+    const [name, setName] = useState('');
+    const [address, setAddress] = useState('');
+
+
 
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
@@ -42,7 +47,11 @@ function Checkout() {
             if (fetchedAddresses && fetchedAddresses.length > 0) {
                 const firstAddress = fetchedAddresses[0];
                 const firstAddressString = `${firstAddress.address}, ${firstAddress.city}, ${firstAddress.country}`;
-                setSelectedAddress(firstAddressString);
+                setSelectedAddress(firstAddress._id);
+                setAddress(firstAddressString);
+                setPhone(firstAddress.phoneNumber);
+                setName(firstAddress.fullName);
+    
             } else {
                 setSelectedAddress('');
             }
@@ -66,11 +75,11 @@ function Checkout() {
                 return;
             }
             setCartItems(data.cart || []);
-            const tempTotal = (data.cart || []).reduce(
-                (sum, item) => sum + item.unitPrice * item.quantity,
-                0
-            );
-            setTotal(tempTotal);
+            // const tempTotal = (data.cart || []).reduce(
+            //     (sum, item) => sum + item.unitPrice * item.quantity,
+            //     0
+            // );
+            setTotal(data.totalPrice);
         } catch (err) {
             console.error('Error fetching cart for checkout:', err);
             setError('Không thể tải giỏ hàng. Vui lòng thử lại.');
@@ -125,7 +134,16 @@ function Checkout() {
     };
 
     const handleAddressChange = (e) => {
-        setSelectedAddress(e.target.value);
+        const newSelectedId = e.target.value;
+        setSelectedAddress(newSelectedId);
+        
+        const selectedAddr = addresses.find(addr => addr._id === newSelectedId);
+        if (selectedAddr) {
+            const fullAddress = `${selectedAddr.address}, ${selectedAddr.city}, ${selectedAddr.country}`;
+            setAddress(fullAddress);
+            setPhone(selectedAddr.phoneNumber);
+            setName(selectedAddr.fullName);
+        }
     };
 
     const handlePlaceOrder = async () => {
@@ -145,7 +163,9 @@ function Checkout() {
                 quantity: item.quantity,
                 price: item.unitPrice,
             })),
-            shippingAddress: selectedAddress,
+            shippingAddress: address,
+            phone: phone,
+            name: name,
             shippingMethod,
             shippingFee,
             totalPrice: total,
@@ -253,7 +273,7 @@ function Checkout() {
                                         addresses.map((addr, index) => {
                                             const addressString = `${addr.address}, ${addr.city}, ${addr.country}`;
                                             return (
-                                                <option key={index} value={addressString}>
+                                                <option key={index} value={addr._id}>
                                                     {addressString}
                                                 </option>
                                             );

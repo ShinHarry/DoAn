@@ -20,7 +20,10 @@ const OrderSchema = new mongoose.Schema(
         unitPrice: { type: Number, required: true },
       },
     ],
+    
     shippingAddress: { type: String, required: true },
+    phone: { type: String, required: true },
+    name: { type: String, required: true },
     shippingMethod: { type: String, required: true },
     shippingFee: { type: Number, required: true, default: 0 },
     subTotalPrice: { type: Number, required: true },

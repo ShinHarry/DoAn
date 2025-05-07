@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
+const User = require("../models/User");
 const Product = require("../models/Product");
 const CartProduct = require("../models/CartProduct");
 const verifyToken = require('../middlewares/Auth/verifyToken');
@@ -8,24 +9,57 @@ const verifyToken = require('../middlewares/Auth/verifyToken');
 // Get all 
 router.get("/", verifyToken, async (req, res) => {
     try {
-        console.log("vao day r")
       const userId = req.user.id;
       const orderList = await Order.find({ user: userId })
-        .populate('user', 'userName userPhone')
-        .lean();
-  
-        console.log(orderList);
   
         const order = orderList.map(item => ({
-          name: item.user.userName,
-          address: item.shippingAddress,
-          phone: item.user.userPhone,
-          _id: item._id,
-          date: item.createdAt,
-          totalAmount: item.totalAmount,
-          orderStatus: item.orderStatus,
-        }));
-      res.json(order);
+            _id: item._id,
+            orderDetails: item.orderDetails,
+            address: item.shippingAddress,
+            phone: item.phone,
+            name: item.name,
+            shippingMethod: item.shippingMethod,
+            shippingFee: item.shippingFee,
+            subTotalPrice: item.subTotalPrice,
+            totalAmount: item.totalAmount,
+            orderStatus: item.orderStatus,
+            paymentMethod: item.paymentMethod,
+            paymentStatus: item.paymentStatus,
+            date: item.createdAt,
+}));
+
+    // // Lấy danh sách đơn hàng theo userId
+    // const orderList = await Order.find({ user: userId }).lean();
+
+    // // Lấy user chứa danh sách địa chỉ
+    // const user = await User.findById(userId).select('userAddress').lean();
+
+    // if (!user) return res.status(404).json({ message: "User not found" });
+
+    // // Duyệt qua các đơn hàng và gán địa chỉ tương ứng
+    // const order = orderList.map(item => {
+    //   const address = user.userAddress.find(
+    //     addr => addr._id.toString() === item.shippingAddress.toString()
+    //   );
+
+    //   return {
+    //     _id: item._id,
+    //     orderDetails: item.orderDetails,
+    //     shippingMethod: item.shippingMethod,
+    //     shippingFee: item.shippingFee,
+    //     subTotalPrice: item.subTotalPrice,
+    //     totalAmount: item.totalAmount,
+    //     orderStatus: item.orderStatus,
+    //     paymentMethod: item.paymentMethod,
+    //     paymentStatus: item.paymentStatus,
+    //     date: item.createdAt,
+    //     address: address || null,
+    //   };
+
+    // })
+
+    // console.log(order)
+    res.json(order);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -34,8 +68,10 @@ router.get("/", verifyToken, async (req, res) => {
 // POST /api/orders - tạo 1 đơn hàng mới
 router.post('/', verifyToken, async (req, res) => {
     const { 
-        orderItems, 
+        name,
+        phone,
         shippingAddress,
+        orderItems, 
         shippingMethod,
         shippingFee,
         totalPrice,
@@ -67,7 +103,7 @@ router.post('/', verifyToken, async (req, res) => {
                  throw new Error(`Sản phẩm ${product.productName} hiện không có sẵn.`);
             }
 
-            const itemSubTotal = product.productUnitPrice * item.quantity;
+            const itemSubTotal = product.productUnitPrice  * (1 - (product.productSupPrice || 0) / 100) * item.quantity;
             calculatedSubtotal += itemSubTotal;
             //lấy thông tin sản phẩm chi tiết
             populatedOrderDetails.push({
@@ -95,6 +131,8 @@ router.post('/', verifyToken, async (req, res) => {
         const newOrder = new Order({
             user: userId,
             orderDetails: populatedOrderDetails,
+            name,
+            phone,
             shippingAddress,
             shippingMethod,
             shippingFee,
