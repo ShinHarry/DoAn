@@ -23,7 +23,6 @@ const routes = {
     addSale: '/addSale',
     forgotpassword: '/forgot-password',
     checkout: '/checkout',
-    orderDetail: '/orders/:id'
 };
 
 export default routes;
