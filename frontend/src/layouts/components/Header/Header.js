@@ -303,7 +303,7 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faBoxes} />,
             title: 'Đơn hàng của tôi',
-            to: '/order',
+            to: '/orders',
         },
         {
             icon: <FontAwesomeIcon icon={faLocationDot} />,
@@ -457,7 +457,7 @@ function Header() {
                                                 />
                                                 <button onClick={() => handleIncrease(item._id)} disabled={item.quantity >= item.availableQuantity}>+</button>
                                             </div>
-                                            <span>Đơn giá: {item.unitPrice.toLocaleString()} VND</span>
+                                            <span>Đơn giá: {(item.unitPrice * item.quantity).toLocaleString()} VND</span>
                                            
                                         </div>
                                     </div>

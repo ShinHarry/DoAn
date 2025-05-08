@@ -11,6 +11,17 @@ export const getOrder = async (userId) => {
     }
 };
 
+//Lay chi tiet don hang
+export const getOrderDetail = async (orderId) => {
+    try {
+        console.log(orderId);
+        return await httpRequest.get(`/orders/${orderId}`);
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }};
+
+
 // tạo mới đơn hàng
 export const createOrder = async (orderData) => {
     try {

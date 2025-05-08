@@ -1,5 +1,6 @@
 import React from "react";
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import * as orderService from '~/services/orderService';
 
@@ -10,6 +11,7 @@ const cx = classNames.bind(styles);
 
 function Order() {
 
+    const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
 
     const getToken = () => {
@@ -45,6 +47,9 @@ function Order() {
       fetchOrders();
     }, []);
 
+    const handleViewDetail = (orderId) => {
+      navigate(`/orders/${orderId}`);
+  };
 
   return (
     <div className={cx("wrapper")}>
@@ -85,8 +90,10 @@ function Order() {
                   </span>
                 </td>
                 <td>
-                  <button className={cx("detail-btn")}>Xem chi tiết</button>
-                </td>
+                  <button className={cx("detail-btn")} onClick={() => handleViewDetail(order._id)}>
+                    Xem chi tiết
+                  </button>                
+                 </td>
               </tr>
             ))}
           </tbody>

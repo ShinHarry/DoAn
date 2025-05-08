@@ -11,7 +11,7 @@ const routes = {
     checkout: '/checkout',
     admin: '/admin',
     login: '/login',
-    order: '/order',
+    order: '/orders',
     address: '/address',
     category: '/category/:categoryId',
     register: '/register',
@@ -21,7 +21,7 @@ const routes = {
     sales : '/sales',
     updateSale: '/updateSale/:saleId',
     addSale: '/addSale',
-    // forgotpassword: '/forgot-password',
+    forgotpassword: '/forgot-password',
     checkout: '/checkout',
 };
 
