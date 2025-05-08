@@ -22,48 +22,58 @@ router.get("/", verifyToken, async (req, res) => {
             shippingFee: item.shippingFee,
             subTotalPrice: item.subTotalPrice,
             totalAmount: item.totalAmount,
+            discount : item.discount,
             orderStatus: item.orderStatus,
             paymentMethod: item.paymentMethod,
             paymentStatus: item.paymentStatus,
             date: item.createdAt,
-}));
+        }));
 
-    // // Lấy danh sách đơn hàng theo userId
-    // const orderList = await Order.find({ user: userId }).lean();
-
-    // // Lấy user chứa danh sách địa chỉ
-    // const user = await User.findById(userId).select('userAddress').lean();
-
-    // if (!user) return res.status(404).json({ message: "User not found" });
-
-    // // Duyệt qua các đơn hàng và gán địa chỉ tương ứng
-    // const order = orderList.map(item => {
-    //   const address = user.userAddress.find(
-    //     addr => addr._id.toString() === item.shippingAddress.toString()
-    //   );
-
-    //   return {
-    //     _id: item._id,
-    //     orderDetails: item.orderDetails,
-    //     shippingMethod: item.shippingMethod,
-    //     shippingFee: item.shippingFee,
-    //     subTotalPrice: item.subTotalPrice,
-    //     totalAmount: item.totalAmount,
-    //     orderStatus: item.orderStatus,
-    //     paymentMethod: item.paymentMethod,
-    //     paymentStatus: item.paymentStatus,
-    //     date: item.createdAt,
-    //     address: address || null,
-    //   };
-
-    // })
-
-    // console.log(order)
     res.json(order);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   });
+
+// Get order detail by orderId
+router.get("/:orderId", async (req, res) => {
+    try {
+        const order  = await Order.findById(req.params.orderId)
+
+        if (!order ) {
+            return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+          }
+  
+          const orderDetail = {
+            _id: order._id,
+            user: order.user,
+            name: order.name,
+            phone: order.phone,
+            address: order.shippingAddress,
+            createdAt: order.createdAt,
+            shippingMethod: order.shippingMethod,
+            shippingFee: order.shippingFee,
+            subTotalPrice: order.subTotalPrice,
+            totalAmount: order.totalAmount,
+            discount : order.discount,
+            orderStatus: order.orderStatus,
+            paymentMethod: order.paymentMethod,
+            paymentStatus: order.paymentStatus,
+            items: order.orderDetails.map((item) => ({
+                productName: item.productName,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.quantity * item.unitPrice,
+                productImage: item.productImage,
+        }))
+      };
+  
+      res.json(orderDetail);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
 
 // POST /api/orders - tạo 1 đơn hàng mới
 router.post('/', verifyToken, async (req, res) => {

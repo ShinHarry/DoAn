@@ -303,7 +303,7 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faBoxes} />,
             title: 'Đơn hàng của tôi',
-            to: '/order',
+            to: '/orders',
         },
         {
             icon: <FontAwesomeIcon icon={faLocationDot} />,
