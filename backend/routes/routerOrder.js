@@ -65,9 +65,10 @@ router.get("/:orderId", async (req, res) => {
                 unitPrice: item.unitPrice,
                 totalPrice: item.quantity * item.unitPrice,
                 productImage: item.productImage,
+                productId : item.product
         }))
       };
-  
+    console.log(orderDetail)
       res.json(orderDetail);
     } catch (err) {
       res.status(500).json({ message: err.message });

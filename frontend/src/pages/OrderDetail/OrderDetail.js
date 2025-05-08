@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import * as orderService from '~/services/orderService';
 import { FiX } from 'react-icons/fi'; // Icon đóng
@@ -67,9 +67,12 @@ function OrderDetail() {
             <h3>Sản phẩm:</h3>
             <ul>
                 {Array.isArray(order.items) && order.items.map((item, idx) => (
+                    
                     <li key={idx} className={cx('item-row')}>
-                    <img src={item.productImage} alt={item.productName} width={50} height={50} />
-                    <div className={cx('item-info')}>
+                        <Link to={`/product/${item.productId}`}>
+                            <img src={item.productImage} alt={item.productName} width={50} height={50} />
+                        </Link>                  
+                        <div className={cx('item-info')}>
                         <p>{item.productName} - SL: {item.quantity}</p>
                         <p>Giá: {item.unitPrice.toLocaleString()} VNĐ - Tổng: {(item.quantity * item.unitPrice).toLocaleString()} VNĐ</p>
                     </div>

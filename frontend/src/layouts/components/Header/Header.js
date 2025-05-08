@@ -457,7 +457,7 @@ function Header() {
                                                 />
                                                 <button onClick={() => handleIncrease(item._id)} disabled={item.quantity >= item.availableQuantity}>+</button>
                                             </div>
-                                            <span>Đơn giá: {item.unitPrice.toLocaleString()} VND</span>
+                                            <span>Đơn giá: {(item.unitPrice * item.quantity).toLocaleString()} VND</span>
                                            
                                         </div>
                                     </div>

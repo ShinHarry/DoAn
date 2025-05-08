@@ -28,7 +28,7 @@ function OrderSuccess() {
                 <Link to="/">
                     <Button outline>Tiếp tục mua sắm</Button>
                 </Link>
-                <Link to="/order"> 
+                <Link to={`/orders/${orderId}`}>
                     <Button primary>Xem đơn hàng của tôi</Button>
                 </Link>
             </div>
