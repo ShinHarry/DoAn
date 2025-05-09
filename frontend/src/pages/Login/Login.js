@@ -30,8 +30,7 @@ function Login() {
                 sessionStorage.setItem('token', token);
                 sessionStorage.setItem('user', JSON.stringify(res.user));
             }
-
-            alert('Đăng nhập thành công!');
+            // toast.success('Đăng nhập thành công!');
             navigate('/');
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {

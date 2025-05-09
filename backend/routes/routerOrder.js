@@ -68,7 +68,6 @@ router.get("/:orderId", async (req, res) => {
                 productId : item.product
         }))
       };
-    console.log(orderDetail)
       res.json(orderDetail);
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -122,8 +121,8 @@ router.post('/', verifyToken, async (req, res) => {
                 product: product._id,
                 productName: product.productName,
                 productImage: product.productImgs?.[0]?.link || '',
-                quantity: item.quantity,
-                unitPrice: product.productUnitPrice,
+                quantity: item.quantity, 
+                unitPrice:  product.productUnitPrice  * (1 - (product.productSupPrice || 0) / 100),
             });
 
             productUpdates.push({
