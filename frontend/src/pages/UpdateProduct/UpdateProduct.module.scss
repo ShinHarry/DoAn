@@ -79,3 +79,15 @@
     background-color: #ccc;
     cursor: not-allowed;
 }
+
+.preview-img {
+    width: 100%;
+    height: auto;
+    max-width: 300px;
+    margin: 10px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: block;
+    object-fit: cover;
+    border: 1px solid #ccc;
+}
