@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import config from '~/config';
 import Image from '~/components/Image';
 import Banner from '~/layouts/components/BannerImage';
+
 const cx = classNames.bind(styles);
 
 function Home() {
@@ -15,6 +16,7 @@ function Home() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(0);
     const [total, setTotal] = useState(0);
+
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
@@ -35,7 +37,6 @@ function Home() {
 
     return (
         <div className={cx('wrapper')}>
-            
             <div className= {cx('slide')}>
                 <Banner />  
             </div>

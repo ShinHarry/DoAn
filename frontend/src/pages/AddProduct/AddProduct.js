@@ -92,7 +92,7 @@ function AddProduct() {
         if (name === 'productImgs') {
             setProduct((prevProduct) => ({
                 ...prevProduct,
-                productImgs: [...prevProduct.productImgs, ...Array.from(files)],
+                productImgs: Array.from(files),
             }));
         } else if (name === 'productUnitPrice' || name === 'productSupPrice') {
             const numericValue = parseCurrency(value);
@@ -120,6 +120,8 @@ function AddProduct() {
             formData.append('productName', product.productName);
             formData.append('productUnitPrice', product.productUnitPrice);
             formData.append('productSupPrice', product.productSupPrice);
+            formData.append('productQuantity', product.productQuantity);
+            formData.append('productWarranty', product.productWarranty);
             formData.append('productCategory', product.productCategory);
             formData.append('productUnit', product.productUnit);
             formData.append('productManufacturer', product.productManufacturer);

@@ -292,6 +292,31 @@ function UpdateProduct() {
                 <div className={cx('form-group')}>
                     <label className={cx('label')}>Ảnh sản phẩm:</label>
                     <input type="file" name="productImgs" onChange={handleChange} className={cx('input')} multiple />
+                    <div className={cx('preview')}>
+                        {Array.isArray(product.productImgs) &&
+                            product.productImgs.map((img, index) => {
+                                if (img instanceof File) {
+                                    return (
+                                        <img
+                                            key={index}
+                                            src={URL.createObjectURL(img)}
+                                            alt="Mới chọn"
+                                            className={cx('preview-img')}
+                                        />
+                                    );
+                                } else if (img.link) {
+                                    return (
+                                        <img
+                                            key={index}
+                                            src={img.link}
+                                            alt={img.alt || `Ảnh ${index + 1}`}
+                                            className={cx('preview-img')}
+                                        />
+                                    );
+                                }
+                                return null;
+                            })}
+                    </div>
                 </div>
 
                 <div className={cx('form-group')}>

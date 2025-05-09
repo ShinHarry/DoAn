@@ -7,6 +7,9 @@ import styles from './ProductDetail.module.scss';
 import config from '~/config';
 import Image from '~/components/Image';
 import Swal from 'sweetalert2'; // thư viện hiện alert 
+import 'slick-carousel/slick/slick.css';  // thư viện slide
+import 'slick-carousel/slick/slick-theme.css';
+import Slider from 'react-slick';
 const cx = classNames.bind(styles);
 function ProductDetail() {
     const { productId } = useParams();
@@ -32,6 +35,7 @@ function ProductDetail() {
             setLoading(true);
             try {
                 const response = await productServices.getProductById(productId);
+                console.log(response);
                 setProduct(response);
             } catch (error) {
                 console.error('Error fetching product details:', error);
@@ -135,7 +139,14 @@ function ProductDetail() {
     return (
         <div className={cx('wrapper')}>
             <div className={cx('product-item')}>
-                <Image className={cx('product-images')} src={productImgs[0].link} alt={productName} />
+                {/* <Image className={cx('product-images')} src={productImgs[0].link} alt={productName} /> */}
+                <Slider dots={true} fade={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1} className={cx('product-slider')}>
+                    {productImgs.map((img, index) => (
+                        <div key={index}>
+                            <Image className={cx('product-images')} src={img.link} alt={img.productName} />
+                        </div>
+                    ))}
+                </Slider>
 
                 <div className={cx('product-info')}>
                     <h2 className={cx('product-name')}>{productName}</h2>
