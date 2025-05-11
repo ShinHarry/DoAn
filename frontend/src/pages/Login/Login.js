@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as authService from '~/services/authService';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '~/redux/actions/authActions';
 import classNames from 'classnames/bind';
 import styles from './Login.module.scss';
 
@@ -13,27 +14,39 @@ function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const currentUser = useSelector((state) => state.auth.login.currentUser);
+
+    useEffect(() => {
+        console.log(currentUser);
+        if (currentUser) {
+            const role = currentUser.role;
+            if (role === 'admin') {
+                navigate('/admindashboard');
+            } else if (role === 'mod') {
+                navigate('/moddashboard');
+            } else if (role === 'cus') {
+                navigate('/');
+            }
+        }
+    }, [currentUser, navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            const res = await authService.login({ userNameAccount: username, userPassword: password });
-
-            const token = res.token;
-
-            if (rememberMe) {
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(res.user));
-            } else {
-                sessionStorage.setItem('token', token);
-                sessionStorage.setItem('user', JSON.stringify(res.user));
-            }
-            // toast.success('Đăng nhập thành công!');
-            navigate('/');
+            await dispatch(
+                login({
+                    userNameAccount: username,
+                    userPassword: password,
+                    rememberMe,
+                }),
+            );
+            alert('Đăng nhập thành công!');
         } catch (err) {
-            if (err.response && err.response.data && err.response.data.message) {
+            if (err.response?.data?.message) {
                 setError(err.response.data.message);
             } else {
                 setError('Đăng nhập thất bại, vui lòng thử lại.');

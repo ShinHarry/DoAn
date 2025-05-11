@@ -8,7 +8,25 @@ export const getUserById = async (userId) => {
         throw err;
     }
 };
+// Cập nhật user theo ID
+export const updateUserById = async (userId, user) => {
+    try {
+        return await httpRequest.put(`/users/${userId}`, user);
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
 
+// Lấy địa chỉ của user theo ID
+export const getAddressByUserId = async (userId) => {
+    try {
+        return await httpRequest.get(`/users/${userId}/addresses`);
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
 
 // --- Thêm phần quản lý địa chỉ--- //
 
@@ -35,11 +53,11 @@ export const addAddress = async (addressData) => {
     }
 };
 
-// xóa địa chỉ 
+// xóa địa chỉ
 export const deleteAddress = async (addressId) => {
     try {
-        const response = await httpRequest.del('/users/me/addresses', { 
-            data: { addressId: addressId } 
+        const response = await httpRequest.del('/users/me/addresses', {
+            data: { addressId: addressId },
         });
         return response;
     } catch (err) {
@@ -51,7 +69,7 @@ export const deleteAddress = async (addressId) => {
 export const updateAddress = async (updatedData) => {
     console.log(updatedData);
     try {
-        const response = await httpRequest.put('/users/me/addresses', updatedData)
+        const response = await httpRequest.put('/users/me/addresses', updatedData);
         return response;
     } catch (err) {
         console.error('Error deleting address:', err);

@@ -1,9 +1,20 @@
 import * as httpRequest from '~/utils/httpRequest';
 
-export const login = async ({ userNameAccount, userPassword }) => {
+export const login = async ({ userNameAccount, userPassword, rememberMe }) => {
     try {
         const res = await httpRequest.post('auth/login', { userNameAccount, userPassword });
-        return res;
+
+        const token = res.token;
+        const user = res.user;
+        if (rememberMe) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+        } else {
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
+        }
+
+        return { token, user };
     } catch (error) {
         throw error;
     }

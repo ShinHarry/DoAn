@@ -1,25 +1,21 @@
-const authPage = (premission) => {
+const authPage = (permissions) => {
   return (req, res, next) => {
-    if (!userid) {
-      return res.status(403).json("Vui lòng đăng nhập!!");
-    }
-    const { user } = {
-      user: {
-        name: "",
-        role: ["ADM", "MOD"],
-      },
-    };
+    const user = req.user;
+
     if (!user) {
-      return res.status(403).json("Tài khoản không hợp lệ!!");
+      return res.status(401).json("Vui lòng đăng nhập!");
     }
-    const { role } = user;
-    if (!premission?.includes(role)) {
+
+    const role = user.role;
+
+    if (!permissions.includes(role)) {
       return res
         .status(403)
-        .json("Bạn không có quyền truy cập vào tài nguyên này!!");
+        .json("Bạn không có quyền truy cập vào tài nguyên này!");
     }
+
     next();
   };
 };
 
-module.exports = { authPage };
+module.exports = authPage;

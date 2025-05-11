@@ -4,20 +4,9 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const { uploadUser } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
-const mongoose = require("mongoose");
-
-// Get list of users
-router.get("/", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
 // Get user by ID
-router.get("/:userId", verifyToken, async (req, res) => {
+router.get("/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -95,123 +84,157 @@ router.delete("/:userId", async (req, res) => {
   }
 });
 
-
-// ---  Routes quản lý Address--- //
-
-// GET /api/users/me/addresses 
-router.get('/me/addresses', verifyToken, async (req, res) => {
+// GET /api/users/me/addresses
+router.get("/me/addresses", async (req, res) => {
   try {
-      const user = await User.findById(req.user.id).select('userAddress'); // chỉ lấy addresses
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
-      }
-      res.json({ success: true, addresses: user.userAddress || [] });
+    const user = await User.findById(req.user.id).select("userAddress"); // chỉ lấy addresses
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Người dùng không tồn tại." });
+    }
+    res.json({ success: true, addresses: user.userAddress || [] });
   } catch (error) {
-      console.error("Get Addresses Error:", error);
-      res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách địa chỉ.' });
+    console.error("Get Addresses Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Lỗi khi lấy danh sách địa chỉ." });
   }
 });
 
-// POST /api/users/me/addresses 
-router.post('/me/addresses', verifyToken, async (req, res) => {
+// POST /api/users/me/addresses
+router.post("/me/addresses", verifyToken, async (req, res) => {
   const { fullName, phoneNumber, address, city, country } = req.body;
 
   if (!fullName || !phoneNumber || !address || !city || !country) {
-      return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ thông tin địa chỉ.' });
+    return res.status(400).json({
+      success: false,
+      message: "Vui lòng điền đầy đủ thông tin địa chỉ.",
+    });
   }
 
   try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
-      }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Người dùng không tồn tại." });
+    }
 
-      const newAddress = {
-          fullName,
-          phoneNumber,
-          address,
-          city,
-          country
-      };
+    const newAddress = {
+      fullName,
+      phoneNumber,
+      address,
+      city,
+      country,
+    };
 
-      user.userAddress.push(newAddress);
-      await user.save();
-      res.status(201).json({ 
-          success: true, 
-          message: 'Thêm địa chỉ thành công!', 
-          address: user.userAddress[user.userAddress.length - 1] 
-      });
-
+    user.userAddress.push(newAddress);
+    await user.save();
+    res.status(201).json({
+      success: true,
+      message: "Thêm địa chỉ thành công!",
+      address: user.userAddress[user.userAddress.length - 1],
+    });
   } catch (error) {
-      console.error("Add Address Error:", error);
-      res.status(500).json({ success: false, message: 'Lỗi khi thêm địa chỉ.' });
+    console.error("Add Address Error:", error);
+    res.status(500).json({ success: false, message: "Lỗi khi thêm địa chỉ." });
   }
 });
 
-
 // DELETE /api/users/me/addresses
-router.delete('/me/addresses', verifyToken, async (req, res) => {
+router.delete("/me/addresses", verifyToken, async (req, res) => {
   // lấy addressId từ request body
-  const { addressId } = req.body; 
+  const { addressId } = req.body;
 
   if (!addressId) {
-       return res.status(400).json({ success: false, message: 'Thiếu ID địa chỉ trong yêu cầu.'});
+    return res
+      .status(400)
+      .json({ success: false, message: "Thiếu ID địa chỉ trong yêu cầu." });
   }
 
   if (!mongoose.Types.ObjectId.isValid(addressId)) {
-      return res.status(400).json({ success: false, message: 'ID địa chỉ không hợp lệ.'});
+    return res
+      .status(400)
+      .json({ success: false, message: "ID địa chỉ không hợp lệ." });
   }
 
   try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
-      }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Người dùng không tồn tại." });
+    }
 
-      const initialLength = user.userAddress.length;
-      // lọc address cần xóa
-      user.userAddress = user.userAddress.filter(addr => addr._id.toString() !== addressId);
+    const initialLength = user.userAddress.length;
+    // lọc address cần xóa
+    user.userAddress = user.userAddress.filter(
+      (addr) => addr._id.toString() !== addressId
+    );
 
-      // kiểm tra xem có thật sự bị xóa không
-      if (user.userAddress.length === initialLength) {
-           return res.status(404).json({ success: false, message: 'Không tìm thấy địa chỉ để xóa.' });
-      }
+    // kiểm tra xem có thật sự bị xóa không
+    if (user.userAddress.length === initialLength) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy địa chỉ để xóa." });
+    }
 
-      await user.save();
-      res.json({ success: true, message: 'Xóa địa chỉ thành công!' });
-
+    await user.save();
+    res.json({ success: true, message: "Xóa địa chỉ thành công!" });
   } catch (error) {
-      console.error("Delete Address Error:", error);
-      res.status(500).json({ success: false, message: 'Lỗi khi xóa địa chỉ.' });
+    console.error("Delete Address Error:", error);
+    res.status(500).json({ success: false, message: "Lỗi khi xóa địa chỉ." });
   }
 });
 
 // PUT /api/users/me/addresses
-router.put('/me/addresses', verifyToken, async (req, res) => {
+router.put("/me/addresses", verifyToken, async (req, res) => {
   const { addressId, fullName, phoneNumber, address, city, country } = req.body;
 
   if (!addressId) {
-      return res.status(400).json({ success: false, message: 'Thiếu ID địa chỉ.' });
+    return res
+      .status(400)
+      .json({ success: false, message: "Thiếu ID địa chỉ." });
   }
 
   try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
-      }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Người dùng không tồn tại." });
+    }
 
-      const addressIndex = user.userAddress.findIndex(addr => addr._id.toString() === addressId);
-      if (addressIndex === -1) {
-          return res.status(404).json({ success: false, message: 'Địa chỉ không tồn tại.' });
-      }
+    const addressIndex = user.userAddress.findIndex(
+      (addr) => addr._id.toString() === addressId
+    );
+    if (addressIndex === -1) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Địa chỉ không tồn tại." });
+    }
 
-      user.userAddress[addressIndex] = { _id: addressId, fullName, phoneNumber, address, city, country };
-      await user.save();
+    user.userAddress[addressIndex] = {
+      _id: addressId,
+      fullName,
+      phoneNumber,
+      address,
+      city,
+      country,
+    };
+    await user.save();
 
-      res.json({ success: true, message: 'Cập nhật địa chỉ thành công!', address: user.userAddress[addressIndex] });
+    res.json({
+      success: true,
+      message: "Cập nhật địa chỉ thành công!",
+      address: user.userAddress[addressIndex],
+    });
   } catch (error) {
-      console.error("Update Address Error:", error);
-      res.status(500).json({ success: false, message: 'Lỗi khi cập nhật địa chỉ.' });
+    console.error("Update Address Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Lỗi khi cập nhật địa chỉ." });
   }
 });
 

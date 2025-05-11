@@ -2,13 +2,11 @@ const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
   try {
-    const authHeader = req.header("Authorization");
+    const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
     if (!token) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Token không được cung cấp." });
+      return res.status(401).json({ message: "Bạn cần đăng nhập." });
     }
 
     const decoded = jwt.verify(token, process.env.secret_token);
@@ -16,15 +14,13 @@ const verifyToken = (req, res, next) => {
       id: decoded.userId,
       role: decoded.role,
       avatar: decoded.userAvatar || null, // phòng trường hợp không có
-      idCard: decoded.idCard || null, // phòng trường hợp không có
     };
 
     next();
-  } catch (error) {
-    console.error("verifyToken Error:", error);
+  } catch (err) {
     return res
       .status(403)
-      .json({ success: false, message: "Token không hợp lệ hoặc hết hạn." });
+      .json({ message: "Token không hợp lệ hoặc đã hết hạn." });
   }
 };
 

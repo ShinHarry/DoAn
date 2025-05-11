@@ -28,33 +28,41 @@ import OrderSuccess from '~/pages/OrderSuccess/OrderSuccess';
 import PaymentReturn from '~/pages/PaymentReturn/PaymentReturn';
 import OrderDetail from '~/pages/OrderDetail';
 
+import AdminDashboard from '~/pages/AdminDashboard';
+import ModDashboard from '~/pages/ModDashboard';
 // Public routes
 const publicRoutes = [
-    { path: config.routes.home, component: Home },
-    { path: config.routes.order, component: Order },
-    { path: config.routes.profile, component: Profile },
-    { path: config.routes.address, component: Address, layout: HeaderOnly },
-    { path: config.routes.search, component: Search },
-    { path: config.routes.productDetail, component: ProductDetail },
-    { path: config.routes.addProduct, component: AddProduct },
-    { path: config.routes.updateProduct, component: UpdateProduct },
-    { path: config.routes.category, component: Category },
     { path: config.routes.login, component: Login, layout: null },
     { path: config.routes.register, component: Register, layout: null },
-    { path: config.routes.news, component: Banner },
-    { path: config.routes.addNew, component: AddBanner },
-    { path: config.routes.updateNew, component: UpdateBanner },
-    { path: config.routes.sales, component: Sale },
-    { path: config.routes.addSale, component: AddSale },
-    { path: config.routes.updateSale, component: UpdateSale },
     { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
-    { path: config.routes.checkout, component: Checkout },
-    { path: '/cart-detail', component: CartDetail },
-    { path: '/order-success/:orderId?', component: OrderSuccess },
-    { path: '/payment-return', component: PaymentReturn },
-    { path: '/orders/:orderId', component: OrderDetail },
+    { path: config.routes.home, component: Home },
+    { path: config.routes.search, component: Search },
+    { path: config.routes.productDetail, component: ProductDetail },
+    { path: config.routes.category, component: Category },
 ];
 
-const privateRoutes = [];
+const privateRoutes = [
+    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: null },
+
+    { path: config.routes.moddashboard, component: ModDashboard, roles: ['mod'] },
+
+    { path: config.routes.addProduct, component: AddProduct, roles: ['mod'] },
+    { path: config.routes.updateProduct, component: UpdateProduct, roles: ['mod'] },
+    { path: config.routes.news, component: Banner, roles: ['mod'] },
+    { path: config.routes.addNew, component: AddBanner, roles: ['mod'] },
+    { path: config.routes.updateNew, component: UpdateBanner, roles: ['mod'] },
+    { path: config.routes.sales, component: Sale, roles: ['mod'] },
+    { path: config.routes.addSale, component: AddSale, roles: ['mod'] },
+    { path: config.routes.updateSale, component: UpdateSale, roles: ['mod'] },
+
+    { path: config.routes.order, component: Order, roles: ['cus', 'mod'] },
+    { path: config.routes.profile, component: Profile, roles: ['admin', 'cus', 'mod'] },
+    { path: config.routes.address, component: Address, layout: HeaderOnly, roles: ['cus', 'mod'] },
+    { path: config.routes.checkout, component: Checkout, roles: ['cus', 'mod'] },
+    { path: '/cart-detail', component: CartDetail, roles: ['cus', 'mod'] },
+    { path: '/order-success/:orderId?', component: OrderSuccess, roles: ['cus', 'mod'] },
+    { path: '/payment-return', component: PaymentReturn, roles: ['cus', 'mod'] },
+    { path: '/orders/:orderId', component: OrderDetail, roles: ['cus', 'mod'] },
+];
 
 export { publicRoutes, privateRoutes };

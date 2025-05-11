@@ -26,7 +26,7 @@ router.post("/register", async (req, res) => {
       userEmail,
       userNameAccount,
       userPassword: hashedPassword,
-      userRole: "CUS",
+      userRole: "cus",
       userStatus: "active",
       userPoint: 0,
       cart: [],
@@ -99,7 +99,7 @@ const transporter = nodemailer.createTransport({
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     console.log(email);
 
     const user = await User.findOne({ userEmail: email });

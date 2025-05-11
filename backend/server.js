@@ -13,12 +13,15 @@ const RouterManufacturer = require("./routes/routerManufacturer");
 const RouterOrigin = require("./routes/routerOrigin");
 const RouterUnit = require("./routes/routerUnit");
 const routerAuth = require("./routes/routerAuth");
-const RouterNew =  require("./routes/routerNew");
+const RouterNew = require("./routes/routerNew");
 const verifyToken = require("./middlewares/Auth/verifyToken");
-const RouterSale =  require("./routes/routerSale");
-const paymentMethodRouter = require('./routes/routerPaymentMethod');
-const orderRouter = require('./routes/routerOrder');
-const paymentRouter = require('./routes/routerPayment');
+const authPage = require("./middlewares/Auth/authoziration");
+const RouterSale = require("./routes/routerSale");
+const paymentMethodRouter = require("./routes/routerPaymentMethod");
+const orderRouter = require("./routes/routerOrder");
+const paymentRouter = require("./routes/routerPayment");
+
+const routerAdmin = require("./routes/routerAdmin");
 
 dotenv.config();
 const app = express();
@@ -32,20 +35,21 @@ app.use(cors());
 db.connect();
 
 // Use routes
+app.use("/api/admindashboard", verifyToken, authPage(["admin"]), routerAdmin);
+
 app.use("/api/products", RouterProduct);
-app.use("/api/users", RouterUser);
-app.use("/api/carts", RouterCart);
+app.use("/api/users", verifyToken, RouterUser);
+app.use("/api/carts", verifyToken, RouterCart);
 app.use("/api/categories", RouterCategory);
 app.use("/api/manufacturers", RouterManufacturer);
 app.use("/api/origins", RouterOrigin);
 app.use("/api/units", RouterUnit);
 app.use("/api/auth", routerAuth);
-app.use("/api/news", RouterNew);
-app.use("/api/sales", RouterSale);
-app.use('/api/', paymentMethodRouter);
-app.use("/api/orders", orderRouter);
+app.use("/api/news", verifyToken, RouterNew);
+app.use("/api/sales", verifyToken, RouterSale);
+app.use("/api/", verifyToken, paymentMethodRouter);
+app.use("/api/orders", verifyToken, orderRouter);
 app.use("/api/payments", paymentRouter);
-
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 
