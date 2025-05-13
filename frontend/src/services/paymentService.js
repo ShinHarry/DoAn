@@ -30,6 +30,3 @@ export const verifyVnpayReturn = async (queryObject) => {
         throw err;
     }
 };
-
-// // You might add other payment related functions later
-// // export const checkVnpayStatus = async (queryParams) => { ... }; 

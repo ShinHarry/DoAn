@@ -5,8 +5,6 @@ const PaymentMethodSchema = new mongoose.Schema(
     name: { type: String ,required: true},
     description : { type: String , required: true },
     paymentType : { type: String , required: true },
-
-
   },
 
 );

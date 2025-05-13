@@ -79,7 +79,7 @@ function UpdateSale() {
                 confirmButtonText: 'OK',
             });
                       
-            navigate('/sales');
+            navigate('/moddashboard/sales');
         } catch (err) {
             console.error('Error updating sale:', err);
             setError('Có lỗi xảy ra khi cập nhật khuyến mãi. Vui lòng thử lại.');
@@ -163,7 +163,7 @@ function UpdateSale() {
                         </div>
         
                         <button type="submit" className={cx('submit-btn')}>
-                            Thêm khuyến mãi
+                            Cập nhật khuyến mãi
                         </button>
 
                     </form>

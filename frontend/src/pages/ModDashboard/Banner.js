@@ -63,7 +63,7 @@ function Banner() {
             <h1>Quản lý Banner</h1>
             <div className={cx('actions')}>
                 <Link to="/addNew" className={cx('btn-add')}>
-                    Thêm mới
+                    ➕ Thêm mới
                 </Link>
             </div>
 

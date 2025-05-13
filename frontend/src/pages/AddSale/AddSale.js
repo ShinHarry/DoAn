@@ -49,7 +49,7 @@ function AddSale() {
         try {
             await saleService.addSale(formData);  //  API addSale bên services
             toast.success('Thêm khuyến mãi thành công!');
-            setTimeout(() => navigate('/sales'), 1500); // Chờ toast hiện rồi chuyển trang
+            setTimeout(() => navigate('/moddashboard/sales'), 1500); // Chờ toast hiện rồi chuyển trang
         } catch (error) {
             console.error('Lỗi thêm khuyến mãi:', error);
                 // Kiểm tra lỗi nếu tên đã tồn tại

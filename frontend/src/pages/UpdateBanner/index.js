@@ -90,7 +90,7 @@ function UpdateBanner() {
                 confirmButtonText: 'OK',
               });
           
-              navigate('/sales');
+              navigate('/moddashboard/news');
         } catch (err) {
             console.error(err);
             setError('Có lỗi xảy ra khi sửa banner. Vui lòng thử lại.');
