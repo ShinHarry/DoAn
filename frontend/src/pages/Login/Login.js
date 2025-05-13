@@ -19,7 +19,6 @@ function Login() {
     const currentUser = useSelector((state) => state.auth.login.currentUser);
 
     useEffect(() => {
-        console.log(currentUser);
         if (currentUser) {
             const role = currentUser.role;
             if (role === 'admin') {

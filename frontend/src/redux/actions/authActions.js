@@ -18,6 +18,8 @@ export const logout = () => async (dispatch) => {
         // Gọi API nếu cần hoặc đơn giản chỉ xóa token
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
         dispatch(logoutSuccess());
     } catch (err) {
         console.error('Logout failed:', err.message);

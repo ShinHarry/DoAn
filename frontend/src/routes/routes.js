@@ -30,6 +30,7 @@ import OrderDetail from '~/pages/OrderDetail';
 
 import AdminDashboard from '~/pages/AdminDashboard';
 import ModDashboard from '~/pages/ModDashboard';
+import ProductList from '~/pages/ModDashboard/ProductList';
 // Public routes
 const publicRoutes = [
     { path: config.routes.login, component: Login, layout: null },
@@ -44,7 +45,19 @@ const publicRoutes = [
 const privateRoutes = [
     { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: null },
 
-    { path: config.routes.moddashboard, component: ModDashboard, roles: ['mod'] },
+    {
+        path: config.routes.moddashboard,
+        component: ModDashboard,
+        roles: ['mod'],
+        children: [
+            {
+                path: 'productlist',
+                component: ProductList,
+                roles: ['mod'],
+                layout: null,
+            },
+        ],
+    },
 
     { path: config.routes.addProduct, component: AddProduct, roles: ['mod'] },
     { path: config.routes.updateProduct, component: UpdateProduct, roles: ['mod'] },

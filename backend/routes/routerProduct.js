@@ -1,26 +1,89 @@
 require("dotenv").config();
+const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
+const Category = require("../models/Category"); // Giả sử bạn có model Category
+const Origin = require("../models/Origin"); // Giả sử bạn có model Origin
+const Manufacturer = require("../models/Manufacturer");
 const { uploadProduct } = require("../middlewares/uploadImage/uploads");
 const BASE_URL = process.env.BASE_URL;
 
 //API lấy danh sách sản phẩm
+// router.get("/", async (req, res) => {
+//   try {
+//     const { page, limit } = req.query;
+//     const products = await Product.find()
+//       .populate("productCategory", "nameCategory")
+//       .populate("productUnit", "nameUnit")
+//       .populate("productManufacturer", "nameManufacturer")
+//       .populate("productOrigin", "nameOrigin")
+//       .skip((page - 1) * limit)
+//       .limit(parseInt(limit))
+//       .lean();
+//     const total = await Product.countDocuments();
+//     res.json({ products, total, page: parseInt(page), limit: parseInt(limit) });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 router.get("/", async (req, res) => {
   try {
-    const { page, limit } = req.query;
-    const products = await Product.find()
-      .populate("productCategory", "nameCategory")
-      .populate("productUnit", "nameUnit")
-      .populate("productManufacturer", "nameManufacturer")
-      .populate("productOrigin", "nameOrigin")
+    const {
+      page = 1,
+      limit = 12,
+      search = "",
+      category,
+      origin,
+      manufacturer,
+      sortBy = "productName",
+      sortOrder = "asc",
+    } = req.query;
+
+    const query = {};
+
+    // Search filter
+    if (search) {
+      query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
+    }
+
+    // Category filter (Assuming category is an ObjectId)
+    if (category && mongoose.Types.ObjectId.isValid(category)) {
+      query.productCategory = category;
+    }
+
+    // Origin filter (Assuming origin is an ObjectId)
+    if (origin && mongoose.Types.ObjectId.isValid(origin)) {
+      query.productOrigin = origin;
+    }
+
+    // Manufacturer filter (Assuming manufacturer is an ObjectId)
+    if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
+      query.productManufacturer = manufacturer;
+    }
+
+    // Sorting configuration
+    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+    // Fetch total count
+    const total = await Product.countDocuments(query);
+
+    // Fetch paginated and sorted products
+    const products = await Product.find(query)
+      .populate("productCategory productManufacturer productOrigin productUnit")
+      .sort(sort)
       .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .lean();
-    const total = await Product.countDocuments();
-    res.json({ products, total, page: parseInt(page), limit: parseInt(limit) });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      .limit(parseInt(limit));
+
+    res.json({
+      products,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+    });
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    res.status(500).json({ message: "Lỗi lấy danh sách sản phẩm" });
   }
 });
 

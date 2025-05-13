@@ -1,10 +1,39 @@
 import * as httpRequest from '~/utils/httpRequest';
 
 // Lấy danh sách sản phẩm có phân trang
-export const getProducts = async ({ page, limit }) => {
+// export const getProducts = async ({ page, limit }) => {
+//     try {
+//         return await httpRequest.get('/products', {
+//             params: { page, limit },
+//         });
+//     } catch (err) {
+//         console.log(err);
+//         throw err;
+//     }
+// };
+
+export const getProducts = async ({
+    page = 1,
+    limit = 12,
+    search = '',
+    category = '',
+    origin = '',
+    manufacturer = '',
+    sortBy = 'productName',
+    sortOrder = 'asc',
+}) => {
     try {
         return await httpRequest.get('/products', {
-            params: { page, limit },
+            params: {
+                page,
+                limit,
+                search,
+                category,
+                origin,
+                manufacturer,
+                sortBy,
+                sortOrder,
+            },
         });
     } catch (err) {
         console.log(err);

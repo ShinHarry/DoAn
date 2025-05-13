@@ -37,12 +37,13 @@ function Home() {
 
     return (
         <div className={cx('wrapper')}>
-            <div className= {cx('slide')}>
-                <Banner />  
+            <div className={cx('slide')}>
+                <Banner />
             </div>
 
-            <br /><h2>Danh sách sản phẩm</h2>
-           
+            <br />
+            <h2>Danh sách sản phẩm</h2>
+
             {error && <p>{error}</p>}
             {loading ? (
                 <p>Đang tải...</p>
@@ -56,7 +57,7 @@ function Home() {
                                 <div key={product._id} className={cx('product-item')}>
                                     <Link to={`${config.routes.productDetail.replace(':productId', product._id)}`}>
                                         <Image
-                                            className={cx('product-avatar')}
+                                            // className={cx('product-avatar')}
                                             src={product.productImgs[0].link}
                                             alt={product.productName}
                                         />

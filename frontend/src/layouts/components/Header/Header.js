@@ -1,5 +1,7 @@
 import classNames from 'classnames/bind';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { logout } from '~/redux/actions/authActions';
+import { useDispatch } from 'react-redux';
 import {
     faKeyboard,
     faUser,
@@ -43,7 +45,7 @@ const cx = classNames.bind(styles);
 
 function Header() {
     const navigate = useNavigate();
-
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [categoryMap, setCategoryMap] = useState({});
@@ -93,13 +95,15 @@ function Header() {
     const avatar = userData?.avatar;
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
-        setUserData(null);
-        setCartItems([]);
-        navigate('/');
+        try {
+            dispatch(logout());
+            setUserData(null);
+            setCartItems([]);
+            navigate('/');
+        } catch (error) {
+            console.error('Logout error:', error);
+            toast.error('Đã xảy ra lỗi khi đăng xuất.');
+        }
     };
 
     //cart // hàm lấy cart, thay đổi theo currentUser
