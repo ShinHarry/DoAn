@@ -74,7 +74,6 @@ const ProductList = () => {
         }
     };
 
-    // Use useCallback to prevent unnecessary re-renders
     const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
@@ -95,7 +94,7 @@ const ProductList = () => {
         } finally {
             setLoading(false);
         }
-    }, [searchTerm, selectedCategory, selectedOrigin, selectedManufacturer]); // Hàm này chỉ thay đổi khi các dependency thay đổi
+    }, [searchTerm, selectedCategory, selectedOrigin, selectedManufacturer]);
 
     useEffect(() => {
         fetchCategories();
@@ -105,7 +104,7 @@ const ProductList = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, [fetchProducts]); // Đảm bảo rằng fetchProducts luôn là hàm mới nhất
+    }, [fetchProducts]);
 
     return (
         <div className={cx('product-filter')}>

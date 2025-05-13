@@ -50,7 +50,7 @@ function Header() {
     const [error, setError] = useState('');
     const [categoryMap, setCategoryMap] = useState({});
     const [userData, setUserData] = useState(null);
-
+    const [userLoading, setUserLoading] = useState(true);
     //cart
     const [cartItems, setCartItems] = useState([]);
     const [openCartPanel, setOpenCartPanel] = useState(false);
@@ -66,11 +66,10 @@ function Header() {
             try {
                 setUserData(JSON.parse(storedUser));
             } catch (error) {
-                console.error('Failed to parse user data from storage:', error);
-                localStorage.removeItem('user');
-                sessionStorage.removeItem('user');
+                console.error('Failed to parse user data:', error);
             }
         }
+        setUserLoading(false);
 
         const fetchCategories = async () => {
             try {
@@ -293,7 +292,7 @@ function Header() {
         },
     ];
 
-    const userMenu = [
+    const userCusMenu = [
         {
             icon: <FontAwesomeIcon icon={faUser} />,
             title: 'Thông tin cá nhân',
@@ -309,21 +308,7 @@ function Header() {
             title: 'Sổ địa chỉ',
             to: '/address',
         },
-        // {
-        //     icon: <FontAwesomeIcon icon={faPlus} />,
-        //     title: 'Thêm sản phẩm',
-        //     to: '/addProduct',
-        // },
-        // {
-        //     icon: <FontAwesomeIcon icon={faImage} />,
-        //     title: 'Banner',
-        //     to: '/news',
-        // },
-        // {
-        //     icon: <FontAwesomeIcon icon={faStar} />,
-        //     title: 'Khuyến mãi',
-        //     to: '/sales',
-        // },
+
         {
             icon: <FontAwesomeIcon icon={faSignOutAlt} />,
             title: 'Đăng xuất',
@@ -331,57 +316,82 @@ function Header() {
             onClick: handleLogout,
         },
     ];
-
+    const userModMenu = [
+        {
+            icon: <FontAwesomeIcon icon={faUser} />,
+            title: 'Thông tin cá nhân',
+            to: `/profile/${userId}`,
+        },
+        {
+            icon: <FontAwesomeIcon icon={faPlus} />,
+            title: 'Thêm sản phẩm',
+            to: '/addProduct',
+        },
+        {
+            icon: <FontAwesomeIcon icon={faImage} />,
+            title: 'Banner',
+            to: '/news',
+        },
+        {
+            icon: <FontAwesomeIcon icon={faStar} />,
+            title: 'Khuyến mãi',
+            to: '/sales',
+        },
+    ];
+    console.log('userData', userData);
     return (
         <header className={cx('wrapper')}>
             {!error && !loading ? (
                 <div className={cx('loading')}>Loading...</div>
             ) : (
                 <div className={cx('inner')}>
-                    <Link to={config.routes.home} className={cx('logo-link')}>
-                        <img src={images.logo} alt="Logo" />
-                    </Link>
-                    <Menu items={MENU_ITEMS}>
-                        <button className={cx('action-btn')}>
-                            <BarsIcon />
-                        </button>
-                    </Menu>
-                    <Search />
+                    {!userLoading && userData?.role === 'cus' && (
+                        <Link to={config.routes.home} className={cx('logo-link')}>
+                            <img src={images.logo} alt="Logo" />
+                        </Link>
+                    )}
+                    {!userLoading && userData?.role === 'mod' && (
+                        <Link to={config.routes.moddashboard} className={cx('logo-link')}>
+                            <img src={images.logo} alt="Logo" />
+                        </Link>
+                    )}
+                    {!userLoading && userData?.role === 'cus' && (
+                        <>
+                            <Menu items={MENU_ITEMS}>
+                                <button className={cx('action-btn')}>
+                                    <BarsIcon />
+                                </button>
+                            </Menu>
+                            <Search />
+                        </>
+                    )}
 
                     <div className={cx('actions')}>
-                        {currentUser ? (
-                            <>
-                                <Tippy delay={[0, 50]} content="Thông báo" placement="bottom">
-                                    <button className={cx('action-btn')}>
-                                        <InboxIcon />
-                                        {/* <span className={cx('badge')}>12</span> */}
-                                    </button>
-                                </Tippy>
-                            </>
-                        ) : (
-                            <>
-                                <Button primary to="/login">
-                                    Log in
-                                </Button>
-                            </>
+                        {!currentUser && (
+                            <Button primary to="/login">
+                                Log in
+                            </Button>
                         )}
-
-                        <Menu items={currentUser ? userMenu : MENU_ITEMS}>
-                            {currentUser ? (
-                                <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />
-                            ) : (
-                                <></>
-                            )}
-                        </Menu>
-                        <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
-                            <button className={cx('action-btn')} onClick={handleOpenCart}>
-                                <CartIcons />
-                                {/* hiển thị badge trên icon giỏ hàng */}
-                                {currentUser && totalQuantity > 0 && (
-                                    <span className={cx('badge')}>{totalQuantity}</span>
-                                )}
-                            </button>
-                        </Tippy>
+                        {!userLoading && userData?.role === 'cus' && (
+                            <Menu items={currentUser ? userCusMenu : MENU_ITEMS}>
+                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
+                            </Menu>
+                        )}
+                        {!userLoading && userData?.role === 'mod' && (
+                            <Menu items={currentUser ? userModMenu : MENU_ITEMS}>
+                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
+                            </Menu>
+                        )}
+                        {!userLoading && userData?.role === 'cus' && (
+                            <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
+                                <button className={cx('action-btn')} onClick={handleOpenCart}>
+                                    <CartIcons />
+                                    {currentUser && totalQuantity > 0 && (
+                                        <span className={cx('badge')}>{totalQuantity}</span>
+                                    )}
+                                </button>
+                            </Tippy>
+                        )}
                     </div>
                 </div>
             )}

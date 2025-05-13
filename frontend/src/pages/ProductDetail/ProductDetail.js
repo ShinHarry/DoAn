@@ -6,19 +6,24 @@ import classNames from 'classnames/bind';
 import styles from './ProductDetail.module.scss';
 import config from '~/config';
 import Image from '~/components/Image';
-import Swal from 'sweetalert2'; // thư viện hiện alert 
-import 'slick-carousel/slick/slick.css';  // thư viện slide
+import Swal from 'sweetalert2';
+import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import Slider from 'react-slick';
+
 const cx = classNames.bind(styles);
+
 function ProductDetail() {
     const { productId } = useParams();
     const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [productLoading, setProductLoading] = useState(true);
+
+    const [userData, setUserData] = useState(null);
+    const [userLoading, setUserLoading] = useState(true);
+
     const [isLiked, setIsLiked] = useState(false);
     const navigate = useNavigate();
 
-    const [userData, setUserData] = useState(null);
     useEffect(() => {
         const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
         if (storedUser) {
@@ -28,19 +33,19 @@ function ProductDetail() {
                 console.error('Failed to parse user data:', error);
             }
         }
+        setUserLoading(false);
     }, []);
-    
+
     useEffect(() => {
         const fetchProductDetails = async () => {
-            setLoading(true);
+            setProductLoading(true);
             try {
                 const response = await productServices.getProductById(productId);
-                console.log(response);
                 setProduct(response);
             } catch (error) {
                 console.error('Error fetching product details:', error);
             }
-            setLoading(false);
+            setProductLoading(false);
         };
         fetchProductDetails();
     }, [productId]);
@@ -52,9 +57,7 @@ function ProductDetail() {
                 title: 'Bạn chưa đăng nhập',
                 text: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
                 confirmButtonText: 'Đăng nhập',
-            }).then(() => {
-                navigate('/login'); // chuyển sang trang đăng nhập
-            });
+            }).then(() => navigate('/login'));
             return;
         }
 
@@ -70,23 +73,16 @@ function ProductDetail() {
 
         try {
             const response = await cartService.addToCart(productId, 1);
+            console.log('Thêm vào giỏ hàng:', response);
             if (response.success) {
                 Swal.fire('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng', 'success');
             } else {
-                Swal.fire(
-                    ' Thêm thất bại',
-                    response.message || 'Không thể thêm sản phẩm vào giỏ hàng.',
-                    'error'
-                  );
+                Swal.fire('Thêm thất bại', response.message || 'Không thể thêm sản phẩm vào giỏ hàng.', 'error');
             }
         } catch (error) {
             console.error('Error adding to cart:', error);
             const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.';
-            Swal.fire(
-                'Thất bại',
-                errorMessage,
-                'error'
-              );
+            Swal.fire('Thất bại', errorMessage, 'error');
         }
     };
 
@@ -94,26 +90,33 @@ function ProductDetail() {
         setIsLiked(!isLiked);
         alert(isLiked ? 'Bạn đã bỏ like sản phẩm!' : 'Bạn đã thích sản phẩm!');
     };
+
     const handleDeleteProduct = async () => {
-        const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');
-        if (!confirmDelete) return;
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc chắn muốn xóa sản phẩm này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             await productServices.deleteProductById(productId);
-            alert('Sản phẩm đã được xóa thành công!');
-            navigate('/');
+            await Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa thành công.', 'success');
+            navigate('/moddashboard/productlist');
         } catch (error) {
             console.error('Lỗi khi xóa sản phẩm:', error);
-            alert('Đã xảy ra lỗi khi xóa sản phẩm.');
+            Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
         }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!product) {
-        return <div>Product not found</div>;
+    if (productLoading || !product) {
+        return <div>Đang tải thông tin sản phẩm...</div>;
     }
 
     const {
@@ -138,12 +141,21 @@ function ProductDetail() {
 
     return (
         <div className={cx('wrapper')}>
+            {productLoading && <div>Đang tải thông tin sản phẩm...</div>}
+            {userLoading && <div>Đang tải thông tin người dùng...</div>}
             <div className={cx('product-item')}>
-                {/* <Image className={cx('product-images')} src={productImgs[0].link} alt={productName} /> */}
-                <Slider dots={true} fade={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1} className={cx('product-slider')}>
-                    {productImgs.map((img, index) => (
+                <Slider
+                    dots={true}
+                    fade={true}
+                    infinite={true}
+                    speed={500}
+                    slidesToShow={1}
+                    slidesToScroll={1}
+                    className={cx('product-slider')}
+                >
+                    {productImgs?.map((img, index) => (
                         <div key={index}>
-                            <Image className={cx('product-images')} src={img.link} alt={img.productName} />
+                            <Image className={cx('product-images')} src={img.link} alt={img.alt || productName} />
                         </div>
                     ))}
                 </Slider>
@@ -154,13 +166,14 @@ function ProductDetail() {
                     <div className={cx('price')}>
                         {hasDiscount ? (
                             <>
-                                <span className={cx('discount-price')}>₫{productFinallyPrice.toLocaleString()} </span>
-                                <span className={cx('old-price')}>₫{productUnitPrice.toLocaleString()} </span>
+                                <span className={cx('discount-price')}>{productFinallyPrice.toLocaleString()}VNĐ</span>
+                                <span className={cx('old-price')}>{productUnitPrice.toLocaleString()}VNĐ</span>
                             </>
                         ) : (
                             <span className={cx('normal-price')}>{productUnitPrice.toLocaleString()} VNĐ</span>
                         )}
                     </div>
+
                     <div className={cx('product-quantity')}>
                         <p className={cx('description-product')}>
                             <span>Số lượng còn lại:</span> {productQuantity}
@@ -172,20 +185,26 @@ function ProductDetail() {
                             <span>Đánh giá trung bình:</span> {productAvgRating}
                         </p>
                     </div>
+
                     <div className={cx('product-actions')}>
                         <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
-                        <button onClick={handleLike} style={{ backgroundColor: isLiked ? 'red' : 'gray' }}>
+                        {/* <button onClick={handleLike} style={{ backgroundColor: isLiked ? 'red' : 'gray' }}>
                             {isLiked ? 'Bỏ thích' : 'Thích'}
-                        </button>
-                        <Link to={`${config.routes.updateProduct.replace(':productId', product._id)}`}>
-                            <button>Sửa sản phẩm</button>
-                        </Link>
-                        <button onClick={handleDeleteProduct} className={cx('delete-button')}>
-                            Xóa sản phẩm
-                        </button>
+                        </button> */}
+                        {!userLoading && userData?.role === 'mod' && (
+                            <>
+                                <Link to={config.routes.updateProduct.replace(':productId', product._id)}>
+                                    <button>Sửa sản phẩm</button>
+                                </Link>
+                                <button onClick={handleDeleteProduct} className={cx('delete-button')}>
+                                    Xóa sản phẩm
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
+
             <div className={cx('product-details')}>
                 <h3>Chi tiết sản phẩm</h3>
                 <p className={cx('description-product')}>
@@ -204,7 +223,7 @@ function ProductDetail() {
                     <span>Bảo hành:</span> {productWarranty} tháng
                 </p>
                 <p className={cx('description-product')}>
-                    <span>Trạng thái:</span> {productStatus == 'available' ? 'Còn hàng' : 'Hết hàng'}
+                    <span>Trạng thái:</span> {productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}
                 </p>
                 <p className={cx('description-product')}>
                     <span>Mô tả:</span> {productDescription}

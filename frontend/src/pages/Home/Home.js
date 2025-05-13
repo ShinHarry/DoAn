@@ -57,7 +57,7 @@ function Home() {
                                 <div key={product._id} className={cx('product-item')}>
                                     <Link to={`${config.routes.productDetail.replace(':productId', product._id)}`}>
                                         <Image
-                                            // className={cx('product-avatar')}
+                                            className={cx('product-avatar')}
                                             src={product.productImgs[0].link}
                                             alt={product.productName}
                                         />
