@@ -44,6 +44,30 @@ function Sidebar() {
                     icon={<FileIcon />}
                     activeIcon={<FileIcon />}
                 />
+                <MenuItem
+                    title="Banner quảng cáo"
+                    to={'news'}
+                    icon={<FileIcon />}
+                    activeIcon={<FileIcon />}
+                />
+                <MenuItem
+                    title="Khuyến mãi"
+                    to={'sales'}
+                    icon={<FileIcon />}
+                    activeIcon={<FileIcon />}
+                />
+                <MenuItem
+                    title="Hãng sản xuất"
+                    to={'manufacturers'}
+                    icon={<FileIcon />}
+                    activeIcon={<FileIcon />}
+                />
+                <MenuItem
+                    title="Nơi xuất xứ"
+                    to={'origins'}
+                    icon={<FileIcon />}
+                    activeIcon={<FileIcon />}
+                />
             </Menu>
         </aside>
     );

@@ -15,11 +15,10 @@ import UpdateProduct from '~/pages/UpdateProduct';
 import Category from '~/pages/Category';
 import Login from '~/pages/Login';
 import Register from '~/pages/Register';
-import Banner from '~/pages/Banner';
+
 import AddBanner from '~/pages/AddBanner';
 import ForgotPassword from '~/pages/ForgotPassword';
 import UpdateBanner from '~/pages/UpdateBanner';
-import Sale from '~/pages/Sale';
 import AddSale from '~/pages/AddSale';
 import UpdateSale from '~/pages/UpdateSale';
 import Checkout from '~/pages/Checkout';
@@ -31,6 +30,10 @@ import OrderDetail from '~/pages/OrderDetail';
 import AdminDashboard from '~/pages/AdminDashboard';
 import ModDashboard from '~/pages/ModDashboard';
 import ProductList from '~/pages/ModDashboard/ProductList';
+import Banner from '~/pages/ModDashboard/Banner';
+import Sale from '~/pages/ModDashboard/Sale';
+import Origin from '~/pages/ModDashboard/Origin';
+import Manufacturer from '~/pages/ModDashboard/Manufacturer';
 // Public routes
 const publicRoutes = [
     { path: config.routes.login, component: Login, layout: null },
@@ -56,17 +59,43 @@ const privateRoutes = [
                 roles: ['mod'],
                 layout: null,
             },
+            {
+                path: 'news',
+                component: Banner,
+                roles: ['mod'],
+                layout: null,
+            },
+            {
+                path: 'sales',
+                component: Sale,
+                roles: ['mod'],
+                layout: null,
+            },
+            {
+                path: 'manufacturers',
+                component: Manufacturer,
+                roles: ['mod'],
+                layout: null,
+            },
+            {
+                path: 'origins',
+                component: Origin,
+                roles: ['mod'],
+                layout: null,
+            },
         ],
     },
 
     { path: config.routes.addProduct, component: AddProduct, roles: ['mod'] },
     { path: config.routes.updateProduct, component: UpdateProduct, roles: ['mod'] },
-    { path: config.routes.news, component: Banner, roles: ['mod'] },
+    // { path: config.routes.news, component: Banner, roles: ['mod'] },
     { path: config.routes.addNew, component: AddBanner, roles: ['mod'] },
     { path: config.routes.updateNew, component: UpdateBanner, roles: ['mod'] },
-    { path: config.routes.sales, component: Sale, roles: ['mod'] },
+    // { path: config.routes.sales, component: Sale, roles: ['mod'] },
     { path: config.routes.addSale, component: AddSale, roles: ['mod'] },
     { path: config.routes.updateSale, component: UpdateSale, roles: ['mod'] },
+    // { path: '/origins', component: Origin , roles: ['mod']},
+    // { path: '/manufacturers', component: Manufacturer, roles: ['mod'] },
 
     { path: config.routes.order, component: Order, roles: ['cus', 'mod'] },
     { path: config.routes.profile, component: Profile, roles: ['admin', 'cus', 'mod'] },
@@ -76,6 +105,7 @@ const privateRoutes = [
     { path: '/order-success/:orderId?', component: OrderSuccess, roles: ['cus', 'mod'] },
     { path: '/payment-return', component: PaymentReturn, roles: ['cus', 'mod'] },
     { path: '/orders/:orderId', component: OrderDetail, roles: ['cus', 'mod'] },
+
 ];
 
 export { publicRoutes, privateRoutes };

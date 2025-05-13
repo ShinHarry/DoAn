@@ -11,12 +11,8 @@ export const getNew = async () => {
 
 export const addNew = async (news) => {
     try {
+        console.log("cx vào đaya r", news);
         return await httpRequest.post('/news', news, 
-            //{
-            // headers: {
-            //     'Content-Type': 'multipart/form-data',
-            // },
-            //}
     );
     } catch (err) {
         console.log(err);

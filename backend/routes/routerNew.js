@@ -73,6 +73,7 @@ router.get("/:id", async (req, res) => {
   
   router.put("/:id", uploadBanner.single("newImage"), async (req, res) => {
     try {
+      console.log("vao day r");
       const { title, summary, content, author, state } = req.body;
   
       const updateData = {

@@ -69,7 +69,7 @@ function AddBanner() {
             });
     
             toast.success('Thêm banner thành công!');
-            setTimeout(() => navigate('/news'), 2000);
+            setTimeout(() => navigate('/moddashboard/news'), 2000);
 
         } catch (err) {
             console.error(err);
