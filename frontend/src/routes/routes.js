@@ -1,7 +1,7 @@
 import config from '~/config';
 
 // Layouts
-import { HeaderOnly } from '~/layouts';
+import { AdminLayout } from '~/layouts';
 
 // Pages
 import Home from '~/pages/Home/Home';
@@ -46,7 +46,7 @@ const publicRoutes = [
 ];
 
 const privateRoutes = [
-    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: null },
+    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: AdminLayout },
 
     {
         path: config.routes.moddashboard,
@@ -99,13 +99,12 @@ const privateRoutes = [
 
     { path: config.routes.order, component: Order, roles: ['cus', 'mod'] },
     { path: config.routes.profile, component: Profile, roles: ['admin', 'cus', 'mod'] },
-    { path: config.routes.address, component: Address, layout: HeaderOnly, roles: ['cus', 'mod'] },
+    { path: config.routes.address, component: Address, roles: ['cus', 'mod'] },
     { path: config.routes.checkout, component: Checkout, roles: ['cus', 'mod'] },
     { path: '/cart-detail', component: CartDetail, roles: ['cus', 'mod'] },
     { path: '/order-success/:orderId?', component: OrderSuccess, roles: ['cus', 'mod'] },
     { path: '/payment-return', component: PaymentReturn, roles: ['cus', 'mod'] },
     { path: '/orders/:orderId', component: OrderDetail, roles: ['cus', 'mod'] },
-
 ];
 
 export { publicRoutes, privateRoutes };

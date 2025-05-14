@@ -149,21 +149,6 @@ function AdminDashboard() {
             <div className={cx('title')}>
                 <h2>Danh sách người dùng</h2>
             </div>
-            <div className={cx('actions')}>
-                {userData && (
-                    <Tippy
-                        content={
-                            <button className={cx('logout-button')} onClick={handleLogout}>
-                                <FontAwesomeIcon icon={faSignOutAlt} /> Đăng xuất
-                            </button>
-                        }
-                        interactive={true}
-                        placement="bottom-end"
-                    >
-                        <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />
-                    </Tippy>
-                )}
-            </div>
 
             {error && !isEditing && <p className={cx('error')}>{error}</p>}
 

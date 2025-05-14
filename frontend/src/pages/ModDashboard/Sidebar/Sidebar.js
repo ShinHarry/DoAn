@@ -1,7 +1,7 @@
 import classNames from 'classnames/bind';
 import styles from './Sidebar.module.scss';
 import Menu, { MenuItem } from './Menu';
-import { UserGroupIcon, UserGroupActiveIcon, FileIcon, LocationIcon } from '~/components/Icons';
+import { UserGroupIcon, BannerIcon, FileIcon, LocationIc, VoucherIcon, HomeIcon, OriginIcon } from '~/components/Icons';
 import { jwtDecode } from 'jwt-decode';
 
 const cx = classNames.bind(styles);
@@ -30,9 +30,9 @@ function Sidebar() {
                     title="Danh sách sản phẩm"
                     to={'productlist'}
                     icon={<UserGroupIcon />}
-                    activeIcon={<UserGroupActiveIcon />}
+                    activeIcon={<UserGroupIcon />}
                 />
-                <MenuItem
+                {/* <MenuItem
                     title="Sổ địa chỉ"
                     to={`/profile/${userId}/address`}
                     icon={<LocationIcon />}
@@ -43,31 +43,11 @@ function Sidebar() {
                     to={`/profile/${userId}/changepassword`}
                     icon={<FileIcon />}
                     activeIcon={<FileIcon />}
-                />
-                <MenuItem
-                    title="Banner quảng cáo"
-                    to={'news'}
-                    icon={<FileIcon />}
-                    activeIcon={<FileIcon />}
-                />
-                <MenuItem
-                    title="Khuyến mãi"
-                    to={'sales'}
-                    icon={<FileIcon />}
-                    activeIcon={<FileIcon />}
-                />
-                <MenuItem
-                    title="Hãng sản xuất"
-                    to={'manufacturers'}
-                    icon={<FileIcon />}
-                    activeIcon={<FileIcon />}
-                />
-                <MenuItem
-                    title="Nơi xuất xứ"
-                    to={'origins'}
-                    icon={<FileIcon />}
-                    activeIcon={<FileIcon />}
-                />
+                /> */}
+                <MenuItem title="Banner quảng cáo" to={'news'} icon={<BannerIcon />} activeIcon={<BannerIcon />} />
+                <MenuItem title="Khuyến mãi" to={'sales'} icon={<VoucherIcon />} activeIcon={<VoucherIcon />} />
+                <MenuItem title="Hãng sản xuất" to={'manufacturers'} icon={<HomeIcon />} activeIcon={<HomeIcon />} />
+                <MenuItem title="Nơi xuất xứ" to={'origins'} icon={<OriginIcon />} activeIcon={<OriginIcon />} />
             </Menu>
         </aside>
     );

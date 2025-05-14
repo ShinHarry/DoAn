@@ -1,10 +1,14 @@
 .wrapper {
-  display: flex;
-  height: 100vh; // toàn bộ chiều cao màn hình
+    display: flex;
+    height: 100vh;
 }
 
 .container {
-  flex: 1; // Phần này sẽ chiếm hết không gian còn lại sau sidebar
-  padding: 20px;
-  overflow-y: auto;
+    flex: 1;
+    padding: 20px;
+    // overflow-y: auto;
+}
+.title {
+    display: flex;
+    justify-content: center;
 }

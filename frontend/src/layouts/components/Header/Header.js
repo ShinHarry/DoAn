@@ -25,7 +25,7 @@ import Button from '~/components/Button';
 import styles from './Header.module.scss';
 import images from '~/assets/images';
 import Menu from '~/components/Popper/Menu';
-import { InboxIcon, CartIcons, BarsIcon, ComponentElectronicIcon } from '~/components/Icons';
+import { CartIcons, BarsIcon, ComponentElectronicIcon } from '~/components/Icons';
 import Image from '~/components/Image';
 import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
@@ -157,12 +157,12 @@ function Header() {
         );
     };
 
-    const showDrawerMessage = (title, message, type) => {
-        const event = new CustomEvent('showDrawerNotification', {
-            detail: { title, message, type },
-        });
-        window.dispatchEvent(event);
-    };
+    // const showDrawerMessage = (title, message, type) => {
+    //     const event = new CustomEvent('showDrawerNotification', {
+    //         detail: { title, message, type },
+    //     });
+    //     window.dispatchEvent(event);
+    // };
 
     // hàm xóa sản phẩm khỏi giỏ
     const handleDeleteItem = async (id) => {
@@ -337,25 +337,31 @@ function Header() {
             title: 'Khuyến mãi',
             to: '/sales',
         },
+        {
+            icon: <FontAwesomeIcon icon={faSignOutAlt} />,
+            title: 'Đăng xuất',
+            separate: true,
+            onClick: handleLogout,
+        },
     ];
-    console.log('userData', userData);
+    console.log('userData: ', userData?.role !== 'mod' ? 'cus' : userData?.role);
     return (
         <header className={cx('wrapper')}>
             {!error && !loading ? (
                 <div className={cx('loading')}>Loading...</div>
             ) : (
                 <div className={cx('inner')}>
-                    {!userLoading && userData?.role === 'cus' && (
+                    {!userLoading && userData?.role !== 'mod' && (
                         <Link to={config.routes.home} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
                     {!userLoading && userData?.role === 'mod' && (
-                        <Link to={config.routes.moddashboard} className={cx('logo-link')}>
+                        <Link to={`${config.routes.moddashboard}/productlist`} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {!userLoading && userData?.role === 'cus' && (
+                    {!userLoading && userData?.role !== 'mod' && (
                         <>
                             <Menu items={MENU_ITEMS}>
                                 <button className={cx('action-btn')}>
@@ -382,7 +388,7 @@ function Header() {
                                 {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
-                        {!userLoading && userData?.role === 'cus' && (
+                        {!userLoading && userData?.role !== 'mod' && (
                             <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
                                 <button className={cx('action-btn')} onClick={handleOpenCart}>
                                     <CartIcons />

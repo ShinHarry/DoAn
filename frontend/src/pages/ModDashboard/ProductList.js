@@ -4,13 +4,17 @@ import * as productService from '~/services/productService';
 import * as categoryService from '~/services/categoryService';
 import * as originService from '~/services/originService';
 import * as manufacturerService from '~/services/manufacturerService';
-
-import classNames from 'classnames/bind';
-import { Link } from 'react-router-dom';
-import styles from './ProductList.module.scss';
 import config from '~/config';
 import Image from '~/components/Image';
+import * as productServices from '~/services/productService';
 
+import classNames from 'classnames/bind';
+import styles from './ProductList.module.scss';
+import { Link, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import Button from '~/components/Button';
 const cx = classNames.bind(styles);
 
 const ProductList = () => {
@@ -31,6 +35,8 @@ const ProductList = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(0);
     const [total, setTotal] = useState(0);
+
+    const navigate = useNavigate();
 
     const fetchCategories = async () => {
         try {
@@ -106,10 +112,34 @@ const ProductList = () => {
         fetchProducts();
     }, [fetchProducts]);
 
+    const handleDeleteProduct = async (productId) => {
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc chắn muốn xóa sản phẩm này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await productServices.deleteProductById(productId);
+            await Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa thành công.', 'success');
+            navigate('/moddashboard/productlist');
+        } catch (error) {
+            console.error('Lỗi khi xóa sản phẩm:', error);
+            Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
+        }
+    };
+
     return (
         <div className={cx('product-filter')}>
             {error && <div className={cx('error')}>{error}</div>}
-
+            <h1 className={cx('title')}>Danh sách sản phẩm</h1>
             <div className={cx('filter-bar')}>
                 <input
                     type="text"
@@ -165,7 +195,15 @@ const ProductList = () => {
                     ))}
                 </select>
             </div>
-
+            <div className={cx('btn-actions')}>
+                <Button
+                    className={cx('btn-add')}
+                    leftIcon={<FontAwesomeIcon icon={faPlus} />}
+                    onClick={() => navigate('/addProduct')}
+                >
+                    Thêm sản phẩm
+                </Button>
+            </div>
             <div className={cx('product-grid')}>
                 {loading ? (
                     <p>Đang tải sản phẩm...</p>
@@ -192,6 +230,17 @@ const ProductList = () => {
                                     <p>Đã bán: {product.productSoldQuantity}</p>
                                 </div>
                             </Link>
+                            <div className={cx('btn-actions')}>
+                                <button
+                                    className={cx('btn-edit')}
+                                    onClick={() => navigate(`/updateProduct/${product._id}`)}
+                                >
+                                    Sửa
+                                </button>
+                                <button className={cx('btn-delete')} onClick={() => handleDeleteProduct(product._id)}>
+                                    Xóa
+                                </button>
+                            </div>
                         </div>
                     ))
                 )}

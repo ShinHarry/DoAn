@@ -10,7 +10,6 @@ function ModDashboard() {
         <div className={cx('wrapper')}>
             <Sidebar />
             <div className={cx('container')}>
-                <h1 className={cx('title')}>Mod Dashboard</h1>
                 <Outlet />
             </div>
         </div>
