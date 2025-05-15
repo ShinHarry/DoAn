@@ -11,9 +11,11 @@ export const getNew = async () => {
 
 export const addNew = async (news) => {
     try {
-        console.log("cx vào đaya r", news);
-        return await httpRequest.post('/news', news, 
-    );
+        return await httpRequest.post('/news', news, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
     } catch (err) {
         console.log(err);
         throw err;
@@ -39,7 +41,7 @@ export const getNewById = async (id) => {
     }
 };
 // Xóa sản phẩm
-export const deleteNewById= async (id) => {
+export const deleteNewById = async (id) => {
     try {
         return await httpRequest.del(`/news/${id}`);
     } catch (err) {

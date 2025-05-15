@@ -4,9 +4,14 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const { uploadUser } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
+const dotenv = require("dotenv");
+const bcrypt = require("bcrypt");
 
+dotenv.config();
+
+const BASE_URL = process.env.BASE_URL;
 // Get user by ID
-router.get("/:userId", async (req, res) => {
+router.get("/:userId", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -32,7 +37,7 @@ router.post("/", uploadUser.single("avatar"), async (req, res) => {
     } = req.body;
 
     const avatar = req.file
-      ? { link: `/public/user/${req.file.filename}`, alt: "User Avatar" }
+      ? { link: `/public/users/${req.file.filename}`, alt: "User Avatar" }
       : null;
     const user = new User({
       userName,
@@ -57,35 +62,104 @@ router.post("/", uploadUser.single("avatar"), async (req, res) => {
 });
 
 // Update user
-router.put("/:userId", async (req, res) => {
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.userId,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!updatedUser)
-      return res.status(404).json({ message: "User not found" });
-    res.json(updatedUser);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+// router.put("/:userId", async (req, res) => {
+//   try {
+//     const updatedUser = await User.findByIdAndUpdate(
+//       req.params.userId,
+//       req.body,
+//       { new: true, runValidators: true }
+//     );
+//     if (!updatedUser)
+//       return res.status(404).json({ message: "User not found" });
+//     res.json(updatedUser);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
-// Delete user
-router.delete("/:userId", async (req, res) => {
-  try {
-    const deletedUser = await User.findByIdAndDelete(req.params.userId);
-    if (!deletedUser)
-      return res.status(404).json({ message: "User not found" });
-    res.json({ message: "User deleted successfully", deletedUser });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+router.put(
+  "/:userId",
+  verifyToken,
+  uploadUser.single("userAvatar"),
+  async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const {
+        userName,
+        userEmail,
+        userPhone,
+        userGender,
+        userAddress,
+        userBirthday,
+      } = req.body;
+
+      console.log("req.body", req.body);
+
+      // Kiểm tra xem user tồn tại hay chưa
+      const currentUser = await User.findById(userId);
+      if (!currentUser) {
+        return res.status(404).json({ message: "Người dùng không tồn tại" });
+      }
+
+      // Kiểm tra email hoặc phone đã tồn tại ở user khác
+      const duplicatedUser = await User.findOne({
+        $or: [{ userEmail: userEmail }, { userPhone: userPhone }],
+        _id: { $ne: userId },
+      });
+      if (duplicatedUser) {
+        return res
+          .status(400)
+          .json({ message: "Email hoặc số điện thoại đã tồn tại!" });
+      }
+
+      // Chuẩn bị dữ liệu cập nhật
+      const updatedData = {
+        userName,
+        userEmail: userEmail,
+        userPhone: userPhone,
+        userGender: userGender,
+        userAddress: userAddress,
+        userBirthday: userBirthday,
+      };
+
+      // Nếu có upload avatar thì cập nhật
+      if (req.file) {
+        updatedData.userAvatar = [
+          {
+            name: userName,
+            link: `${BASE_URL}public/users/${req.file.filename}`,
+          },
+        ];
+      }
+
+      // Thực hiện cập nhật
+      const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
+        new: true,
+      });
+
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Lỗi cập nhật người dùng:", error);
+      return res
+        .status(500)
+        .json({ message: "Đã xảy ra lỗi khi cập nhật người dùng" });
+    }
   }
-});
+);
+// Delete user
+// router.delete("/:userId", verifyToken, async (req, res) => {
+//   try {
+//     const deletedUser = await User.findByIdAndDelete(req.params.userId);
+//     if (!deletedUser)
+//       return res.status(404).json({ message: "User not found" });
+//     res.json({ message: "User deleted successfully", deletedUser });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 // GET /api/users/me/addresses
-router.get("/me/addresses", async (req, res) => {
+router.get("/me/addresses", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("userAddress"); // chỉ lấy addresses
     if (!user) {
@@ -238,4 +312,25 @@ router.put("/me/addresses", verifyToken, async (req, res) => {
   }
 });
 
+router.put("/:userId/change-password", verifyToken, async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại." });
+    }
+    const isMatch = await bcrypt.compare(oldPassword, user.userPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.userPassword = hashedPassword;
+    await user.save();
+    res.status(200).json({ message: "Đổi mật khẩu thành công." });
+  } catch (error) {
+    console.error("Lỗi đổi mật khẩu:", error);
+    res.status(500).json({ message: "Đã xảy ra lỗi khi đổi mật khẩu." });
+  }
+});
 module.exports = router;

@@ -1,13 +1,14 @@
 import config from '~/config';
 
 // Layouts
-import { AdminLayout } from '~/layouts';
 
 // Pages
 import Home from '~/pages/Home/Home';
 import Order from '~/pages/Order';
-import Profile from '~/pages/Profile';
-import Address from '~/pages/Address';
+import Profile from '~/pages/ProfileDashboard/Profile/Profile';
+// import Address from '~/pages/Address';
+import Address from '~/pages/ProfileDashboard/Address';
+
 import Search from '~/pages/Search';
 import ProductDetail from '~/pages/ProductDetail';
 import AddProduct from '~/pages/AddProduct';
@@ -28,12 +29,16 @@ import PaymentReturn from '~/pages/PaymentReturn/PaymentReturn';
 import OrderDetail from '~/pages/OrderDetail';
 
 import AdminDashboard from '~/pages/AdminDashboard';
+
 import ModDashboard from '~/pages/ModDashboard';
 import ProductList from '~/pages/ModDashboard/ProductList';
 import Banner from '~/pages/ModDashboard/Banner';
 import Sale from '~/pages/ModDashboard/Sale';
 import Origin from '~/pages/ModDashboard/Origin';
 import Manufacturer from '~/pages/ModDashboard/Manufacturer';
+
+import ProfileDashboard from '~/pages/ProfileDashboard';
+import ChangePassWord from '~/pages/ProfileDashboard/ChangePassWord';
 // Public routes
 const publicRoutes = [
     { path: config.routes.login, component: Login, layout: null },
@@ -46,7 +51,7 @@ const publicRoutes = [
 ];
 
 const privateRoutes = [
-    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: AdminLayout },
+    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'] },
 
     {
         path: config.routes.moddashboard,
@@ -88,17 +93,45 @@ const privateRoutes = [
 
     { path: config.routes.addProduct, component: AddProduct, roles: ['mod'] },
     { path: config.routes.updateProduct, component: UpdateProduct, roles: ['mod'] },
-    // { path: config.routes.news, component: Banner, roles: ['mod'] },
+
+    { path: config.routes.news, component: Banner, roles: ['mod'] },
     { path: config.routes.addNew, component: AddBanner, roles: ['mod'] },
     { path: config.routes.updateNew, component: UpdateBanner, roles: ['mod'] },
-    // { path: config.routes.sales, component: Sale, roles: ['mod'] },
+
+    { path: config.routes.sales, component: Sale, roles: ['mod'] },
     { path: config.routes.addSale, component: AddSale, roles: ['mod'] },
     { path: config.routes.updateSale, component: UpdateSale, roles: ['mod'] },
-    // { path: '/origins', component: Origin , roles: ['mod']},
-    // { path: '/manufacturers', component: Manufacturer, roles: ['mod'] },
 
+    { path: '/origins', component: Origin, roles: ['mod'] },
+    { path: '/manufacturers', component: Manufacturer, roles: ['mod'] },
+
+    // { path: config.routes.profile, component: Profile, roles: ['admin', 'cus', 'mod'] },
+    {
+        path: config.routes.profiledashboard,
+        component: ProfileDashboard,
+        roles: ['admin', 'cus', 'mod'],
+        children: [
+            {
+                path: config.routes.profile,
+                component: Profile,
+                roles: ['admin', 'cus', 'mod'],
+                layout: null,
+            },
+            {
+                path: config.routes.address,
+                component: Address,
+                roles: ['admin', 'cus', 'mod'],
+                layout: null,
+            },
+            {
+                path: config.routes.changepassWord,
+                component: ChangePassWord,
+                roles: ['admin', 'cus', 'mod'],
+                layout: null,
+            },
+        ],
+    },
     { path: config.routes.order, component: Order, roles: ['cus', 'mod'] },
-    { path: config.routes.profile, component: Profile, roles: ['admin', 'cus', 'mod'] },
     { path: config.routes.address, component: Address, roles: ['cus', 'mod'] },
     { path: config.routes.checkout, component: Checkout, roles: ['cus', 'mod'] },
     { path: '/cart-detail', component: CartDetail, roles: ['cus', 'mod'] },

@@ -8,8 +8,11 @@ import * as unitService from '~/services/unitService';
 import { useNavigate } from 'react-router-dom';
 import styles from './AddProduct.module.scss';
 import classNames from 'classnames/bind';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(styles);
+
 function AddProduct() {
     const navigate = useNavigate();
     const [product, setProduct] = useState({
@@ -28,53 +31,31 @@ function AddProduct() {
     });
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
     const [categories, setCategories] = useState([]);
     const [units, setUnits] = useState([]);
     const [manufacturers, setManufacturers] = useState([]);
     const [origins, setOrigins] = useState([]);
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchAll = async () => {
             try {
-                const categoryData = await categoryService.getCategories();
+                const [categoryData, manufacturerData, originData, unitData] = await Promise.all([
+                    categoryService.getCategories(),
+                    manufacturerService.getManufacturer(),
+                    originService.getOrigin(),
+                    unitService.getUnit(),
+                ]);
                 setCategories(categoryData);
-            } catch (error) {
-                setError('Không thể tải danh mục. Vui lòng thử lại.');
-            }
-        };
-
-        const fetchManufacturer = async () => {
-            try {
-                const manufacturerData = await manufacturerService.getManufacturer();
                 setManufacturers(manufacturerData);
-            } catch (error) {
-                setError('Không thể tải nhà sản xuất. Vui lòng thử lại.');
-            }
-        };
-
-        const fetchOrigin = async () => {
-            try {
-                const originData = await originService.getOrigin();
                 setOrigins(originData);
-            } catch (error) {
-                setError('Không thể tải xuất xứ. Vui lòng thử lại.');
-            }
-        };
-
-        const fetchUnit = async () => {
-            try {
-                const unitData = await unitService.getUnit();
                 setUnits(unitData);
             } catch (error) {
-                setError('Không thể tải đơn vị. Vui lòng thử lại.');
+                toast.error('Lỗi khi tải dữ liệu. Vui lòng thử lại!', {
+                    position: 'top-center',
+                });
             }
         };
-
-        fetchCategories();
-        fetchManufacturer();
-        fetchOrigin();
-        fetchUnit();
+        fetchAll();
     }, []);
 
     const formatCurrency = (value) => {
@@ -82,28 +63,26 @@ function AddProduct() {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
 
-    const parseCurrency = (value) => {
-        return value.replace(/\./g, '');
-    };
+    const parseCurrency = (value) => value.replace(/\./g, '');
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
 
         if (name === 'productImgs') {
-            setProduct((prevProduct) => ({
-                ...prevProduct,
+            setProduct((prev) => ({
+                ...prev,
                 productImgs: Array.from(files),
             }));
         } else if (name === 'productUnitPrice' || name === 'productSupPrice') {
             const numericValue = parseCurrency(value);
             if (!/^\d*$/.test(numericValue)) return;
-            setProduct((prevProduct) => ({
-                ...prevProduct,
+            setProduct((prev) => ({
+                ...prev,
                 [name]: numericValue,
             }));
         } else {
-            setProduct((prevProduct) => ({
-                ...prevProduct,
+            setProduct((prev) => ({
+                ...prev,
                 [name]: value,
             }));
         }
@@ -111,33 +90,33 @@ function AddProduct() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(product);
         setLoading(true);
-        setError('');
 
         try {
             const formData = new FormData();
-            formData.append('productName', product.productName);
-            formData.append('productUnitPrice', product.productUnitPrice);
-            formData.append('productSupPrice', product.productSupPrice);
-            formData.append('productQuantity', product.productQuantity);
-            formData.append('productWarranty', product.productWarranty);
-            formData.append('productCategory', product.productCategory);
-            formData.append('productUnit', product.productUnit);
-            formData.append('productManufacturer', product.productManufacturer);
-            formData.append('productOrigin', product.productOrigin);
-            formData.append('productDescription', product.productDescription);
+            for (let key in product) {
+                if (key === 'productImgs') {
+                    product.productImgs.forEach((img) => formData.append('productImgs', img));
+                } else {
+                    formData.append(key, product[key]);
+                }
+            }
 
-            product.productImgs.forEach((img) => {
-                formData.append('productImgs', img);
-            });
             await productService.addProduct(formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            alert('Thêm sản phẩm thành công!');
-            navigate('/');
+
+            toast.success('Thêm sản phẩm thành công!', {
+                position: 'top-center',
+            });
+
+            setTimeout(() => {
+                navigate('/');
+            }, 1500);
         } catch (err) {
-            setError('Có lỗi xảy ra khi thêm sản phẩm. Vui lòng thử lại.');
+            toast.error('Có lỗi xảy ra khi thêm sản phẩm. Vui lòng thử lại.', {
+                position: 'top-center',
+            });
         } finally {
             setLoading(false);
         }
@@ -145,8 +124,8 @@ function AddProduct() {
 
     return (
         <div className={cx('wrapper')}>
+            <ToastContainer />
             <h2 className={cx('heading')}>Thêm Sản Phẩm Mới</h2>
-            {error && <p className={cx('error-message')}>{error}</p>}
 
             <form onSubmit={handleSubmit} className={cx('form')}>
                 <div className={cx('form-group')}>

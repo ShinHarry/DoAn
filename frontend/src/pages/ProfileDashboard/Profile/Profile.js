@@ -49,6 +49,9 @@ function Profile() {
                     userAvatar: files[0],
                 }));
             }
+        } else if (name === 'userPhone') {
+            const onlyNumbers = value.replace(/\D/g, '');
+            setEditedUser((prev) => ({ ...prev, [name]: onlyNumbers }));
         } else {
             setEditedUser((prevUser) => ({
                 ...prevUser,
@@ -76,7 +79,6 @@ function Profile() {
             if (editedUser.userAvatar) {
                 formData.append('userAvatar', editedUser.userAvatar);
             }
-
             const updatedUser = await userService.updateUserById(userId, formData);
             setUser(updatedUser);
             setIsEditing(false);
@@ -113,7 +115,6 @@ function Profile() {
                 <div className={cx('user-avatar')}>
                     <Image src={user.userAvatar?.[0]?.link || ''} alt={user.userAvatar?.[0]?.alt || 'Avatar'} />
                 </div>
-
                 <div className={cx('user-details')}>
                     {isEditing ? (
                         <>
@@ -151,6 +152,7 @@ function Profile() {
                                     name="userPhone"
                                     value={editedUser.userPhone || ''}
                                     onChange={handleChange}
+                                    maxLength={10}
                                     className={cx('input')}
                                 />
                             </div>
@@ -188,7 +190,7 @@ function Profile() {
                             {displayField('Tên', user.userName)}
                             {displayField('Email', user.userEmail)}
                             {displayField('Tên tài khoản', user.userNameAccount)}
-                            {displayField('Số điện thoại', user.userPhone)}
+                            {displayField('Số điện thoại', user.userPhone ? `0${user.userPhone}` : 'Không có')}
                             {displayField(
                                 'Ngày sinh',
                                 user.userBirthday ? new Date(user.userBirthday).toLocaleDateString() : '',

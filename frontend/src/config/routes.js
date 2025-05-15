@@ -1,10 +1,16 @@
 const routes = {
     admindashboard: '/admindashboard',
+
     moddashboard: '/moddashboard',
+
+    profiledashboard: '/profiledashboard',
+    profile: 'profile/:userId',
+    address: 'profile/me/address',
+    changepassWord: 'profile/:userId/changepassword',
+
     home: '/',
     search: '/search',
     product: '/product',
-    profile: '/profile/:userId',
     productDetail: '/product/:productId',
     updateProduct: '/updateProduct/:productId',
     addProduct: '/addProduct',
@@ -14,7 +20,6 @@ const routes = {
     admin: '/admin',
     login: '/login',
     order: '/orders',
-    address: '/address',
     category: '/category/:categoryId',
     register: '/register',
     news: '/news',
@@ -24,7 +29,6 @@ const routes = {
     updateSale: '/updateSale/:saleId',
     addSale: '/addSale',
     forgotpassword: '/forgot-password',
-    checkout: '/checkout',
 };
 
 export default routes;
