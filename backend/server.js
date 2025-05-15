@@ -20,6 +20,7 @@ const RouterSale = require("./routes/routerSale");
 const paymentMethodRouter = require("./routes/routerPaymentMethod");
 const orderRouter = require("./routes/routerOrder");
 const paymentRouter = require("./routes/routerPayment");
+const statisticsRouter = require("./routes/routerStatistics");
 
 const routerAdmin = require("./routes/routerAdmin");
 
@@ -50,6 +51,7 @@ app.use("/api/sales", verifyToken, RouterSale);
 app.use("/api/", verifyToken, paymentMethodRouter);
 app.use("/api/orders", verifyToken, orderRouter);
 app.use("/api/payments", paymentRouter);
+app.use("/api/statistics", statisticsRouter);
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 

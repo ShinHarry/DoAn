@@ -1,7 +1,7 @@
 import config from '~/config';
 
 // Layouts
-import { AdminLayout } from '~/layouts';
+import { HeaderOnly } from '~/layouts';
 
 // Pages
 import Home from '~/pages/Home/Home';
@@ -26,7 +26,6 @@ import CartDetail from '~/pages/CartDetail/CartDetail';
 import OrderSuccess from '~/pages/OrderSuccess/OrderSuccess';
 import PaymentReturn from '~/pages/PaymentReturn/PaymentReturn';
 import OrderDetail from '~/pages/OrderDetail';
-
 import AdminDashboard from '~/pages/AdminDashboard';
 import ModDashboard from '~/pages/ModDashboard';
 import ProductList from '~/pages/ModDashboard/ProductList';
@@ -34,6 +33,7 @@ import Banner from '~/pages/ModDashboard/Banner';
 import Sale from '~/pages/ModDashboard/Sale';
 import Origin from '~/pages/ModDashboard/Origin';
 import Manufacturer from '~/pages/ModDashboard/Manufacturer';
+import Statistics from '~/pages/ModDashboard/Statistics';
 // Public routes
 const publicRoutes = [
     { path: config.routes.login, component: Login, layout: null },
@@ -46,7 +46,7 @@ const publicRoutes = [
 ];
 
 const privateRoutes = [
-    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: AdminLayout },
+    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: null },
 
     {
         path: config.routes.moddashboard,
@@ -83,6 +83,12 @@ const privateRoutes = [
                 roles: ['mod'],
                 layout: null,
             },
+            {
+                path: 'statistics',
+                component: Statistics,
+                roles: ['mod'],
+                layout: null,
+            },
         ],
     },
 
@@ -99,12 +105,13 @@ const privateRoutes = [
 
     { path: config.routes.order, component: Order, roles: ['cus', 'mod'] },
     { path: config.routes.profile, component: Profile, roles: ['admin', 'cus', 'mod'] },
-    { path: config.routes.address, component: Address, roles: ['cus', 'mod'] },
+    { path: config.routes.address, component: Address, layout: HeaderOnly, roles: ['cus', 'mod'] },
     { path: config.routes.checkout, component: Checkout, roles: ['cus', 'mod'] },
     { path: '/cart-detail', component: CartDetail, roles: ['cus', 'mod'] },
     { path: '/order-success/:orderId?', component: OrderSuccess, roles: ['cus', 'mod'] },
     { path: '/payment-return', component: PaymentReturn, roles: ['cus', 'mod'] },
     { path: '/orders/:orderId', component: OrderDetail, roles: ['cus', 'mod'] },
+
 ];
 
 export { publicRoutes, privateRoutes };
