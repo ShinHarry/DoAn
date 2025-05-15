@@ -411,7 +411,11 @@ function Header() {
                         {!userLoading && userData?.role === 'admin' && (
                             <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
                                 {currentUser && (
-                                    <Image className={cx('user-avatar')} src={avatar[0].link || ''} alt="Avatar User" />
+                                    <Image
+                                        className={cx('user-avatar')}
+                                        src={avatar[0]?.link || ''}
+                                        alt="Avatar User"
+                                    />
                                 )}
                             </Menu>
                         )}

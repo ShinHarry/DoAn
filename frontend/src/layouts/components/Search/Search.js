@@ -30,7 +30,12 @@ function Search() {
         }
         const fetchAPI = async () => {
             setLoading(true);
-            const result = await searchServices.search({ debouncedValue });
+            const result = await searchServices.search({
+                q: debouncedValue,
+                page: 1,
+                limit: 4,
+            });
+
             setSearchResult(result.products);
             setLoading(false);
         };
