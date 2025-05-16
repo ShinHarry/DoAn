@@ -69,7 +69,7 @@ router.post("/login", async (req, res) => {
       process.env.secret_token,
       { expiresIn: "1d" }
     );
-
+    console.log("avatar", user.userAvatar || "");
     res.status(200).json({
       message: "Đăng nhập thành công.",
       token,
@@ -79,6 +79,7 @@ router.post("/login", async (req, res) => {
         userEmail: user.userEmail,
         userNameAccount: user.userNameAccount,
         role: user.userRole,
+        avatar: user.userAvatar || "",
       },
     });
   } catch (err) {

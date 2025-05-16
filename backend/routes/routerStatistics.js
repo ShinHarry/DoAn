@@ -204,11 +204,11 @@ router.get('/products', async (req, res) => {
 
     const pipeline = [];
 
-    // Match stage for product-specific filters (like categoryId)
+    // Match stage cho categoryId
     const productMatchStage = {};
 
-    // Giai đoạn 1: Lấy tất cả sản phẩm và thông tin cần thiết (số lượng tồn kho)
-    // If filtering by a specific category when groupBy is 'product'
+    // 1: Lấy tất cả sản phẩm và thông tin cần thiết (số lượng tồn kho)
+    // lọc theo một danh mục khi groupBy là 'product'
     if (groupBy === 'product' && categoryId) {
         if (!mongoose.Types.ObjectId.isValid(categoryId)) {
             return res.status(400).json({ message: "Định dạng categoryId không hợp lệ." });
@@ -217,17 +217,17 @@ router.get('/products', async (req, res) => {
     }
     
     pipeline.push({
-        $lookup: {
-            from: Product.collection.name,
+        $lookup: {  //giống sql join
+            from: Product.collection.name, //products
             localField: "_id", 
-            foreignField: "_id", 
-            as: "productInfo"
+            foreignField: "_id", // _id products
+            as: "productInfo"   
         }
     }, {
-        $unwind: "$productInfo"
+        $unwind: "$productInfo"  //array -> object
     });
 
-    // Apply productMatchStage after unwinding productInfo
+    // áp dụng productMatchStage sau khi unwinding productInfo
     if (Object.keys(productMatchStage).length > 0) {
         pipeline.push({ $match: productMatchStage });
     }
@@ -239,11 +239,11 @@ router.get('/products', async (req, res) => {
             pipeline: [
                 { $match: { 
                     paymentStatus: 'completed', 
-                    $expr: { 
+                    $expr: {   // phép so sánh 2 trường trong 2 collection
                         $in: ["$$productId", "$orderDetails.product"] 
                     }
                 } },
-                { $unwind: "$orderDetails" },
+                { $unwind: "$orderDetails" },  // bóc mảng thành nhiều document con
                 { $match: { $expr: { $eq: ["$$productId", "$orderDetails.product"] } } },
                 {
                     $group: {
@@ -257,19 +257,39 @@ router.get('/products', async (req, res) => {
         }
     }, {
         $addFields: {
-            soldQuantity: { $ifNull: [ { $arrayElemAt: ["$orderStats.soldQuantity", 0] }, 0 ] },
+            soldQuantity: { $ifNull: [ { $arrayElemAt: ["$orderStats.soldQuantity", 0] }, 0 ] }, // nếu null thì gán 0
             totalRevenue: { $ifNull: [ { $arrayElemAt: ["$orderStats.totalRevenueFromProduct", 0] }, 0 ] },
             quantityInStock: "$productInfo.productQuantity"
         }
     });
 
-    // Giai đoạn 2: Group by và tính toán
+    // {
+//   "_id": ObjectId("P002"),
+//   "productInfo": {
+//     "productName": "Smartphone Y",
+//     "productQuantity": 100,
+//     "productCategory": ObjectId("C002")
+//      ...
+//   },
+//   "orderStats": [
+//     {
+//       "_id": ObjectId("P002"),
+//       "soldQuantity": 3,
+//       "totalRevenueFromProduct": 2400
+//     }
+//   ],
+//   "soldQuantity": 3,
+//   "totalRevenue": 2400,
+//   "quantityInStock": 100
+// }
+
+    //2: Group by và tính toán
     let groupStageId;
-    const projectStage = {
+    const projectStage = {  //output $project
         _id: 0,
-        name: "$_id.name", // Sẽ được điều chỉnh lại dựa trên groupBy
+        name: "$_id.name", //điều chỉnh lại dựa trên groupBy
         groupInfo: "$_id.info", // Thêm cho category/manufacturer name
-        quantityInStock: { $sum: "$quantityInStock" }, // Sum quantity if grouping by category/manufacturer
+        quantityInStock: { $sum: "$quantityInStock" },
         soldQuantity: { $sum: "$soldQuantity" },
         totalRevenue: { $sum: "$totalRevenue" },
     };
@@ -296,7 +316,7 @@ router.get('/products', async (req, res) => {
                 name: "$_id.name",
                 category: { $ifNull: [ { $arrayElemAt: ["$categoryInfo.nameCategory", 0] }, "N/A"] },
                 manufacturer: { $ifNull: [ { $arrayElemAt: ["$manufacturerInfo.nameManufacturer", 0] }, "N/A"] },
-                quantityInStock: 1,
+                quantityInStock: 1, //Giữ nguyên trường quantityInStock từ document hiện tại === "$quantityInStock"
                 soldQuantity: 1,
                 totalRevenue: 1
             }
@@ -305,8 +325,8 @@ router.get('/products', async (req, res) => {
         pipeline.push({
             $lookup: { from: 'categories', localField: 'productInfo.productCategory', foreignField: '_id', as: 'categoryData' }
         }, {
-            $unwind: { path: "$categoryData", preserveNullAndEmptyArrays: true }
-        });
+            $unwind: { path: "$categoryData", preserveNullAndEmptyArrays: true } //nếu không có danh mục → giữ document, không bỏ
+        }); 
         groupStageId = { name: { $ifNull: ["$categoryData.nameCategory", "Không có danh mục"] }, id: "$categoryData._id" };
         projectStage.name = "$_id.name";
         pipeline.push({
@@ -315,7 +335,7 @@ router.get('/products', async (req, res) => {
                 quantityInStock: { $sum: "$quantityInStock" },
                 soldQuantity: { $sum: "$soldQuantity" },
                 totalRevenue: { $sum: "$totalRevenue" },
-                productCount: { $addToSet: "$productInfo._id" } 
+                productCount: { $addToSet: "$productInfo._id" } // thêm gtri nhưng ko trùng lặp
             }
         }, {
             $project: {
@@ -325,7 +345,7 @@ router.get('/products', async (req, res) => {
                 quantityInStock: 1,
                 soldQuantity: 1,
                 totalRevenue: 1,
-                productCount: { $size: "$productCount"}
+                productCount: { $size: "$productCount"} //lấy độ dài mảng
             }
         });
     } else if (groupBy === 'manufacturer') {
@@ -360,7 +380,7 @@ router.get('/products', async (req, res) => {
     // Giai đoạn 3: Sắp xếp
     if (sortBy) {
         const sortStage = {};
-        sortStage[sortBy] = sortOrderValue;
+        sortStage[sortBy] = sortOrderValue; // = sortStage = {[sortBy]: sortOrderValue}
         pipeline.push({ $sort: sortStage });
     }
 

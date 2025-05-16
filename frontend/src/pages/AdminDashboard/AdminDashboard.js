@@ -3,14 +3,10 @@ import styles from './AdminDashboard.module.scss';
 import { useState, useEffect } from 'react';
 import * as adminService from '~/services/adminService';
 import Image from '~/components/Image';
-import Tippy from '@tippyjs/react';
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const cx = classNames.bind(styles);
 
 function AdminDashboard() {
-    const [userData, setUserData] = useState(null);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -27,16 +23,6 @@ function AdminDashboard() {
     const [roleFilter, setRoleFilter] = useState('');
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-        if (storedUser) {
-            try {
-                setUserData(JSON.parse(storedUser));
-            } catch (error) {
-                console.error('Failed to parse user data from storage:', error);
-                localStorage.removeItem('user');
-                sessionStorage.removeItem('user');
-            }
-        }
         const fetchUsers = async () => {
             setLoading(true);
             try {
@@ -50,8 +36,6 @@ function AdminDashboard() {
         };
         fetchUsers();
     }, []);
-
-    const avatar = userData?.avatar;
 
     const handleUserClick = (user) => {
         setSelectedUser(user);
@@ -134,15 +118,6 @@ function AdminDashboard() {
             user._id.toLowerCase().includes(searchQuery.toLowerCase());
         return isRoleMatch && isSearchMatch;
     });
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
-        setUserData(null);
-        window.location.href = '/login';
-    };
 
     return (
         <div className={cx('wrapper')}>
@@ -230,7 +205,7 @@ function AdminDashboard() {
                                     />
                                 </div>
 
-                                {/* <div className={cx('form-group')}>
+                                <div className={cx('form-group')}>
                                     <label className={cx('label')}>Email: </label>
                                     <input
                                         type="email"
@@ -252,7 +227,7 @@ function AdminDashboard() {
                                         maxLength={10}
                                         className={cx('input')}
                                     />
-                                </div> */}
+                                </div>
 
                                 <div className={cx('form-group')}>
                                     <label className={cx('label')}>Trạng thái: </label>

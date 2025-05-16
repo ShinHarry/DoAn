@@ -112,7 +112,6 @@ function Header() {
         setCartError(null);
         try {
             const data = await cartService.getCart();
-            console.log('Dữ liệu cart từ server:', data);
             setCartItems(data.cart || []);
         } catch (error) {
             console.error('Lỗi lấy cart:', error);
@@ -296,7 +295,7 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faUser} />,
             title: 'Thông tin cá nhân',
-            to: `/profile/${userId}`,
+            to: `/profiledashboard/profile/${userId}`,
         },
         {
             icon: <FontAwesomeIcon icon={faBoxes} />,
@@ -320,7 +319,7 @@ function Header() {
         {
             icon: <FontAwesomeIcon icon={faUser} />,
             title: 'Thông tin cá nhân',
-            to: `/profile/${userId}`,
+            to: `/profiledashboard/profile/${userId}`,
         },
         {
             icon: <FontAwesomeIcon icon={faPlus} />,
@@ -344,14 +343,26 @@ function Header() {
             onClick: handleLogout,
         },
     ];
-    console.log('userData: ', userData?.role !== 'mod' ? 'cus' : userData?.role);
+    const adminMenu = [
+        {
+            icon: <FontAwesomeIcon icon={faUser} />,
+            title: 'Thông tin cá nhân',
+            to: `/profiledashboard/profile/${userId}`,
+        },
+        {
+            icon: <FontAwesomeIcon icon={faSignOutAlt} />,
+            title: 'Đăng xuất',
+            separate: true,
+            onClick: handleLogout,
+        },
+    ];
     return (
         <header className={cx('wrapper')}>
             {!error && !loading ? (
                 <div className={cx('loading')}>Loading...</div>
             ) : (
                 <div className={cx('inner')}>
-                    {!userLoading && userData?.role !== 'mod' && (
+                    {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
                         <Link to={config.routes.home} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
@@ -361,7 +372,12 @@ function Header() {
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {!userLoading && userData?.role !== 'mod' && (
+                    {!userLoading && userData?.role === 'admin' && (
+                        <Link to={`${config.routes.admindashboard}/productlist`} className={cx('logo-link')}>
+                            <img src={images.logo} alt="Logo" />
+                        </Link>
+                    )}
+                    {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
                         <>
                             <Menu items={MENU_ITEMS}>
                                 <button className={cx('action-btn')}>
@@ -380,15 +396,27 @@ function Header() {
                         )}
                         {!userLoading && userData?.role === 'cus' && (
                             <Menu items={currentUser ? userCusMenu : MENU_ITEMS}>
-                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
+                                {currentUser && (
+                                    <Image className={cx('user-avatar')} src={avatar[0].link || ''} alt="Avatar User" />
+                                )}
                             </Menu>
                         )}
                         {!userLoading && userData?.role === 'mod' && (
                             <Menu items={currentUser ? userModMenu : MENU_ITEMS}>
-                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
+                                {currentUser && (
+                                    <Image className={cx('user-avatar')} src={avatar[0].link || ''} alt="Avatar User" />
+                                )}
                             </Menu>
                         )}
-                        {!userLoading && userData?.role !== 'mod' && (
+                        {!userLoading && userData?.role === 'admin' && (
+                            <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
+                                {currentUser && (
+                                    <Image className={cx('user-avatar')} src={avatar[0].link || ''} alt="Avatar User" />
+                                )}
+                            </Menu>
+                        )}
+
+                        {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
                             <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
                                 <button className={cx('action-btn')} onClick={handleOpenCart}>
                                     <CartIcons />

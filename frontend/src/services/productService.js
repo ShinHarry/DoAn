@@ -43,7 +43,11 @@ export const getProducts = async ({
 
 export const addProduct = async (product) => {
     try {
-        return await httpRequest.post('/products', product);
+        return await httpRequest.post('/products', product, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
     } catch (err) {
         console.log(err);
         throw err;

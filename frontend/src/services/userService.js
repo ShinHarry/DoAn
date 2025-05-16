@@ -11,7 +11,12 @@ export const getUserById = async (userId) => {
 // Cập nhật user theo ID
 export const updateUserById = async (userId, user) => {
     try {
-        return await httpRequest.put(`/users/${userId}`, user);
+        console.log('user:', user);
+        return await httpRequest.put(`/users/${userId}`, user, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
     } catch (err) {
         console.log(err);
         throw err;
@@ -73,6 +78,17 @@ export const updateAddress = async (updatedData) => {
         return response;
     } catch (err) {
         console.error('Error deleting address:', err);
+        throw err;
+    }
+};
+
+export const changePassword = async (userId, passwordData) => {
+    try {
+        const response = await httpRequest.put(`/users/${userId}/change-password`, passwordData);
+        console.log('response:', response);
+        return response;
+    } catch (err) {
+        console.error('Error changing password:', err);
         throw err;
     }
 };

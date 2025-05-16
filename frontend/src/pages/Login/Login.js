@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login } from '~/redux/actions/authActions';
 import classNames from 'classnames/bind';
 import styles from './Login.module.scss';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(styles);
 
@@ -43,12 +45,26 @@ function Login() {
                     rememberMe,
                 }),
             );
-            alert('Đăng nhập thành công!');
+            toast.success('Đăng nhập thành công!', {
+                position: 'top-center',
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                draggable: true,
+            });
         } catch (err) {
             if (err.response?.data?.message) {
                 setError(err.response.data.message);
+                toast.error(err.response.data.message, {
+                    position: 'top-center',
+                    autoClose: 3000,
+                });
             } else {
                 setError('Đăng nhập thất bại, vui lòng thử lại.');
+                toast.error('Đăng nhập thất bại, vui lòng thử lại.', {
+                    position: 'top-center',
+                    autoClose: 3000,
+                });
             }
         }
     };
@@ -126,6 +142,8 @@ function Login() {
                     </button>
                 </div>
             </form>
+
+            <ToastContainer />
         </div>
     );
 }
