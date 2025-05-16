@@ -100,6 +100,25 @@ function Statistics() {
         fetchProducts();
     }, [productParams]);
 
+    //function xuất excel
+     const handleExportProducts = async () => {
+        try {
+            const response = await statisticsService.exportProductsToExcel(productParams);
+            // Xử lý file download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'product_statistics.xlsx'); // tải về file
+            document.body.appendChild(link); // thêm vào DOM
+            link.click(); // tự động click , trình duyệt sẽ tự tải file xuống ngay lập tức.
+            link.parentNode.removeChild(link); // xóa khỏi DOM
+            window.URL.revokeObjectURL(url);  //Giải phóng URL Blob vừa tạo, để trình duyệt giải phóng tài nguyên.
+        } catch (err) {
+            console.error("Lỗi xuất excel sản phẩm:", err);
+            alert("Không thể xuất file Excel.");
+        }
+    };
+
     //function format tiền 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -209,9 +228,9 @@ function Statistics() {
                         <h2 className={cx('cardTitle')}>
                             <FaBox className={cx('titleIcon')} /> Thống kê Sản phẩm
                         </h2>
-                        {/* <button onClick={handleExportProducts} className={cx('exportButton')}>
+                        <button onClick={handleExportProducts} className={cx('exportButton')}>
                             <FaDownload className={cx('buttonIcon')} /> Xuất Excel
-                        </button> */}
+                        </button>
                     </div>
                     <div className={cx('filtersContainer')}>
                         <div className={cx('filterGroup')}>

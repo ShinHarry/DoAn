@@ -119,7 +119,7 @@ import Image from '~/components/Image';
 import classNames from 'classnames/bind';
 import styles from './Home.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
-import Banner from '../ModDashboard/Banner';
+import Banner from '~/layouts/components/BannerImage';
 const cx = classNames.bind(styles);
 
 const Home = () => {

@@ -18,6 +18,7 @@ function BannerImage() {
         const fetchNews = async () => {
             try {
                 const response = await newService.getNew();
+                console.log(response);
                 setNews(response);
             } catch (error) {
                 console.error(error);
@@ -28,19 +29,17 @@ function BannerImage() {
     }, []);
    
     return (
-        <div className={cx('slide')}>
             <div className={cx('container')}>
                 <Swiper spaceBetween={30}
                         centeredSlides={true}
                         autoplay={{
                         delay: 3000,
-                        disableOnInteraction: false,
+                        disableOnInteraction: true,
                         }}
-                        pagination={{
+                        pagination={{   //dot
                         clickable: true,
                         }}
-                        navigation={true}
-                        modules={[Autoplay, Pagination, Navigation]}
+                        modules={[Autoplay, Pagination, Navigation]} //Import các module cần dùng cho Swiper
                         className={cx('mySwiper')}>
                         
                         {news.map((item) => (
@@ -50,10 +49,8 @@ function BannerImage() {
                             </SwiperSlide>
                             )
                         ))}
-                        
                 </Swiper>
             </div>
-        </div>
     )
 }
 

@@ -61,7 +61,7 @@ function Banner() {
                     leftIcon={<FontAwesomeIcon icon={faPlus} />}
                     onClick={() => navigate('/addNew')}
                 >
-                    Thêm sản phẩm
+                    Thêm mới
                 </Button>
             </div>
             {error && <p>{error}</p>}

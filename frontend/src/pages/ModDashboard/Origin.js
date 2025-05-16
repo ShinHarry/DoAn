@@ -131,7 +131,7 @@ function Origin() {
                         setShowModal(true);
                     }}
                 >
-                    <FontAwesomeIcon icon={faPlus} /> Thêm hãng sản xuất
+                    <FontAwesomeIcon icon={faPlus} /> Thêm nơi xuất xứ
                 </Button>
             </div>
 

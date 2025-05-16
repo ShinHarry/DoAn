@@ -190,213 +190,239 @@ router.get('/categories', async (req, res) => {
     } 
 );
 
-router.get('/products', async (req, res) => {
-    const { groupBy, sortBy, sortOrder = 'desc', categoryId } = req.query; // Added categoryId
-    const sortOrderValue = sortOrder === 'asc' ? 1 : -1;
-
-    if (!['manufacturer', 'category', 'product'].includes(groupBy)) {
-        return res.status(400).json({ message: "Giá trị groupBy không hợp lệ. Chỉ chấp nhận 'manufacturer', 'category', 'product'." });
-    }
-
-    if (sortBy && !['soldQuantity', 'totalRevenue', 'quantityInStock', 'name'].includes(sortBy)) {
-        return res.status(400).json({ message: "Giá trị sortBy không hợp lệ." });
-    }
-
+function buildProductStatisticsPipeline({ groupBy, sortBy, sortOrder = 'desc', categoryId }) {
     const pipeline = [];
-
-    // Match stage cho categoryId
+    const sortOrderValue = sortOrder === 'asc' ? 1 : -1;
     const productMatchStage = {};
 
-    // 1: Lấy tất cả sản phẩm và thông tin cần thiết (số lượng tồn kho)
-    // lọc theo một danh mục khi groupBy là 'product'
     if (groupBy === 'product' && categoryId) {
         if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-            return res.status(400).json({ message: "Định dạng categoryId không hợp lệ." });
+            throw new Error("categoryId không hợp lệ.");
         }
         productMatchStage['productInfo.productCategory'] = new mongoose.Types.ObjectId(categoryId);
     }
-    
-    pipeline.push({
-        $lookup: {  //giống sql join
-            from: Product.collection.name, //products
-            localField: "_id", 
-            foreignField: "_id", // _id products
-            as: "productInfo"   
-        }
-    }, {
-        $unwind: "$productInfo"  //array -> object
-    });
 
-    // áp dụng productMatchStage sau khi unwinding productInfo
+    pipeline.push(
+        {
+            $lookup: {
+                from: Product.collection.name,
+                localField: "_id",
+                foreignField: "_id",
+                as: "productInfo"
+            }
+        },
+        { $unwind: "$productInfo" }
+    );
+
     if (Object.keys(productMatchStage).length > 0) {
         pipeline.push({ $match: productMatchStage });
     }
-    
-    pipeline.push({
-        $lookup: {
-            from: Order.collection.name,
-            let: { productId: "$productInfo._id" },
-            pipeline: [
-                { $match: { 
-                    paymentStatus: 'completed', 
-                    $expr: {   // phép so sánh 2 trường trong 2 collection
-                        $in: ["$$productId", "$orderDetails.product"] 
-                    }
-                } },
-                { $unwind: "$orderDetails" },  // bóc mảng thành nhiều document con
-                { $match: { $expr: { $eq: ["$$productId", "$orderDetails.product"] } } },
-                {
-                    $group: {
-                        _id: "$orderDetails.product",
-                        soldQuantity: { $sum: "$orderDetails.quantity" },
-                        totalRevenueFromProduct: { $sum: { $multiply: ["$orderDetails.quantity", "$orderDetails.unitPrice"] } }
-                    }
-                }
-            ],
-            as: "orderStats"
-        }
-    }, {
-        $addFields: {
-            soldQuantity: { $ifNull: [ { $arrayElemAt: ["$orderStats.soldQuantity", 0] }, 0 ] }, // nếu null thì gán 0
-            totalRevenue: { $ifNull: [ { $arrayElemAt: ["$orderStats.totalRevenueFromProduct", 0] }, 0 ] },
-            quantityInStock: "$productInfo.productQuantity"
-        }
-    });
 
-    // {
-//   "_id": ObjectId("P002"),
-//   "productInfo": {
-//     "productName": "Smartphone Y",
-//     "productQuantity": 100,
-//     "productCategory": ObjectId("C002")
-//      ...
-//   },
-//   "orderStats": [
-//     {
-//       "_id": ObjectId("P002"),
-//       "soldQuantity": 3,
-//       "totalRevenueFromProduct": 2400
-//     }
-//   ],
-//   "soldQuantity": 3,
-//   "totalRevenue": 2400,
-//   "quantityInStock": 100
-// }
+    pipeline.push(
+        {
+            $lookup: {
+                from: Order.collection.name,
+                let: { productId: "$productInfo._id" },
+                pipeline: [
+                    { $match: { paymentStatus: 'completed', $expr: { $in: ["$$productId", "$orderDetails.product"] } } },
+                    { $unwind: "$orderDetails" },
+                    { $match: { $expr: { $eq: ["$$productId", "$orderDetails.product"] } } },
+                    {
+                        $group: {
+                            _id: "$orderDetails.product",
+                            soldQuantity: { $sum: "$orderDetails.quantity" },
+                            totalRevenueFromProduct: { $sum: { $multiply: ["$orderDetails.quantity", "$orderDetails.unitPrice"] } }
+                        }
+                    }
+                ],
+                as: "orderStats"
+            }
+        },
+        {
+            $addFields: {
+                soldQuantity: { $ifNull: [{ $arrayElemAt: ["$orderStats.soldQuantity", 0] }, 0] },
+                totalRevenue: { $ifNull: [{ $arrayElemAt: ["$orderStats.totalRevenueFromProduct", 0] }, 0] },
+                quantityInStock: "$productInfo.productQuantity"
+            }
+        }
+    );
 
-    //2: Group by và tính toán
     let groupStageId;
-    const projectStage = {  //output $project
-        _id: 0,
-        name: "$_id.name", //điều chỉnh lại dựa trên groupBy
-        groupInfo: "$_id.info", // Thêm cho category/manufacturer name
-        quantityInStock: { $sum: "$quantityInStock" },
-        soldQuantity: { $sum: "$soldQuantity" },
-        totalRevenue: { $sum: "$totalRevenue" },
-    };
-
     if (groupBy === 'product') {
         groupStageId = { name: "$productInfo.productName", id: "$productInfo._id" };
-         pipeline.push({
-            $group: {
-                _id: groupStageId,
-                quantityInStock: { $first: "$quantityInStock" }, 
-                soldQuantity: { $first: "$soldQuantity" },
-                totalRevenue: { $first: "$totalRevenue" },
-                category: { $first: "$productInfo.productCategory"}, 
-                manufacturer: { $first: "$productInfo.productManufacturer"}, 
+        pipeline.push(
+            {
+                $group: {
+                    _id: groupStageId,
+                    quantityInStock: { $first: "$quantityInStock" },
+                    soldQuantity: { $first: "$soldQuantity" },
+                    totalRevenue: { $first: "$totalRevenue" },
+                    category: { $first: "$productInfo.productCategory" },
+                    manufacturer: { $first: "$productInfo.productManufacturer" },
+                }
+            },
+            {
+                $lookup: { from: 'categories', localField: 'category', foreignField: '_id', as: 'categoryInfo' }
+            },
+            {
+                $lookup: { from: 'manufacturers', localField: 'manufacturer', foreignField: '_id', as: 'manufacturerInfo' }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: "$_id.id",
+                    name: "$_id.name",
+                    category: { $ifNull: [{ $arrayElemAt: ["$categoryInfo.nameCategory", 0] }, "N/A"] },
+                    manufacturer: { $ifNull: [{ $arrayElemAt: ["$manufacturerInfo.nameManufacturer", 0] }, "N/A"] },
+                    quantityInStock: 1,
+                    soldQuantity: 1,
+                    totalRevenue: 1
+                }
             }
-        }, {
-            $lookup: { from: 'categories', localField: 'category', foreignField: '_id', as: 'categoryInfo' }
-        }, {
-            $lookup: { from: 'manufacturers', localField: 'manufacturer', foreignField: '_id', as: 'manufacturerInfo' }
-        }, {
-            $project: {
-                _id: 0,
-                id: "$_id.id",
-                name: "$_id.name",
-                category: { $ifNull: [ { $arrayElemAt: ["$categoryInfo.nameCategory", 0] }, "N/A"] },
-                manufacturer: { $ifNull: [ { $arrayElemAt: ["$manufacturerInfo.nameManufacturer", 0] }, "N/A"] },
-                quantityInStock: 1, //Giữ nguyên trường quantityInStock từ document hiện tại === "$quantityInStock"
-                soldQuantity: 1,
-                totalRevenue: 1
-            }
-        });
+        );
     } else if (groupBy === 'category') {
-        pipeline.push({
-            $lookup: { from: 'categories', localField: 'productInfo.productCategory', foreignField: '_id', as: 'categoryData' }
-        }, {
-            $unwind: { path: "$categoryData", preserveNullAndEmptyArrays: true } //nếu không có danh mục → giữ document, không bỏ
-        }); 
+        pipeline.push(
+            { $lookup: { from: 'categories', localField: 'productInfo.productCategory', foreignField: '_id', as: 'categoryData' } },
+            { $unwind: { path: "$categoryData", preserveNullAndEmptyArrays: true } }
+        );
         groupStageId = { name: { $ifNull: ["$categoryData.nameCategory", "Không có danh mục"] }, id: "$categoryData._id" };
-        projectStage.name = "$_id.name";
-        pipeline.push({
-            $group: {
-                _id: groupStageId,
-                quantityInStock: { $sum: "$quantityInStock" },
-                soldQuantity: { $sum: "$soldQuantity" },
-                totalRevenue: { $sum: "$totalRevenue" },
-                productCount: { $addToSet: "$productInfo._id" } // thêm gtri nhưng ko trùng lặp
+        pipeline.push(
+            {
+                $group: {
+                    _id: groupStageId,
+                    quantityInStock: { $sum: "$quantityInStock" },
+                    soldQuantity: { $sum: "$soldQuantity" },
+                    totalRevenue: { $sum: "$totalRevenue" },
+                    productCount: { $addToSet: "$productInfo._id" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: "$_id.id",
+                    name: "$_id.name",
+                    quantityInStock: 1,
+                    soldQuantity: 1,
+                    totalRevenue: 1,
+                    productCount: { $size: "$productCount" }
+                }
             }
-        }, {
-            $project: {
-                _id: 0,
-                id: "$_id.id",
-                name: "$_id.name",
-                quantityInStock: 1,
-                soldQuantity: 1,
-                totalRevenue: 1,
-                productCount: { $size: "$productCount"} //lấy độ dài mảng
-            }
-        });
+        );
     } else if (groupBy === 'manufacturer') {
-        pipeline.push({
-            $lookup: { from: 'manufacturers', localField: 'productInfo.productManufacturer', foreignField: '_id', as: 'manufacturerData' }
-        }, {
-            $unwind: { path: "$manufacturerData", preserveNullAndEmptyArrays: true }
-        });
+        pipeline.push(
+            { $lookup: { from: 'manufacturers', localField: 'productInfo.productManufacturer', foreignField: '_id', as: 'manufacturerData' } },
+            { $unwind: { path: "$manufacturerData", preserveNullAndEmptyArrays: true } }
+        );
         groupStageId = { name: { $ifNull: ["$manufacturerData.nameManufacturer", "Không có nhà sản xuất"] }, id: "$manufacturerData._id" };
-        projectStage.name = "$_id.name";
-        pipeline.push({
-            $group: {
-                _id: groupStageId,
-                quantityInStock: { $sum: "$quantityInStock" },
-                soldQuantity: { $sum: "$soldQuantity" },
-                totalRevenue: { $sum: "$totalRevenue" },
-                productCount: { $addToSet: "$productInfo._id" } 
+        pipeline.push(
+            {
+                $group: {
+                    _id: groupStageId,
+                    quantityInStock: { $sum: "$quantityInStock" },
+                    soldQuantity: { $sum: "$soldQuantity" },
+                    totalRevenue: { $sum: "$totalRevenue" },
+                    productCount: { $addToSet: "$productInfo._id" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: "$_id.id",
+                    name: "$_id.name",
+                    quantityInStock: 1,
+                    soldQuantity: 1,
+                    totalRevenue: 1,
+                    productCount: { $size: "$productCount" }
+                }
             }
-        }, {
-            $project: {
-                _id: 0,
-                id: "$_id.id",
-                name: "$_id.name",
-                quantityInStock: 1,
-                soldQuantity: 1,
-                totalRevenue: 1,
-                productCount: { $size: "$productCount"}
-            }
-        });
+        );
     }
-    
-    // Giai đoạn 3: Sắp xếp
+
     if (sortBy) {
         const sortStage = {};
-        sortStage[sortBy] = sortOrderValue; // = sortStage = {[sortBy]: sortOrderValue}
+        sortStage[sortBy] = sortOrderValue;
         pipeline.push({ $sort: sortStage });
     }
 
+    return pipeline;
+}
+
+router.get('/products', async (req, res) => {
     try {
-        // Chạy pipeline từ collection Product vì chúng ta muốn liệt kê tất cả sản phẩm
-        // ngay cả khi chúng chưa bán được hàng.
-        const results = await Product.aggregate(pipeline);
+        // Chạy pipeline từ collection Product vì muốn liệt kê tất cả sản phẩm
+        const { groupBy, sortBy, sortOrder, categoryId } = req.query;
+        const pipeline = buildProductStatisticsPipeline({ groupBy, sortBy, sortOrder, categoryId });
+        const results = await Product.aggregate(pipeline);        
         res.json({
             message: `Thống kê sản phẩm theo ${groupBy}, sắp xếp theo ${sortBy || 'mặc định'}`,
             data: results
         });
+        // console.log("Product statistics data:", results);
     } catch (error) {
         console.error("Error fetching product statistics:", error);
         res.status(500).json({ message: "Lỗi khi lấy thống kê sản phẩm", error: error.message });
     }
     }
 );
+
+// 4. Xuất file Excel ( cho sản phẩm: /api/dashboard/products/export)
+router.get('/products/export', async (req, res) => {
+    try {
+        const { groupBy, sortBy, sortOrder, categoryId } = req.query;
+        const pipeline = buildProductStatisticsPipeline({ groupBy, sortBy, sortOrder, categoryId });
+        const productData = await Product.aggregate(pipeline);
+        const cleanedData = productData.map(({ id, ...rest }) => rest);
+        console.log("Excel export data:", cleanedData);
+        // Tạo file Excel
+        const ExcelJS = require('exceljs');
+        const workbook = new ExcelJS.Workbook();  // tạo file exel
+        const worksheet = workbook.addWorksheet('ThongKeSanPham');  // tạo worksheet trong file excel
+
+        // Thêm header cho worksheet
+        let columns = [];
+        if (groupBy === 'product' || !groupBy) {
+            columns = [
+                { header: 'Tên Sản Phẩm', key: 'name', width: 30 },
+                { header: 'Danh Mục', key: 'category', width: 20 },
+                { header: 'Nhà Sản Xuất', key: 'manufacturer', width: 20 },
+                { header: 'SL Tồn', key: 'quantityInStock', width: 10 },
+                { header: 'Đã Bán', key: 'soldQuantity', width: 10 },
+                { header: 'Doanh Thu', key: 'totalRevenue', width: 15 },
+            ];
+        } else if (groupBy === 'category' || groupBy === 'manufacturer') {
+            columns = [
+                { header: groupBy === 'category' ? 'Tên Danh Mục' : 'Tên Nhà Sản Xuất', key: 'name', width: 30 },
+                { header: 'SL Sản Phẩm', key: 'productCount', width: 15 },
+                { header: 'Tổng SL Tồn', key: 'quantityInStock', width: 15 },
+                { header: 'Tổng Đã Bán', key: 'soldQuantity', width: 15 },
+                { header: 'Tổng Doanh Thu', key: 'totalRevenue', width: 20 },
+            ];
+        }
+        worksheet.columns = columns;  //gán danh sách cột vào worksheet
+
+        // Thêm dữ liệu
+        worksheet.addRows(cleanedData.map(item => {
+            let row = { name: item.name, quantityInStock: item.quantityInStock, soldQuantity: item.soldQuantity, totalRevenue: item.totalRevenue }; 
+            if (groupBy === 'product' || !groupBy) {
+                 row.category = item.category;
+                 row.manufacturer = item.manufacturer;
+            } else if (groupBy === 'category' || groupBy === 'manufacturer'){
+                row.productCount = item.productCount;
+            }
+            return row;
+        }));
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); 
+        //Giúp trình duyệt hiểu là file Excel, không phải HTML, JSON hay file văn bản.
+        res.setHeader('Content-Disposition', 'attachment; filename="ThongKeSanPham.xlsx"');  //báo trình duyệt tải file
+        await workbook.xlsx.write(res); //ghi nội dung file Excel vào res dạng binary
+        res.end(); // phản hồi kết thúc
+
+    } catch (error) {
+        console.error("Error exporting product statistics to Excel:", error);
+        res.status(500).json({ message: "Lỗi khi xuất file Excel thống kê sản phẩm", error: error.message });
+    }
+});
+
 
 module.exports = router;
