@@ -83,8 +83,11 @@
 }
 
 .chartContainer {
-  height: 400px;
+  height: 450px;
   position: relative;
+  display: flex;
+  justify-content: center; /* Canh giữa theo chiều ngang */
+  align-items: center;
 }
 
 .noData {

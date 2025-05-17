@@ -31,7 +31,7 @@ export const getCategoryList = () => {
     }
 }; 
 
-// 3. Xuất Excel (VD cho sản phẩm)
+// 3. Xuất Excel  (cho sản phẩm)
 export const exportProductsToExcel = (params) => {
     try {
         return httpRequest.default.get('statistics/products/export', { 
@@ -50,4 +50,28 @@ export const exportProductsToExcel = (params) => {
         console.log(err);
         throw err;
     }
+};
+
+// 4. Thống kê khách hàng
+export const getCustomerStatistics = (params) => {
+    // params: { sortBy, sortOrder }
+    return httpRequest.get('statistics/customers', { params });
+};
+
+// 5. Xuất Excel  (cho khách hàng)
+export const exportCustomersToExcel = (params) => {
+    try {
+        return httpRequest.default.get('statistics/customers/export', { 
+            params,
+            responseType: 'blob',
+        });    
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
+
+// 6. Thống kê trạng thái đơn hàng
+export const getOrderStatusStatistics = () => {
+    return httpRequest.get('statistics/orders/status');
 };

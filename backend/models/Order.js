@@ -31,7 +31,7 @@ const OrderSchema = new mongoose.Schema(
     discount :{ type: Number, required: true },
     orderStatus: {
       type: String,
-      enum: ["processing", "confirmed", "shipped", "completed", "cancelled"],
+      enum: ["processing", "confirmed", "shipped", "completed", "cancelled", "returned"],
       default: "pending",
     },
     paymentMethod: {
