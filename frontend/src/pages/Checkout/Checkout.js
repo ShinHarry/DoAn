@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { useEffect, useState, useCallback } from 'react';
 import classNames from 'classnames/bind';
 import Button from '~/components/Button';
@@ -16,6 +17,7 @@ const cx = classNames.bind(styles);
 
 function Checkout() {
     const navigate = useNavigate();
+    const cartItemsFromRedux = useSelector(state => state.cart.selectedCartItems);
     const [cartItems, setCartItems] = useState([]);
     const [discount, setDiscount] = useState([]);
     const [shippingMethod, setShippingMethod] = useState('standard');
@@ -77,19 +79,12 @@ function Checkout() {
     const fetchCart = useCallback(async () => {
         setError(null);
         try {
-            const data = await cartService.getCart();
-            // console.log("Cart data for checkout:", data);
-            if (!data.cart || data.cart.length === 0) {
-                toast.warning('Giỏ hàng của bạn đang trống. Không thể thanh toán.');
-                navigate('/');
-                return;
+           if (cartItemsFromRedux && cartItemsFromRedux.length > 0) {
+            setCartItems(cartItemsFromRedux);
+            const tempTotal = cartItemsFromRedux.reduce(
+                (sum, item) => sum + item.unitPrice * item.quantity, 0);
+            setTotal(tempTotal);
             }
-            setCartItems(data.cart || []);
-            // const tempTotal = (data.cart || []).reduce(
-            //     (sum, item) => sum + item.unitPrice * item.quantity,
-            //     0
-            // );
-            setTotal(data.totalPrice);
         } catch (err) {
             console.error('Error fetching cart for checkout:', err);
             setError('Không thể tải giỏ hàng. Vui lòng thử lại.');

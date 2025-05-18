@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { logout } from '~/redux/actions/authActions';
 import { FiHeart } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
+import { setSelectedCartItems } from '~/redux/slices/cartSlice';
 import {
     faKeyboard,
     faUser,
@@ -256,7 +257,10 @@ function Header() {
             toast.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
             return;
         }
+        dispatch(setSelectedCartItems(selectedItems)); // Gửi vào Redux
+        sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
         setOpenCartPanel(false);
+        navigate('/checkout');
     };
 
     const MENU_ITEMS = [
@@ -550,11 +554,9 @@ function Header() {
                                     Xem chi tiết
                                 </Button>
                             </Link>
-                            <Link to="/checkout" onClick={() => setOpenCartPanel(false)}>
                                 <Button className={cx('checkout-btn')} primary onClick={handleCheckout}>
                                     Thanh toán
                                 </Button>
-                            </Link>
                         </div>
                     )}
                 </div>

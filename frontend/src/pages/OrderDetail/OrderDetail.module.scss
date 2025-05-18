@@ -150,3 +150,17 @@ ul li p {
   }
 }
 
+.item-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+
+  img {
+      flex-shrink: 0;
+  }
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+}

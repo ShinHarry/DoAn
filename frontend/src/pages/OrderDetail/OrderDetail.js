@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import {Link, useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import * as orderService from '~/services/orderService';
 import { FiX } from 'react-icons/fi';
@@ -88,43 +88,33 @@ function OrderDetail() {
                 </button>
             </div>
 
-            <p>
-                <strong>Người đặt:</strong> {order.user}
-            </p>
-            <p>
-                <strong>Số điện thoại:</strong> {order.phone}
-            </p>
-            <p>
-                <strong>Địa chỉ:</strong> {order.address}
-            </p>
-            <p>
-                <strong>Ngày đặt:</strong> {new Date(order.createdAt).toLocaleString()}
-            </p>
-            <p>
-                <strong>Trạng thái đơn hàng:</strong> {order.orderStatus}
-            </p>
-            <p>
-                <strong>Tổng tiền:</strong> {order.totalAmount != null ? order.totalAmount.toLocaleString() : 'N/A'} VNĐ
-            </p>
-            <p>
-                <strong>Phương thức thanh toán:</strong> {order.paymentMethod}
-            </p>
-            <p>
-                <strong>Trạng thái thanh toán:</strong> {order.paymentStatus}
-            </p>
+            <p><strong>Người đặt:</strong> {order.name}</p>
+            <p><strong>Số điện thoại:</strong> {order.phone}</p> {/* Thêm trường phone */}
+            <p><strong>Địa chỉ:</strong> {order.address}</p>
+            <p><strong>Ngày đặt:</strong> {new Date(order.createdAt).toLocaleString()}</p>
+            <p><strong>Trạng thái đơn hàng:</strong> {order.orderStatus}</p>
+            <p><strong>Tạm tính:</strong> {order.subTotalPrice != null ? order.subTotalPrice.toLocaleString() : 'N/A'} VNĐ</p>
+            <p><strong>Giảm giá: -</strong> {order.discount != null ? order.discount.toLocaleString() : 'N/A'} VNĐ</p>
+            <p><strong>Phí ship:</strong> {order.shippingFee != null ? order.shippingFee.toLocaleString() : 'N/A'} VNĐ</p>
+            <p><strong>Tổng tiền:</strong> {order.totalAmount != null ? order.totalAmount.toLocaleString() : 'N/A'} VNĐ</p>
+            <p><strong>Phương thức thanh toán:</strong> {order.paymentMethod}</p>
+            <p><strong>Trạng thái thanh toán:</strong> {order.paymentStatus}</p>
 
             <h3>Sản phẩm:</h3>
             <ul>
-                {Array.isArray(order.items) &&
-                    order.items.map((item, idx) => (
-                        <li key={idx}>
+                {Array.isArray(order.items) && order.items.map((item, idx) => (
+                    
+                    <li key={idx} className={cx('item-row')}>
+                        <Link to={`/product/${item.productId}`}>
                             <img src={item.productImage} alt={item.productName} width={50} height={50} />
-                            <p>
-                                {item.productName} - SL: {item.quantity} - Giá: {item.unitPrice.toLocaleString()} VNĐ -
-                                Tổng: {(item.quantity * item.unitPrice).toLocaleString()} VNĐ
-                            </p>
-                        </li>
-                    ))}
+                        </Link>                  
+                        <div className={cx('item-info')}>
+                        <p>{item.productName} - SL: {item.quantity}</p>
+                        <p>Giá: {item.unitPrice.toLocaleString()} VNĐ - Tổng: {(item.quantity * item.unitPrice).toLocaleString()} VNĐ</p>
+                    </div>
+                </li>
+                
+                ))}
             </ul>
 
             {order.orderStatus === 'completed' && (

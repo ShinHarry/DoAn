@@ -149,7 +149,7 @@ const privateRoutes = [
             },
         ],
     },
-    { path: config.routes.order, component: Order, roles: ['cus', 'mod'] },
+    { path: config.routes.order, component: Order, roles: ['cus', 'mod'] ,layout: LayoutNoFooter },
     { path: config.routes.address, component: Address, roles: ['cus', 'mod'] },
     { path: config.routes.checkout, component: Checkout, roles: ['cus', 'mod'] },
     { path: '/cart-detail', component: CartDetail, roles: ['cus', 'mod'] },

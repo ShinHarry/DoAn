@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { clearSelectedCartItems } from '~/redux/slices/cartSlice'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './PaymentReturn.module.scss';
@@ -7,7 +8,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import * as paymentService from '~/services/paymentService';
 import * as orderService from '~/services/orderService';
-import * as cartService from '~/services/cartService';
 import * as userService from '~/services/userService';
 
 const cx = classNames.bind(styles);
@@ -21,6 +21,7 @@ function PaymentReturn() {
     const [createdOrderId, setCreatedOrderId] = useState(null);
 
     useEffect(() => {
+        
         const processPaymentReturn = async () => {
             setStatus('verifying');
             const queryParams = new URLSearchParams(location.search);  // lấy query parameters sau ? trên url chuyển sang object 
@@ -48,10 +49,11 @@ function PaymentReturn() {
 
                     try {
                         // 2. lấy giỏ hàng hiện tại
-                        const cartData = await cartService.getCart();
-                        if (!cartData || !cartData.cart || cartData.cart.length === 0) {
-                            throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
-                        }
+                        const cartData = JSON.parse(sessionStorage.getItem('selectedCartItems'));
+                        if (!cartData && cartData.length === 0) {
+                                throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
+                        } 
+                        console.log("du lieu", cartData)
 
                         // 3. lấy data user
                         const userFromStorage = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
@@ -59,9 +61,6 @@ function PaymentReturn() {
                              throw new Error('Không tìm thấy thông tin người dùng.');
                         }
                         const userData = await userService.getUserById(userFromStorage.id);
-                        // const shippingAddress = userData?.userAddress?.[0] 
-                        //     ? `${userData.userAddress[0].address}, ${userData.userAddress[0].city}, ${userData.userAddress[0].country}`
-                        //     : 'Địa chỉ mặc định không tìm thấy'; 
 
                         // 4.chuẩn bị thông tin chi tiết đơn hàng
                         const shippingFee = parseInt(sessionStorage.getItem('shippingFee')) || 0;
@@ -69,13 +68,20 @@ function PaymentReturn() {
                         const discountValue = parseInt(sessionStorage.getItem('discountValue')) || 0;
                         const name = sessionStorage.getItem('name');
                         const phone = sessionStorage.getItem('phone');
-                        console.log(discountValue)
-                        const currentSubtotal = cartData.cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+                        //giải thóng sessionStorage
+                        sessionStorage.removeItem('selectedCartItems');
+                        sessionStorage.removeItem('shippingFee');
+                        sessionStorage.removeItem('shippingAddress');
+                        sessionStorage.removeItem('discountValue');
+                        sessionStorage.removeItem('name');
+                        sessionStorage.removeItem('phone');
+                        // console.log(discountValue)
+                        const currentSubtotal = cartData.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
                         const hardcodedShippingMethod = (shippingFee === 20000) ? 'standard' : 'express';
                         const discount = (currentSubtotal * discountValue) / 100;
                         const finalAmountFromVnpay = parseInt(paramsObject.vnp_Amount) / 100 - discount;
                         const orderDetails = {
-                            orderItems: cartData.cart.map(item => ({
+                            orderItems: cartData.map(item => ({
                                 product: item.productId,
                                 quantity: item.quantity,
                                 price: item.unitPrice,
@@ -103,7 +109,7 @@ function PaymentReturn() {
                          if (orderResponse.success && orderResponse.order?._id) {
                             setStatus('success');
                             setMessage('Thanh toán và đặt hàng thành công! Cảm ơn bạn.');
-                             setCreatedOrderId(orderResponse.order._id); 
+                            setCreatedOrderId(orderResponse.order._id); 
                         } else {
                             throw new Error(orderResponse.message || 'Không thể tạo đơn hàng sau khi thanh toán.');
                         }
