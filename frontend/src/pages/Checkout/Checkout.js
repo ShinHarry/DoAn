@@ -174,7 +174,7 @@ function Checkout() {
         const foundDiscount = discount.find((item) => item.name === discountCode.trim());
 
         if (!foundDiscount) {
-            setDiscountMessage('Mã giảm giá đã hết hạn.');
+            setDiscountMessage('Không tồn tại mã giảm giá.');
             setDiscountMessageType('errorMessage');
             return;
         }
@@ -186,14 +186,13 @@ function Checkout() {
             setDiscountMessageType('errorMessage');
             return;
         }
-
         // Áp dụng giảm giá
-        setDiscountValue(foundDiscount.discount);
+        const discountPercent = foundDiscount.discount;
         const discountAmountCalc = (total * discountValue) / 100;
-
+        
+        setDiscountValue(discountPercent);
         setDiscountAmount(discountAmountCalc);
         setFinalTotal(total + shippingFee - discountAmountCalc);
-
         setDiscountMessage('Áp dụng mã giảm giá thành công!');
         setDiscountMessageType('successMessage');
     };
@@ -238,6 +237,7 @@ function Checkout() {
                 // toast.success('Đặt hàng COD thành công!');
                 if (response.order?._id) {
                     sessionStorage.removeItem('selectedCartItems');
+                    window.dispatchEvent(new Event('cartUpdated'));
                     navigate(`/order-success/${response.order._id}`);
                 } else {
                     navigate('/order-success');

@@ -91,6 +91,7 @@ function ProductDetail() {
         try {
             const response = await cartService.addToCart(productId, 1);
             if (response.success) {
+                window.dispatchEvent(new Event('cartUpdated'));
                 Swal.fire('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng', 'success');
             } else {
                 Swal.fire('Thêm thất bại', response.message || 'Không thể thêm sản phẩm vào giỏ hàng.', 'error');

@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import styles from './Category.module.scss';
 import classNames from 'classnames/bind';
 import Image from '~/components/Image';
+import Banner from '~/layouts/components/BannerImage';
 import config from '~/config';
 
 const cx = classNames.bind(styles);
@@ -46,6 +47,9 @@ function Category() {
 
     return (
         <div className={cx('wrapper')}>
+            <div className={cx('slide')}>
+                <Banner />
+            </div>
             <h2>Danh sách sản phẩm</h2>
             <div className={cx('filter-bar')}>
                 <label>Sắp xếp theo giá: </label>

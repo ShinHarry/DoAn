@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { clearSelectedCartItems } from '~/redux/slices/cartSlice'
+// import { clearSelectedCartItems } from '~/redux/slices/cartSlice'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './PaymentReturn.module.scss';
@@ -107,6 +107,7 @@ function PaymentReturn() {
                         const orderResponse = await orderService.createOrder(orderDetails);
                         
                          if (orderResponse.success && orderResponse.order?._id) {
+                            window.dispatchEvent(new Event('cartUpdated'));
                             setStatus('success');
                             setMessage('Thanh toán và đặt hàng thành công! Cảm ơn bạn.');
                             setCreatedOrderId(orderResponse.order._id); 

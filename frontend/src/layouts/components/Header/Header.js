@@ -2,8 +2,8 @@ import classNames from 'classnames/bind';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { logout } from '~/redux/actions/authActions';
 import { FiHeart } from 'react-icons/fi';
-import { useDispatch } from 'react-redux';
-import { setSelectedCartItems } from '~/redux/slices/cartSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSelectedCartItems, setCartItems } from '~/redux/slices/cartSlice';
 import {
     faKeyboard,
     faUser,
@@ -122,9 +122,23 @@ function Header() {
     }, [currentUser]);
 
     useEffect(() => {
+        const shouldRefresh = sessionStorage.getItem('shouldRefreshCart');
+        if (shouldRefresh === 'true') {
+            fetchCart();
+            sessionStorage.removeItem('shouldRefreshCart');
+        }
+        }, []);
+
+    useEffect(() => {
         if (currentUser) {
             fetchCart();
         }
+        const handleCartUpdated = () => {
+        fetchCart();
+        };
+
+        window.addEventListener('cartUpdated', handleCartUpdated);
+        return () => window.removeEventListener('cartUpdated', handleCartUpdated);
     }, [currentUser, fetchCart]);
 
     useEffect(() => {
@@ -138,6 +152,7 @@ function Header() {
         });
         setTotalQuantity(quantity);
         setTotalPrice(price);
+        // fetchCart();
     }, [cartItems]);
 
     // hàm xử lý đóng mở giỏ hàng drawer
