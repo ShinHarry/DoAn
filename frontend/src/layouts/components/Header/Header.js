@@ -11,11 +11,8 @@ import {
     faDesktop,
     faHeadphones,
     faBoxes,
-    faLocationDot,
     faPlus,
     faSignOutAlt,
-    faImage,
-    faStar,
     faMobilePhone,
     faCartPlus,
 } from '@fortawesome/free-solid-svg-icons';
@@ -157,13 +154,6 @@ function Header() {
             prevItems.map((item) => (item._id === id ? { ...item, selected: !item.selected } : item)),
         );
     };
-
-    // const showDrawerMessage = (title, message, type) => {
-    //     const event = new CustomEvent('showDrawerNotification', {
-    //         detail: { title, message, type },
-    //     });
-    //     window.dispatchEvent(event);
-    // };
 
     // hàm xóa sản phẩm khỏi giỏ
     const handleDeleteItem = async (id) => {

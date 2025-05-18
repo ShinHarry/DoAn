@@ -89,8 +89,8 @@ const BASE_URL = process.env.BASE_URL;
 // });
 router.get("/", async (req, res) => {
   const {
-    page = 1,
-    limit = 12,
+    page,
+    limit,
     category,
     origin,
     manufacturer,
@@ -150,11 +150,6 @@ router.get("/", async (req, res) => {
 router.get("/search", async (req, res) => {
   try {
     const { page, limit, q } = req.query;
-    console.log("query", req.query);
-    console.log("page", page);
-    console.log("limit", limit);
-    console.log("q", q);
-
     const query = q ? { productName: new RegExp(q, "i") } : {};
     const products = await Product.find(query)
       .populate("productCategory", "nameCategory")

@@ -111,7 +111,7 @@ function AddProduct() {
             });
 
             setTimeout(() => {
-                navigate('/');
+                navigate('moderator/products');
             }, 1500);
         } catch (err) {
             toast.error('Có lỗi xảy ra khi thêm sản phẩm. Vui lòng thử lại.', {

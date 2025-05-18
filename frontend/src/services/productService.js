@@ -44,7 +44,6 @@ import * as httpRequest from '~/utils/httpRequest';
 export const getProducts = async ({
     page = 1,
     limit = 12,
-    search = '',
     category = '',
     origin = '',
     manufacturer = '',
