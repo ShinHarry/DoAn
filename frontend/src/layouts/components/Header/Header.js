@@ -91,6 +91,7 @@ function Header() {
     const currentUser = !!userData;
     const userId = userData?.id;
     const avatar = userData?.avatar;
+    console.log('avatar: ', avatar);
 
     const handleLogout = () => {
         try {
@@ -400,14 +401,22 @@ function Header() {
                         {!userLoading && userData?.role === 'cus' && (
                             <Menu items={currentUser ? userCusMenu : MENU_ITEMS}>
                                 {currentUser && (
-                                    <Image className={cx('user-avatar')} src={avatar[0].link || ''} alt="Avatar User" />
+                                    <Image
+                                        className={cx('user-avatar')}
+                                        src={avatar[0]?.link || ''}
+                                        alt="Avatar User"
+                                    />
                                 )}
                             </Menu>
                         )}
                         {!userLoading && userData?.role === 'mod' && (
                             <Menu items={currentUser ? userModMenu : MENU_ITEMS}>
                                 {currentUser && (
-                                    <Image className={cx('user-avatar')} src={avatar[0].link || ''} alt="Avatar User" />
+                                    <Image
+                                        className={cx('user-avatar')}
+                                        src={avatar[0]?.link || ''}
+                                        alt="Avatar User"
+                                    />
                                 )}
                             </Menu>
                         )}
@@ -559,9 +568,9 @@ function Header() {
                                     Xem chi tiết
                                 </Button>
                             </Link>
-                                <Button className={cx('checkout-btn')} primary onClick={handleCheckout}>
-                                    Thanh toán
-                                </Button>
+                            <Button className={cx('checkout-btn')} primary onClick={handleCheckout}>
+                                Thanh toán
+                            </Button>
                         </div>
                     )}
                 </div>
