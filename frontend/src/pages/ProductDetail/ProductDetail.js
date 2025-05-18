@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as productServices from '~/services/productService';
 import * as cartService from '~/services/cartService';
+import * as wishlistService from '~/services/wishlistService';
 import classNames from 'classnames/bind';
 import styles from './ProductDetail.module.scss';
 import config from '~/config';
@@ -50,6 +51,22 @@ function ProductDetail() {
         fetchProductDetails();
     }, [productId]);
 
+    useEffect(() => {
+        if (!userData || !product) return;
+
+        const checkLiked = async () => {
+            try {
+                const data = await wishlistService.getWishlistByUser(userData._id);
+                const existed = data.find((item) => item.productId === product._id);
+                setIsLiked(!!existed);
+            } catch (err) {
+                console.error('Lỗi khi kiểm tra wishlist:', err);
+            }
+        };
+
+        checkLiked();
+    }, [userData, product]);
+
     const handleAddToCart = async () => {
         if (!userData) {
             Swal.fire({
@@ -73,22 +90,57 @@ function ProductDetail() {
 
         try {
             const response = await cartService.addToCart(productId, 1);
-            console.log('Thêm vào giỏ hàng:', response);
             if (response.success) {
                 Swal.fire('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng', 'success');
             } else {
                 Swal.fire('Thêm thất bại', response.message || 'Không thể thêm sản phẩm vào giỏ hàng.', 'error');
             }
         } catch (error) {
-            console.error('Error adding to cart:', error);
             const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.';
             Swal.fire('Thất bại', errorMessage, 'error');
         }
     };
 
-    const handleLike = () => {
-        setIsLiked(!isLiked);
-        alert(isLiked ? 'Bạn đã bỏ like sản phẩm!' : 'Bạn đã thích sản phẩm!');
+    const handleLike = async () => {
+        if (!userData) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Bạn chưa đăng nhập',
+                text: 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích',
+                confirmButtonText: 'Đăng nhập',
+            }).then(() => navigate('/login'));
+            return;
+        }
+
+        if (isLiked) {
+            try {
+                const existing = await wishlistService.getWishlistByUser(userData._id);
+                const item = existing.find((i) => i.productId === product._id);
+                if (item) {
+                    await wishlistService.deleteWishlist(item._id);
+                    setIsLiked(false);
+                    Swal.fire('Đã xóa', 'Đã xóa khỏi danh sách yêu thích', 'info');
+                }
+            } catch (err) {
+                Swal.fire('Lỗi', 'Không thể xóa khỏi danh sách yêu thích.', 'error');
+            }
+        } else {
+            try {
+                const wishlistItem = {
+                    productId: product._id,
+                    name: product.productName,
+                    price: productUnitPrice * (1 - productSupPrice / 100),
+                    image: product.productImgs[0]?.link,
+                };
+                const res = await wishlistService.addToWishlist(wishlistItem);
+                if (res && res._id) {
+                    setIsLiked(true);
+                    Swal.fire('Thành công', 'Đã thêm vào danh sách yêu thích!', 'success');
+                }
+            } catch (err) {
+                Swal.fire('Lỗi', 'Không thể thêm sản phẩm vào danh sách yêu thích.', 'error');
+            }
+        }
     };
 
     const handleDeleteProduct = async () => {
@@ -110,7 +162,6 @@ function ProductDetail() {
             await Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa thành công.', 'success');
             navigate('/moddashboard/productlist');
         } catch (error) {
-            console.error('Lỗi khi xóa sản phẩm:', error);
             Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
         }
     };
@@ -141,8 +192,6 @@ function ProductDetail() {
 
     return (
         <div className={cx('wrapper')}>
-            {productLoading && <div>Đang tải thông tin sản phẩm...</div>}
-            {userLoading && <div>Đang tải thông tin người dùng...</div>}
             <div className={cx('product-item')}>
                 <Slider
                     dots={true}
@@ -175,22 +224,22 @@ function ProductDetail() {
                     </div>
 
                     <div className={cx('product-quantity')}>
-                        <p className={cx('description-product')}>
-                            <span>Số lượng còn lại:</span> {productQuantity}
-                        </p>
-                        <p className={cx('description-product')}>
-                            <span>Số lượng đã bán:</span> {productSoldQuantity}
-                        </p>
-                        <p className={cx('description-product')}>
-                            <span>Đánh giá trung bình:</span> {productAvgRating}
-                        </p>
+                        <p className={cx('description-product')}><span>Số lượng còn lại:</span> {productQuantity}</p>
+                        <p className={cx('description-product')}><span>Số lượng đã bán:</span> {productSoldQuantity}</p>
+                        <p className={cx('description-product')}><span>Đánh giá trung bình:</span> {productAvgRating}</p>
                     </div>
 
                     <div className={cx('product-actions')}>
+
+{!userLoading && userData?.role === 'cus' && (
+                            <>
                         <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
-                        {/* <button onClick={handleLike} style={{ backgroundColor: isLiked ? 'red' : 'gray' }}>
+                        <button onClick={handleLike} style={{ backgroundColor: isLiked ? 'red' : 'gray', color: 'white' }}>
                             {isLiked ? 'Bỏ thích' : 'Thích'}
-                        </button> */}
+                        </button>
+ </>
+                        )}
+
                         {!userLoading && userData?.role === 'mod' && (
                             <>
                                 <Link to={config.routes.updateProduct.replace(':productId', product._id)}>
@@ -207,27 +256,13 @@ function ProductDetail() {
 
             <div className={cx('product-details')}>
                 <h3>Chi tiết sản phẩm</h3>
-                <p className={cx('description-product')}>
-                    <span>Danh mục:</span> {productCategory.nameCategory}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Nhà sản xuất:</span> {productManufacturer.nameManufacturer}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Xuất xứ:</span> {productOrigin.nameOrigin}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Đơn vị:</span> {productUnit.nameUnit}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Bảo hành:</span> {productWarranty} tháng
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Trạng thái:</span> {productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Mô tả:</span> {productDescription}
-                </p>
+                <p className={cx('description-product')}><span>Danh mục:</span> {productCategory.nameCategory}</p>
+                <p className={cx('description-product')}><span>Nhà sản xuất:</span> {productManufacturer.nameManufacturer}</p>
+                <p className={cx('description-product')}><span>Xuất xứ:</span> {productOrigin.nameOrigin}</p>
+                <p className={cx('description-product')}><span>Đơn vị:</span> {productUnit.nameUnit}</p>
+                <p className={cx('description-product')}><span>Bảo hành:</span> {productWarranty} tháng</p>
+                <p className={cx('description-product')}><span>Trạng thái:</span> {productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}</p>
+                <p className={cx('description-product')}><span>Mô tả:</span> {productDescription}</p>
             </div>
         </div>
     );

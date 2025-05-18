@@ -1,7 +1,7 @@
 import classNames from 'classnames/bind';
 import styles from './Sidebar.module.scss';
 import Menu, { MenuItem } from './Menu';
-import { UserGroupIcon, BannerIcon, FileIcon, LocationIc, VoucherIcon, HomeIcon, OriginIcon } from '~/components/Icons';
+import { UserGroupIcon, BannerIcon, FileIcon, LocationIc, VoucherIcon, HomeIcon, OriginIcon,  } from '~/components/Icons';
 import { jwtDecode } from 'jwt-decode';
 
 const cx = classNames.bind(styles);
@@ -45,6 +45,8 @@ function Sidebar() {
                     activeIcon={<FileIcon />}
                 /> */}
                 <MenuItem title="Banner quảng cáo" to={'news'} icon={<BannerIcon />} activeIcon={<BannerIcon />} />
+                <MenuItem title="Quản lý đơn hàng" to={'orderManage'} icon={<FileIcon />} activeIcon={<FileIcon />} />
+                <MenuItem title="Danh mục sản phẩm" to={'categoryManager'} icon={<FileIcon />} activeIcon={<FileIcon />} />
                 <MenuItem title="Khuyến mãi" to={'sales'} icon={<VoucherIcon />} activeIcon={<VoucherIcon />} />
                 <MenuItem title="Hãng sản xuất" to={'manufacturers'} icon={<HomeIcon />} activeIcon={<HomeIcon />} />
                 <MenuItem title="Nơi xuất xứ" to={'origins'} icon={<OriginIcon />} activeIcon={<OriginIcon />} />

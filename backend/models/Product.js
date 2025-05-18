@@ -41,6 +41,14 @@ const ProductSchema = new mongoose.Schema(
       default: "available",
     },
     productAvgRating: { type: Number, default: 0 },
+    productRatings: [
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    rating: { type: Number, min: 1, max: 5 },
+    createdAt: { type: Date, default: Date.now }
+  }
+],
+
   },
   { timestamps: true }
 );

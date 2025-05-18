@@ -34,6 +34,7 @@ const OrderSchema = new mongoose.Schema(
       enum: ["processing", "confirmed", "shipped", "completed", "cancelled", "returned"],
       default: "pending",
     },
+    completeAt: { type: Date, default: null },
     paymentMethod: {
       type: String,
       enum: ["cod", "vnpay"],
@@ -44,6 +45,10 @@ const OrderSchema = new mongoose.Schema(
       enum: ["pending", "completed", "failed"],
       default: "pending",
     },
+    hasRated: {
+    type: Boolean,
+    default: false,
+  },
   },
   { timestamps: true }
 );
