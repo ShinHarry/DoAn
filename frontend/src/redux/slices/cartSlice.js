@@ -6,12 +6,12 @@ const cartSlice = createSlice({
         selectedCartItems: [],
     },
     reducers: {
-        setSelectedCartItems: (state, action) => {
-        state.selectedCartItems = action.payload;
-        },
-        clearSelectedCartItems: (state) => {
-        state.selectedCartItems = [];
-        }
+        // setSelectedCartItems: (state, action) => {
+        // state.selectedCartItems = action.payload;
+        // },
+        // clearSelectedCartItems: (state) => {
+        // state.selectedCartItems = [];
+        // }
     },
 });
 

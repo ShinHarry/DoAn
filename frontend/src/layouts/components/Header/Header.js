@@ -247,7 +247,7 @@ function Header() {
             toast.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
             return;
         }
-        dispatch(setSelectedCartItems(selectedItems)); // Gửi vào Redux
+        // dispatch(setSelectedCartItems(selectedItems)); // Gửi vào Redux
         sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
         setOpenCartPanel(false);
         navigate('/checkout');

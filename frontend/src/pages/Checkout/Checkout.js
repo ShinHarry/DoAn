@@ -79,12 +79,14 @@ function Checkout() {
     const fetchCart = useCallback(async () => {
         setError(null);
         try {
-           if (cartItemsFromRedux && cartItemsFromRedux.length > 0) {
-            setCartItems(cartItemsFromRedux);
-            const tempTotal = cartItemsFromRedux.reduce(
+            const cartData = JSON.parse(sessionStorage.getItem('selectedCartItems'));
+            if (!cartData && cartData.length === 0) {
+                    throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
+            } 
+            setCartItems(cartData);
+            const tempTotal = cartData.reduce(
                 (sum, item) => sum + item.unitPrice * item.quantity, 0);
             setTotal(tempTotal);
-            }
         } catch (err) {
             console.error('Error fetching cart for checkout:', err);
             setError('Không thể tải giỏ hàng. Vui lòng thử lại.');
@@ -233,8 +235,9 @@ function Checkout() {
             try {
                 const response = await orderService.createOrder(orderDetails);
                 console.log('COD Order Response:', response);
-                // toast.error('Đặt hàng COD thành công!');
+                // toast.success('Đặt hàng COD thành công!');
                 if (response.order?._id) {
+                    sessionStorage.removeItem('selectedCartItems');
                     navigate(`/order-success/${response.order._id}`);
                 } else {
                     navigate('/order-success');
