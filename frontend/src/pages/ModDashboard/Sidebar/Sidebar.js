@@ -17,6 +17,13 @@ function Sidebar() {
                 />
 
                 <MenuItem title="Banner quảng cáo" to={'news'} icon={<BannerIcon />} activeIcon={<BannerIcon />} />
+                <MenuItem title="Quản lý đơn hàng" to={'orderManage'} icon={<FileIcon />} activeIcon={<FileIcon />} />
+                <MenuItem
+                    title="Danh mục sản phẩm"
+                    to={'categoryManager'}
+                    icon={<FileIcon />}
+                    activeIcon={<FileIcon />}
+                />
                 <MenuItem title="Khuyến mãi" to={'sales'} icon={<VoucherIcon />} activeIcon={<VoucherIcon />} />
                 <MenuItem title="Hãng sản xuất" to={'manufacturers'} icon={<HomeIcon />} activeIcon={<HomeIcon />} />
                 <MenuItem title="Nơi xuất xứ" to={'origins'} icon={<OriginIcon />} activeIcon={<OriginIcon />} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Line, Pie } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -13,7 +13,7 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import * as statisticsService from '~/services/statisticsService';
-import { FaDownload, FaChartLine, FaBox } from 'react-icons/fa';
+import { FaDownload, FaChartLine, FaBox, FaUsers, FaShoppingCart } from 'react-icons/fa';
 import classNames from 'classnames/bind';
 import styles from './Statistics.module.scss';
 
@@ -47,7 +47,12 @@ function Statistics() {
         categoryId: '',
     });
     const [categories, setCategories] = useState([]);
-
+    // kh
+    const [customerStats, setCustomerStats] = useState(null);
+    const [customerParams, setCustomerParams] = useState({ sortBy: 'totalSpent', sortOrder: 'desc' });
+    //order
+    const [orderStatusStats, setOrderStatusStats] = useState(null);
+    //orther
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -110,15 +115,64 @@ function Statistics() {
         fetchProducts();
     }, [productParams]);
 
+    // Fetch lấy thôngs kê khách hàng
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            try {
+                const response = await statisticsService.getCustomerStatistics(customerParams);
+                setCustomerStats(response);
+                setError('');
+            } catch (err) {
+                console.error('Lỗi lấy thống kê khách hàng:', err);
+                setError('Không thể tải thống kê khách hàng.');
+                setCustomerStats(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCustomers();
+    }, [customerParams]);
+
+    // Fetch lấy thống kê Order Status
+    useEffect(() => {
+        const fetchOrderStatus = async () => {
+            try {
+                const response = await statisticsService.getOrderStatusStatistics();
+                setOrderStatusStats(response.data);
+                setError('');
+            } catch (err) {
+                console.error('Lỗi lấy thống kê trạng thái đơn hàng:', err);
+                setError('Không thể tải thống kê trạng thái đơn hàng.');
+                setOrderStatusStats(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrderStatus();
+    }, []);
+
     //function xuất excel
-    const handleExportProducts = async () => {
+    const handleExport = async ({ type, params }) => {
         try {
-            const response = await statisticsService.exportProductsToExcel(productParams);
+            let response;
+            let filename;
+
+            if (type === 'product') {
+                response = await statisticsService.exportProductsToExcel(params);
+                filename = 'product_statistics.xlsx';
+            } else if (type === 'customer') {
+                response = await statisticsService.exportCustomersToExcel(params);
+                filename = 'customer_statistics.xlsx';
+            }
             // Xử lý file download
+            // const disposition = response.headers['content-disposition'];
+            // const match = disposition && disposition.match(/filename="(.+)"/);
+            // const fileName = match?.[1] || 'default.xlsx';
+            // link.setAttribute('download', fileName);  //nếu muốn dùng filename từ backend
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', 'product_statistics.xlsx'); // tải về file
+            link.setAttribute('download', filename); // tải về file
             document.body.appendChild(link); // thêm vào DOM
             link.click(); // tự động click , trình duyệt sẽ tự tải file xuống ngay lập tức.
             link.parentNode.removeChild(link); // xóa khỏi DOM
@@ -162,6 +216,75 @@ function Statistics() {
                 yAxisID: 'orderCount',
             },
         ],
+    };
+
+    //format pie data
+    const orderStatusChartData = {
+        labels: orderStatusStats
+            ? Object.keys(orderStatusStats).map((status) =>
+                  status === 'processing'
+                      ? 'Đang xử lý'
+                      : status === 'confirmed'
+                      ? 'Đã xác nhận'
+                      : status === 'shipped'
+                      ? 'Đang giao'
+                      : status === 'completed'
+                      ? 'Hoàn thành'
+                      : status === 'cancelled'
+                      ? 'Đã hủy'
+                      : status,
+              )
+            : [],
+        datasets: [
+            {
+                data: orderStatusStats ? Object.values(orderStatusStats) : [],
+                backgroundColor: [
+                    'rgba(255, 159, 64, 0.8)', // processing
+                    'rgba(54, 162, 235, 0.8)', // confirmed
+                    'rgba(255, 206, 86, 0.8)', // shipped
+                    'rgba(75, 192, 192, 0.8)', // completed
+                    'rgba(153, 102, 255, 0.8)', // cancelled
+                    'rgba(201, 203, 207, 0.8)', // returnde
+                ],
+                borderColor: 'white',
+                borderWidth: 2,
+            },
+        ],
+    };
+
+    //option pie chart
+    const orderStatusChartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'right',
+            },
+            title: {
+                display: true,
+                text: 'Phân bổ Trạng Thái Đơn Hàng',
+            },
+            datalabels: {
+                formatter: (value, ctx) => {
+                    //value: gtri hiện tại, ctx:context
+                    let sum = 0;
+                    let dataArr = ctx.chart.data.datasets[0].data;
+                    sum = dataArr.reduce((acc, val) => acc + val, 0); //tổng đơn
+                    let percentage = ((value * 100) / sum).toFixed(1) + '%'; // tính % lấy 1 thập phân
+                    return `${percentage} (${value})`; // hiển thị % và sl
+                },
+                color: '#fff',
+                font: {
+                    weight: 'bold',
+                    size: 12,
+                },
+                textShadow: {
+                    color: 'black',
+                    dx: 1,
+                    dy: 1,
+                    blur: 2,
+                },
+            },
+        },
     };
 
     if (loading)
@@ -241,13 +364,19 @@ function Statistics() {
                         )}
                     </div>
                 </div>
+
                 {/* Product Statistics */}
                 <div className={cx('card')}>
                     <div className={cx('cardHeader')}>
                         <h2 className={cx('cardTitle')}>
                             <FaBox className={cx('titleIcon')} /> Thống kê Sản phẩm
                         </h2>
-                        <button onClick={handleExportProducts} className={cx('exportButton')}>
+                        <button
+                            onClick={() => {
+                                handleExport({ type: 'product', params: productParams });
+                            }}
+                            className={cx('exportButton')}
+                        >
                             <FaDownload className={cx('buttonIcon')} /> Xuất Excel
                         </button>
                     </div>
@@ -360,6 +489,96 @@ function Statistics() {
                             </table>
                         ) : (
                             <p className={cx('noData')}>Không có dữ liệu sản phẩm</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Customer Statistics */}
+                <div className={cx('card')}>
+                    <div className={cx('cardHeader')}>
+                        <h2 className={cx('cardTitle')}>
+                            <FaUsers className={cx('titleIcon')} /> Thống kê Khách hàng
+                        </h2>
+                        <button
+                            onClick={() => {
+                                handleExport({ type: 'customer', params: customerParams });
+                            }}
+                            className={cx('exportButton')}
+                        >
+                            <FaDownload className={cx('buttonIcon')} /> Xuất Excel
+                        </button>
+                    </div>
+                    <div className={cx('filtersContainer')}>
+                        <div className={cx('filterGroup')}>
+                            <label htmlFor="sortBy" className={cx('filterLabel')}>
+                                Sắp xếp theo:
+                            </label>
+                            <select
+                                id="sortBy"
+                                value={customerParams.sortBy}
+                                onChange={(e) => setCustomerParams({ ...customerParams, sortBy: e.target.value })}
+                                className={cx('select')}
+                            >
+                                <option value="userName">Tên</option>
+                                <option value="orderCount">Số đơn hàng</option>
+                                <option value="totalSpent">Tổng chi tiêu</option>
+                            </select>
+                        </div>
+                        <div className={cx('filterGroup')}>
+                            <label htmlFor="sortOrder" className={cx('filterLabel')}>
+                                Thứ tự:
+                            </label>
+                            <select
+                                id="sortOrder"
+                                value={customerParams.sortOrder}
+                                onChange={(e) => setCustomerParams({ ...customerParams, sortOrder: e.target.value })}
+                                className={cx('select')}
+                            >
+                                <option value="desc">Giảm dần</option>
+                                <option value="asc">Tăng dần</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className={cx('tableContainer')}>
+                        {customerStats?.data ? (
+                            <table className={cx('table')}>
+                                <thead>
+                                    <tr>
+                                        <th>Tên khách hàng</th>
+                                        <th>Email</th>
+                                        <th>Số đơn hàng</th>
+                                        <th>Tổng chi tiêu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {customerStats.data.map((customer, index) => (
+                                        <tr key={customer.userId || index}>
+                                            <td>{customer.userName}</td>
+                                            <td>{customer.userEmail}</td>
+                                            <td>{customer.orderCount}</td>
+                                            <td>{formatCurrency(customer.totalSpent)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p className={cx('noData')}>Không có dữ liệu khách hàng</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Order Status Statistics */}
+                <div className={cx('card')}>
+                    <div className={cx('cardHeader')}>
+                        <h2 className={cx('cardTitle')}>
+                            <FaShoppingCart className={cx('titleIcon')} /> Trạng thái Đơn hàng
+                        </h2>
+                    </div>
+                    <div className={cx('chartContainer')}>
+                        {orderStatusStats && Object.keys(orderStatusStats).length > 0 ? (
+                            <Pie data={orderStatusChartData} options={orderStatusChartOptions} />
+                        ) : (
+                            <p className={cx('noData')}>Không có dữ liệu trạng thái đơn hàng</p>
                         )}
                     </div>
                 </div>

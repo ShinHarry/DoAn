@@ -19,8 +19,12 @@ const authPage = require("./middlewares/Auth/authoziration");
 const RouterSale = require("./routes/routerSale");
 const paymentMethodRouter = require("./routes/routerPaymentMethod");
 const orderRouter = require("./routes/routerOrder");
+const orderManagerRouter = require('./routes/orderManager');
 const paymentRouter = require("./routes/routerPayment");
 const statisticsRouter = require("./routes/routerStatistics");
+const routerWishlist = require('./routes/routerWishlist');
+const routerCategoryManager = require('./routes/CategoryManage');
+
 
 const routerAdmin = require("./routes/routerAdmin");
 
@@ -52,6 +56,9 @@ app.use("/api/", verifyToken, paymentMethodRouter);
 app.use("/api/orders", verifyToken, orderRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/statistics", statisticsRouter);
+app.use("/api/orderM", orderManagerRouter);
+app.use("/api/wishlist", routerWishlist);
+app.use("/api/category", routerCategoryManager);
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 

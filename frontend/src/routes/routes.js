@@ -34,6 +34,11 @@ import Manufacturer from '~/pages/ModDashboard/Manufacturer';
 import Sale from '~/pages/ModDashboard/Sale';
 import Origin from '~/pages/ModDashboard/Origin';
 import Statistics from '~/pages/ModDashboard/Statistics';
+import Wishlist from '~/pages/Wishlist';
+import OrderManage from '~/pages/OrderManage';
+import CategoryManager from '~/pages/CategoryManager';
+import OrderDetailM from '~/pages/OrderDetailM';
+
 
 import ProfileDashboard from '~/pages/ProfileDashboard';
 import ChangePassWord from '~/pages/ProfileDashboard/ChangePassWord';
@@ -70,6 +75,8 @@ const privateRoutes = [
                 roles: ['mod'],
                 layout: null,
             },
+            { path: 'orderManage', component: OrderManage, roles: ['mod'] },
+            { path: 'categoryManager', component: CategoryManager, roles: ['mod'] },
             {
                 path: 'news',
                 component: Banner,
@@ -149,6 +156,10 @@ const privateRoutes = [
     { path: '/order-success/:orderId?', component: OrderSuccess, roles: ['cus', 'mod'] },
     { path: '/payment-return', component: PaymentReturn, roles: ['cus', 'mod'] },
     { path: '/orders/:orderId', component: OrderDetail, roles: ['cus', 'mod'] },
+    { path: config.routes.wishlist, component: Wishlist, roles: ['cus', 'mod'] },
+    
+    
+    { path: '/orderDetailM/:orderId', component: OrderDetailM, roles: ['mod'] },
 ];
 
 export { publicRoutes, privateRoutes };

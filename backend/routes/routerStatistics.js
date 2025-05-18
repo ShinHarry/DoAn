@@ -174,7 +174,7 @@ router.get('/revenue', async (req, res) => {
     }
 });
 
-// 2. Thống kê sản phẩm (/api/dashboard/products?groupBy=category&sortBy=soldQuantity...)
+// 2. Thống kê sản phẩm (/api/statistics/products?groupBy=category&sortBy=soldQuantity...)
 
 router.get('/categories', async (req, res) => {
     try {
@@ -351,7 +351,7 @@ router.get('/products', async (req, res) => {
     try {
         // Chạy pipeline từ collection Product vì muốn liệt kê tất cả sản phẩm
         const { groupBy, sortBy, sortOrder, categoryId } = req.query;
-        const pipeline = buildProductStatisticsPipeline({ groupBy, sortBy, sortOrder, categoryId });
+        const pipeline =  buildProductStatisticsPipeline({ groupBy, sortBy, sortOrder, categoryId });
         const results = await Product.aggregate(pipeline);        
         res.json({
             message: `Thống kê sản phẩm theo ${groupBy}, sắp xếp theo ${sortBy || 'mặc định'}`,
@@ -365,14 +365,14 @@ router.get('/products', async (req, res) => {
     }
 );
 
-// 4. Xuất file Excel ( cho sản phẩm: /api/dashboard/products/export)
+// 3. Xuất file Excel ( cho sản phẩm: /api/statistics/products/export)
 router.get('/products/export', async (req, res) => {
     try {
         const { groupBy, sortBy, sortOrder, categoryId } = req.query;
         const pipeline = buildProductStatisticsPipeline({ groupBy, sortBy, sortOrder, categoryId });
         const productData = await Product.aggregate(pipeline);
         const cleanedData = productData.map(({ id, ...rest }) => rest);
-        console.log("Excel export data:", cleanedData);
+        // console.log("Excel export data:", cleanedData);
         // Tạo file Excel
         const ExcelJS = require('exceljs');
         const workbook = new ExcelJS.Workbook();  // tạo file exel
@@ -387,7 +387,7 @@ router.get('/products/export', async (req, res) => {
                 { header: 'Nhà Sản Xuất', key: 'manufacturer', width: 20 },
                 { header: 'SL Tồn', key: 'quantityInStock', width: 10 },
                 { header: 'Đã Bán', key: 'soldQuantity', width: 10 },
-                { header: 'Doanh Thu', key: 'totalRevenue', width: 15 },
+                { header: 'Doanh Thu', key: 'totalRevenue', width: 15, style: { numFmt: '#,##0 [$₫-vi-VN]'} },
             ];
         } else if (groupBy === 'category' || groupBy === 'manufacturer') {
             columns = [
@@ -421,6 +421,168 @@ router.get('/products/export', async (req, res) => {
     } catch (error) {
         console.error("Error exporting product statistics to Excel:", error);
         res.status(500).json({ message: "Lỗi khi xuất file Excel thống kê sản phẩm", error: error.message });
+    }
+});
+
+// 4. Thống kê khách hàng (/api/statistics/customers?sortBy=totalSpent)
+async function buildCustomersStatisticsPipeline({ sortBy, sortOrder = 'desc' }) {
+    
+ const sortOrderValue = sortOrder === 'asc' ? 1 : -1;
+
+    if (!['totalSpent', 'orderCount', 'userName'].includes(sortBy)) {
+        return res.status(400).json({ message: "Giá trị sortBy không hợp lệ." });
+    }
+
+    // ktra xem có đơn hàng nào k
+    const orderCount = await Order.countDocuments();
+    if (orderCount === 0) {
+        return res.json({
+            message: "Chưa có đơn hàng nào trong hệ thống",
+            data: []
+        });
+    }
+
+    const pipeline = [
+        {
+            $match: { orderStatus : 'completed'}
+        },
+        {
+            $group: {
+                _id: "$user",
+                totalSpent: { $sum: "$totalAmount" },
+                orderCount: { $sum: 1 }
+            }
+        },
+        {
+            $lookup: { from: 'users', localField: "_id", foreignField: "_id", as: "userInfo" }
+        },
+        {
+            $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true }
+        },
+        {
+            $project: {
+                _id: 0,
+                userId: "$_id",
+                userName: { $ifNull: ["$userInfo.userName", "Người dùng không xác định"] },
+                userEmail: { $ifNull: ["$userInfo.userEmail", "Chưa có"] },
+                totalSpent: 1,
+                orderCount: 1
+            }
+        },
+        {
+            $sort: { [sortBy]: sortOrderValue }
+        }
+    ];
+
+    return pipeline;
+}
+
+router.get('/customers', async (req, res) => {
+    try{
+        const { sortBy, sortOrder } = req.query;
+        const pipeline = await buildCustomersStatisticsPipeline({sortBy, sortOrder});
+
+        const results = await Order.aggregate(pipeline);
+            
+        if (results.length === 0) {
+            return res.json({
+                message: "Không tìm thấy dữ liệu thống kê khách hàng",
+                data: []
+            });
+        }
+        res.json({
+            message: `Thống kê khách hàng, sắp xếp theo ${sortBy}`,
+            data: results
+        });
+    } catch (error) {
+        console.error("Error fetching customer statistics:", error);
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê khách hàng", error: error.message
+        });
+    }
+});
+
+// 5. Xuất file Excel ( cho khách hàng: /api/statistics/customers/export)
+router.get('/customers/export', async (req, res) => {
+    try {
+        const { sortBy = 'totalSpent', sortOrder = 'desc' } = req.query;
+        const pipeline =  await buildCustomersStatisticsPipeline({sortBy, sortOrder});
+        const customersData = await Order.aggregate(pipeline);
+        const cleanedData = customersData.map(({ id, ...rest }) => rest);
+        // console.log("Excel export data:", cleanedData);
+        // Tạo file Excel
+        const ExcelJS = require('exceljs');
+        const workbook = new ExcelJS.Workbook();  // tạo file exel
+        const worksheet = workbook.addWorksheet('ThongKeKhachHang');  // tạo worksheet trong file excel
+
+        // Thêm header cho worksheet
+        let columns = [];
+
+        columns = [
+            { header: 'Tên Khách hàng', key: 'name', width: 30 },
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Số đơn hàng', key: 'orderCount', width: 15 },
+            { header: 'Tổng chi tiêu', key: 'totalSpent', width: 20 , style: { numFmt: '#,##0 [$₫-vi-VN]' }},
+        ];
+        worksheet.columns = columns;  //gán danh sách cột vào worksheet
+
+        // Thêm dữ liệu
+        worksheet.addRows(cleanedData.map(item => {
+            let row = { name: item.userName, email: item.userEmail, orderCount: item.orderCount, totalSpent: item.totalSpent }; 
+            return row;
+        }));
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); 
+        //Giúp trình duyệt hiểu là file Excel, không phải HTML, JSON hay file văn bản.
+        res.setHeader('Content-Disposition', 'attachment; filename="ThongKeKhachHang.xlsx"');  //báo trình duyệt tải file
+        await workbook.xlsx.write(res); //ghi nội dung file Excel vào res dạng binary
+        res.end(); // phản hồi kết thúc
+
+    } catch (error) {
+        console.error("Error exporting product statistics to Excel:", error);
+        res.status(500).json({ message: "Lỗi khi xuất file Excel thống kê sản phẩm", error: error.message });
+    }
+});
+
+// 5. Thống kê trạng thái đơn hàng (/api/statistics/orders/status)
+router.get('/orders/status', async (req, res) => {
+    try {
+        const statusCounts = await Order.aggregate([
+            {
+                $group: {
+                    _id: "$orderStatus",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    status: "$_id",
+                    count: 1
+                }
+            }
+        ]);
+        // Chuyển mảng thành object cho frontend
+        const formattedCounts = statusCounts.reduce((acc, item) => {
+            acc[item.status] = item.count;
+            return acc;
+        }, {});
+
+        //Lấy tất cả trạng thái có trong enum, kể cả khi count = 0
+        const allOrderStatuses = Order.schema.path('orderStatus').enumValues; // lấy tất cả enuum
+        allOrderStatuses.forEach(status => {
+            if (!formattedCounts[status]) {
+                formattedCounts[status] = 0;
+            }
+        });
+
+        res.json({
+            message: "Thống kê trạng thái đơn hàng",
+            data: formattedCounts
+        });
+    } catch (error) {
+        console.error("Error fetching order status statistics:", error);
+        res.status(500).json({ message: "Lỗi khi lấy thống kê trạng thái đơn hàng", error: error.message });
     }
 });
 

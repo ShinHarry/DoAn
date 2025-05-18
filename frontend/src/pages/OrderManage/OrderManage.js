@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import * as orderService from '~/services/orderService';
-
-import classNames from "classnames/bind";
-import styles from "./Order.module.scss";
+import { useNavigate } from 'react-router-dom';
+import classNames from 'classnames/bind';
+import styles from './OrderManage.module.scss';
 
 const cx = classNames.bind(styles);
 
-function Order() {
+function OrderManage() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,27 +31,13 @@ function Order() {
       return null;
     }
   };
-const handleViewDetail = (orderId) => {
-    navigate(`/orders/${orderId}`);
+
+  const handleViewDetail = (orderId) => {
+    navigate(`/orderDetailM/${orderId}`);
   };
-  const { userId } = getToken() || {};
-
-  useEffect(() => {
-  const fetchOrders = async () => {
-    try {
-      const response = await orderService.getOrder(userId);
-      const sortedOrders = [...response].sort((a, b) => new Date(b.date) - new Date(a.date));
-      setOrders(sortedOrders);
-      setFilteredOrders(sortedOrders);
-    } catch (error) {
-      console.error("Lỗi khi lấy đơn hàng:", error);
-    }
-  };
-  fetchOrders();
-}, []);
 
 
-  useEffect(() => {
+ useEffect(() => {
   let filtered = [...orders];
 
   if (statusFilter !== 'all') {
@@ -91,12 +76,25 @@ const handleViewDetail = (orderId) => {
 }, [orders, statusFilter, fromDate, toDate, searchTerm]);
 
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await orderService.getOrderManage();
+        setOrders(response.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      } catch (error) {
+        console.error('Lỗi khi lấy đơn hàng:', error);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   return (
-    <div className={cx("wrapper")}>
+    <div className={cx('wrapper')}>
       <br />
-      <h2 className={cx("title")}>Danh sách đơn hàng</h2>
-<div className={cx('search-container')}>
+      <h2 className={cx('title')}>Danh sách đơn hàng</h2>
+
+      <div className={cx('search-container')}>
         <input
           type="text"
           placeholder="Tìm theo tên hoặc mã đơn hàng..."
@@ -105,6 +103,7 @@ const handleViewDetail = (orderId) => {
           className={cx('search-input')}
         />
       </div>
+
       <div className={cx("filters")}>
         <label>
           Trạng thái:&nbsp;
@@ -130,8 +129,8 @@ const handleViewDetail = (orderId) => {
         </label>
       </div>
 
-      <div className={cx("table-wrapper")}>
-        <table className={cx("order-table")}>
+      <div className={cx('table-wrapper')}>
+        <table className={cx('order-table')}>
           <thead>
             <tr>
               <th>Người đặt</th>
@@ -154,21 +153,45 @@ const handleViewDetail = (orderId) => {
                 <td>{new Date(order.date).toLocaleDateString('vi-VN')}</td>
                 <td>{order.totalAmount.toLocaleString()} VNĐ</td>
                 <td>
-                  <span className={cx("status", {
-                    processing: order.orderStatus === "processing",
-                    confirmed: order.orderStatus === "confirmed",
-                    shipped: order.orderStatus === "shipped",
-                    completed: order.orderStatus === "completed",
-                    cancelled: order.orderStatus === "cancelled",
-                    returned: order.orderStatus === "returned",
-                  })}>
+                  <span
+                    className={cx('status', {
+                      processing: order.orderStatus === 'processing',
+                      confirmed: order.orderStatus === 'confirmed',
+                      shipped: order.orderStatus === 'shipped',
+                      completed: order.orderStatus === 'completed',
+                      cancelled: order.orderStatus === 'cancelled',
+                      refunded: order.orderStatus === 'returned',
+                    })}
+                  >
                     {order.orderStatus}
                   </span>
                 </td>
                 <td>
-                  <button className={cx("detail-btn")} onClick={() => handleViewDetail(order._id)}>
+                  <button className={cx('detail-btn')} onClick={() => handleViewDetail(order._id)}>
                     Xem chi tiết
                   </button>
+                  {order.orderStatus === 'processing' && (
+                    <button
+                      className={cx('cancel-btn')}
+                      onClick={async () => {
+                        const confirmed = window.confirm('Bạn có chắc muốn huỷ đơn hàng này?');
+                        if (confirmed) {
+                          try {
+                            await orderService.updateOrderStatus(order._id, 'cancelled');
+                            setOrders((prev) =>
+                              prev.map((o) =>
+                                o._id === order._id ? { ...o, orderStatus: 'cancelled' } : o
+                              )
+                            );
+                          } catch (err) {
+                            console.error('Lỗi khi huỷ đơn:', err);
+                          }
+                        }
+                      }}
+                    >
+                      Huỷ
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -184,4 +207,4 @@ const handleViewDetail = (orderId) => {
   );
 }
 
-export default Order;
+export default OrderManage;

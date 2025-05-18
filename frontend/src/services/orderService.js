@@ -11,6 +11,39 @@ export const getOrder = async (userId) => {
     }
 };
 
+export const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+        const response = await httpRequest.put(`/orders/${orderId}/orderStatus`, {
+            status: newStatus,
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getOrderManage = async () => {
+    try {
+        console.log("da vao dayy")
+        return await httpRequest.get("/orderM");
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
+
+//Đánh giá
+export const submitRating = async (orderId, rating) => {
+    try {
+        const response = await httpRequest.post(`/orders/${orderId}/rating`, { rating });
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi gửi đánh giá:', error);
+        throw error;
+    }
+};
+
+
 //Lay chi tiet don hang
 export const getOrderDetail = async (orderId) => {
     try {
@@ -20,7 +53,6 @@ export const getOrderDetail = async (orderId) => {
         console.log(err);
         throw err;
     }};
-
 
 // tạo mới đơn hàng
 export const createOrder = async (orderData) => {

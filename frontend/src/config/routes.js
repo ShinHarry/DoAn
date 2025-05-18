@@ -1,8 +1,10 @@
 const routes = {
+    // Quản trị viên
     admindashboard: '/admindashboard',
 
     moddashboard: '/moddashboard',
 
+    // Hồ sơ người dùng
     profiledashboard: '/profiledashboard',
     profile: 'profile/:userId',
     address: 'profile/me/address',
@@ -23,7 +25,6 @@ const routes = {
     cartsId: '/carts/:id',
     checkout: '/checkout',
 
-    // admin: '/admin',
     order: '/orders',
     category: '/category/:categoryId',
 
@@ -35,6 +36,13 @@ const routes = {
     updateSale: '/updateSale/:saleId',
     addSale: '/addSale',
     notfound: '/notfound',
+    wishlist: '/wishlist',
+    orderDetailM: '/orderDetailM/:id',
+    orderManage: '/orderManage',
+    orderDetail: '/orders/:id',
+    orderSuccess: '/order-success/:orderId?',
+    paymentReturn: '/payment-return',
+    categoryManager: '/categoryManager',
 };
 
 export default routes;
