@@ -46,7 +46,7 @@ app.use("/api/manufacturers", RouterManufacturer);
 app.use("/api/origins", RouterOrigin);
 app.use("/api/units", RouterUnit);
 app.use("/api/auth", routerAuth);
-app.use("/api/news", verifyToken, RouterNew);
+app.use("/api/news", RouterNew);
 app.use("/api/sales", verifyToken, RouterSale);
 app.use("/api/", verifyToken, paymentMethodRouter);
 app.use("/api/orders", verifyToken, orderRouter);

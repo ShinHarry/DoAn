@@ -3,6 +3,8 @@ const router = express.Router();
 const News = require("../models/New");
 require("dotenv").config();
 const { uploadBanner } = require("../middlewares/uploadImage/uploads");
+const verifyToken = require("../middlewares/Auth/verifyToken");
+
 const BASE_URL = process.env.BASE_URL;
 
 // Get all news
@@ -17,49 +19,52 @@ router.get("/", async (req, res) => {
 
 // Create news
 
-router.post("/", uploadBanner.single("newImage"), async (req, res) => {
-  try {
-    const {
-      title,
-      summary,
-      content,
-      author,
-      state,
-    } = req.body;
+router.post(
+  "/",
+  uploadBanner.single("newImage"),
+  verifyToken,
+  async (req, res) => {
+    try {
+      const { title, summary, content, author, state } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Ảnh banner (newImage) là bắt buộc." });
+      if (!req.file) {
+        return res
+          .status(400)
+          .json({ message: "Ảnh banner (newImage) là bắt buộc." });
+      }
+
+      const newImage = {
+        link: `${BASE_URL}public/banners/${req.file.filename}`, // Đường dẫn public ảnh
+        alt: title, // alt lấy từ title
+      };
+
+      console.log(newImage);
+
+      const newNews = new News({
+        title,
+        summary,
+        content,
+        author,
+        state: state === "true",
+        newImage, // lưu object image vào banner
+      });
+
+      await newNews.save();
+
+      res
+        .status(201)
+        .json({ message: "Thêm banner thành công!", banner: newNews });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Lỗi khi thêm banner", error });
     }
-
-    const newImage = {
-      link: `${BASE_URL}public/banners/${req.file.filename}`, // Đường dẫn public ảnh
-      alt: title, // alt lấy từ title
-    };
-    
-    console.log(newImage)
-
-    const newNews = new News({
-      title,
-      summary,
-      content,
-      author,
-      state: state === 'true',
-      newImage, // lưu object image vào banner
-    });
-
-    await newNews.save();
-
-    res.status(201).json({ message: "Thêm banner thành công!", banner: newNews });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi khi thêm banner", error });
   }
-});
+);
 
 // lấy chi tiết
 router.get("/:id", async (req, res) => {
   try {
-    const news = await News.findById(req.params.id)
+    const news = await News.findById(req.params.id);
 
     if (!news) return res.status(404).json({ message: "Banner not found" });
 
@@ -70,40 +75,50 @@ router.get("/:id", async (req, res) => {
 });
 
 // Update new Promise((resolve, reject) => {
-  
-  router.put("/:id", uploadBanner.single("newImage"), async (req, res) => {
+
+router.put(
+  "/:id",
+  verifyToken,
+  uploadBanner.single("newImage"),
+  async (req, res) => {
     try {
       console.log("vao day r");
       const { title, summary, content, author, state } = req.body;
-  
+
       const updateData = {
         title,
         summary,
         content,
         author,
-        state: state === 'true',
+        state: state === "true",
       };
-  
+
       if (req.file) {
         updateData.newImage = {
           link: `${BASE_URL}public/banners/${req.file.filename}`,
           alt: title,
         };
       }
-  
-      const updatedNews = await News.findByIdAndUpdate(req.params.id, updateData, { new: true });
-  
-      if (!updatedNews) return res.status(404).json({ message: "News not found" });
-  
+
+      const updatedNews = await News.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+
+      if (!updatedNews)
+        return res.status(404).json({ message: "News not found" });
+
       res.json(updatedNews);
     } catch (err) {
       console.error(err);
       res.status(400).json({ message: err.message });
     }
-  });
+  }
+);
 
 // Delete news
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const deleted = await News.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "News not found" });
@@ -112,6 +127,5 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 module.exports = router;

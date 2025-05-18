@@ -27,66 +27,125 @@ const BASE_URL = process.env.BASE_URL;
 //     res.status(500).json({ message: error.message });
 //   }
 // });
+
+// router.get("/", async (req, res) => {
+//   try {
+//     const {
+//       page = 1,
+//       limit = 12,
+//       search = "",
+//       category,
+//       origin,
+//       manufacturer,
+//       sortBy = "productName",
+//       sortOrder = "asc",
+//     } = req.query;
+
+//     const query = {};
+
+//     // Search filter
+//     if (search) {
+//       query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
+//     }
+
+//     // Category filter (Assuming category is an ObjectId)
+//     if (category && mongoose.Types.ObjectId.isValid(category)) {
+//       query.productCategory = category;
+//     }
+
+//     // Origin filter (Assuming origin is an ObjectId)
+//     if (origin && mongoose.Types.ObjectId.isValid(origin)) {
+//       query.productOrigin = origin;
+//     }
+
+//     // Manufacturer filter (Assuming manufacturer is an ObjectId)
+//     if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
+//       query.productManufacturer = manufacturer;
+//     }
+
+//     // Sorting configuration
+//     const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+//     // Fetch total count
+//     const total = await Product.countDocuments(query);
+
+//     // Fetch paginated and sorted products
+//     const products = await Product.find(query)
+//       .populate("productCategory productManufacturer productOrigin productUnit")
+//       .sort(sort)
+//       .skip((page - 1) * limit)
+//       .limit(parseInt(limit));
+
+//     res.json({
+//       products,
+//       total,
+//       page: parseInt(page),
+//       limit: parseInt(limit),
+//     });
+//   } catch (err) {
+//     console.error("Error fetching products:", err);
+//     res.status(500).json({ message: "Lỗi lấy danh sách sản phẩm" });
+//   }
+// });
 router.get("/", async (req, res) => {
-  try {
-    const {
-      page = 1,
-      limit = 12,
-      search = "",
-      category,
-      origin,
-      manufacturer,
-      sortBy = "productName",
-      sortOrder = "asc",
-    } = req.query;
+  const {
+    page = 1,
+    limit = 12,
+    category,
+    origin,
+    manufacturer,
+    sortBy = "productName",
+    sortOrder = "asc",
+    minPrice,
+    maxPrice,
+  } = req.query;
 
-    const query = {};
+  const query = {};
 
-    // Search filter
-    if (search) {
-      query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
-    }
-
-    // Category filter (Assuming category is an ObjectId)
-    if (category && mongoose.Types.ObjectId.isValid(category)) {
-      query.productCategory = category;
-    }
-
-    // Origin filter (Assuming origin is an ObjectId)
-    if (origin && mongoose.Types.ObjectId.isValid(origin)) {
-      query.productOrigin = origin;
-    }
-
-    // Manufacturer filter (Assuming manufacturer is an ObjectId)
-    if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
-      query.productManufacturer = manufacturer;
-    }
-
-    // Sorting configuration
-    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
-
-    // Fetch total count
-    const total = await Product.countDocuments(query);
-
-    // Fetch paginated and sorted products
-    const products = await Product.find(query)
-      .populate("productCategory productManufacturer productOrigin productUnit")
-      .sort(sort)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-
-    res.json({
-      products,
-      total,
-      page: parseInt(page),
-      limit: parseInt(limit),
-    });
-  } catch (err) {
-    console.error("Error fetching products:", err);
-    res.status(500).json({ message: "Lỗi lấy danh sách sản phẩm" });
+  // Lọc danh mục
+  if (category && mongoose.Types.ObjectId.isValid(category)) {
+    query.productCategory = category;
   }
-});
 
+  // Lọc xuất xứ
+  if (origin && mongoose.Types.ObjectId.isValid(origin)) {
+    query.productOrigin = origin;
+  }
+
+  // Lọc nhà sản xuất
+  if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
+    query.productManufacturer = manufacturer;
+  }
+
+  // 👉 Lọc theo khoảng giá
+  if (minPrice || maxPrice) {
+    query.productUnitPrice = {};
+    if (minPrice) {
+      query.productUnitPrice.$gte = parseFloat(minPrice);
+    }
+    if (maxPrice) {
+      query.productUnitPrice.$lte = parseFloat(maxPrice);
+    }
+  }
+
+  // Sắp xếp
+  const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+  // Lấy dữ liệu
+  const total = await Product.countDocuments(query);
+  const products = await Product.find(query)
+    .populate("productCategory productManufacturer productOrigin productUnit")
+    .sort(sort)
+    .skip((page - 1) * limit)
+    .limit(parseInt(limit));
+
+  res.json({
+    products,
+    total,
+    page: parseInt(page),
+    limit: parseInt(limit),
+  });
+});
 // API tìm kiếm
 router.get("/search", async (req, res) => {
   try {

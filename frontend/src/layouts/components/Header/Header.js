@@ -326,16 +326,7 @@ function Header() {
             title: 'Thêm sản phẩm',
             to: '/addProduct',
         },
-        {
-            icon: <FontAwesomeIcon icon={faImage} />,
-            title: 'Banner',
-            to: '/news',
-        },
-        {
-            icon: <FontAwesomeIcon icon={faStar} />,
-            title: 'Khuyến mãi',
-            to: '/sales',
-        },
+
         {
             icon: <FontAwesomeIcon icon={faSignOutAlt} />,
             title: 'Đăng xuất',

@@ -10,25 +10,31 @@ const routes = {
 
     home: '/',
     search: '/search',
+    login: '/login',
+    register: '/register',
+    forgotpassword: '/forgot-password',
+
     product: '/product',
     productDetail: '/product/:productId',
     updateProduct: '/updateProduct/:productId',
     addProduct: '/addProduct',
+
     cart: '/cart',
     cartsId: '/carts/:id',
     checkout: '/checkout',
-    admin: '/admin',
-    login: '/login',
+
+    // admin: '/admin',
     order: '/orders',
     category: '/category/:categoryId',
-    register: '/register',
+
     news: '/news',
     addNew: '/addNew',
     updateNew: '/updateNew/:bannerId',
+
     sales: '/sales',
     updateSale: '/updateSale/:saleId',
     addSale: '/addSale',
-    forgotpassword: '/forgot-password',
+    notfound: '/notfound',
 };
 
 export default routes;

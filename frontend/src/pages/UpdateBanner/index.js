@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as newService from '~/services/newService';
 import classNames from 'classnames/bind';
-import styles from './UpdateBanner.module.scss'; 
+import styles from './UpdateBanner.module.scss';
 import Swal from 'sweetalert2';
 
 const cx = classNames.bind(styles);
@@ -20,9 +20,8 @@ function UpdateBanner() {
         const fetchBannerDetails = async () => {
             try {
                 const result = await newService.getNewById(bannerId); // Cần có API get 1 banner
-                setBanner(result); 
-               // newImage: null, // ảnh đang là link, ko phải file, nên để null để upload mới nếu cần
-
+                setBanner(result);
+                // newImage: null, // ảnh đang là link, ko phải file, nên để null để upload mới nếu cần
             } catch (err) {
                 console.error('Error fetching banner details:', err);
                 setError('Không thể tải banner. Vui lòng thử lại.');
@@ -79,18 +78,16 @@ function UpdateBanner() {
                 console.log(pair[0] + ':', pair[1]);
             }
 
-            await newService.updateNews(bannerId, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            await newService.updateNews(bannerId, formData);
 
             await Swal.fire({
                 icon: 'success',
                 title: 'Cập nhật thành công!',
                 text: 'Banner đã được cập nhật.',
                 confirmButtonText: 'OK',
-              });
-          
-              navigate('/moddashboard/news');
+            });
+
+            navigate('/moddashboard/news');
         } catch (err) {
             console.error(err);
             setError('Có lỗi xảy ra khi sửa banner. Vui lòng thử lại.');
@@ -157,30 +154,20 @@ function UpdateBanner() {
 
                 <div className={cx('form-group')}>
                     <label className={cx('label')}>Ảnh banner mới (nếu muốn thay đổi):</label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleChange}
-                        className={cx('input')}
-                    />
+                    <input type="file" accept="image/*" onChange={handleChange} className={cx('input')} />
                     {banner.newImage && (
                         <div className={cx('preview')}>
-                        {banner.newImage instanceof File ? (
-                          <img src={URL.createObjectURL(banner.newImage)} alt="Preview" />
-                        ) : (
-                          <img src={banner.newImage?.link} alt={banner.newImage?.alt || 'Preview'} />
-                        )}
-                      </div>
+                            {banner.newImage instanceof File ? (
+                                <img src={URL.createObjectURL(banner.newImage)} alt="Preview" />
+                            ) : (
+                                <img src={banner.newImage?.link} alt={banner.newImage?.alt || 'Preview'} />
+                            )}
+                        </div>
                     )}
                 </div>
 
                 <div className={cx('form-group-checkbox')}>
-                    <input
-                        type="checkbox"
-                        name="state"
-                        checked={banner.state}
-                        onChange={handleChange}
-                    />
+                    <input type="checkbox" name="state" checked={banner.state} onChange={handleChange} />
                     <label>Hiển thị banner</label>
                 </div>
 

@@ -4,23 +4,22 @@ import config from '~/config';
 // Pages
 import Home from '~/pages/Home/Home';
 import Order from '~/pages/Order';
-import Profile from '~/pages/ProfileDashboard/Profile/Profile';
-// import Address from '~/pages/Address';
-import Address from '~/pages/ProfileDashboard/Address';
 
 import Search from '~/pages/Search';
 import ProductDetail from '~/pages/ProductDetail';
 import AddProduct from '~/pages/AddProduct';
 import UpdateProduct from '~/pages/UpdateProduct';
+
 import Category from '~/pages/Category';
 import Login from '~/pages/Login';
 import Register from '~/pages/Register';
 
 import AddBanner from '~/pages/AddBanner';
-import ForgotPassword from '~/pages/ForgotPassword';
 import UpdateBanner from '~/pages/UpdateBanner';
 import AddSale from '~/pages/AddSale';
 import UpdateSale from '~/pages/UpdateSale';
+
+import ForgotPassword from '~/pages/ForgotPassword';
 import Checkout from '~/pages/Checkout';
 import CartDetail from '~/pages/CartDetail/CartDetail';
 import OrderSuccess from '~/pages/OrderSuccess/OrderSuccess';
@@ -29,15 +28,21 @@ import OrderDetail from '~/pages/OrderDetail';
 import AdminDashboard from '~/pages/AdminDashboard';
 
 import ModDashboard from '~/pages/ModDashboard';
-import ProductList from '~/pages/ModDashboard/ProductList';
+import ProductList from '~/pages/ModDashboard/ProductList/ProductList';
 import Banner from '~/pages/ModDashboard/Banner';
+import Manufacturer from '~/pages/ModDashboard/Manufacturer';
 import Sale from '~/pages/ModDashboard/Sale';
 import Origin from '~/pages/ModDashboard/Origin';
-import Manufacturer from '~/pages/ModDashboard/Manufacturer';
-import ProfileDashboard from '~/pages/ProfileDashboard';
-import ChangePassWord from '~/pages/ProfileDashboard/ChangePassWord';
 import Statistics from '~/pages/ModDashboard/Statistics';
 
+import ProfileDashboard from '~/pages/ProfileDashboard';
+import ChangePassWord from '~/pages/ProfileDashboard/ChangePassWord';
+import Profile from '~/pages/ProfileDashboard/Profile';
+import Address from '~/pages/ProfileDashboard/Address';
+
+import NotFound from '~/pages/NotFound/NotFound';
+
+import { LayoutNoFooter } from '~/layouts';
 // Public routes
 const publicRoutes = [
     { path: config.routes.login, component: Login, layout: null },
@@ -47,16 +52,17 @@ const publicRoutes = [
     { path: config.routes.search, component: Search },
     { path: config.routes.productDetail, component: ProductDetail },
     { path: config.routes.category, component: Category },
+    { path: config.routes.notfound, component: NotFound, layout: null },
 ];
 
 const privateRoutes = [
-
-    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'] },
+    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: LayoutNoFooter },
 
     {
         path: config.routes.moddashboard,
         component: ModDashboard,
         roles: ['mod'],
+        layout: LayoutNoFooter,
         children: [
             {
                 path: 'productlist',
@@ -97,21 +103,20 @@ const privateRoutes = [
         ],
     },
 
-    { path: config.routes.addProduct, component: AddProduct, roles: ['mod'] },
-    { path: config.routes.updateProduct, component: UpdateProduct, roles: ['mod'] },
+    { path: config.routes.addProduct, component: AddProduct, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.updateProduct, component: UpdateProduct, roles: ['mod'], layout: LayoutNoFooter },
 
-    { path: config.routes.news, component: Banner, roles: ['mod'] },
-    { path: config.routes.addNew, component: AddBanner, roles: ['mod'] },
-    { path: config.routes.updateNew, component: UpdateBanner, roles: ['mod'] },
+    { path: config.routes.news, component: Banner, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.addNew, component: AddBanner, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.updateNew, component: UpdateBanner, roles: ['mod'], layout: LayoutNoFooter },
 
-    { path: config.routes.sales, component: Sale, roles: ['mod'] },
-    { path: config.routes.addSale, component: AddSale, roles: ['mod'] },
-    { path: config.routes.updateSale, component: UpdateSale, roles: ['mod'] },
+    { path: config.routes.sales, component: Sale, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.addSale, component: AddSale, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.updateSale, component: UpdateSale, roles: ['mod'], layout: LayoutNoFooter },
 
-    { path: '/origins', component: Origin, roles: ['mod'] },
-    { path: '/manufacturers', component: Manufacturer, roles: ['mod'] },
+    { path: '/origins', component: Origin, roles: ['mod'], layout: LayoutNoFooter },
+    { path: '/manufacturers', component: Manufacturer, roles: ['mod'], layout: LayoutNoFooter },
 
-    // { path: config.routes.profile, component: Profile, roles: ['admin', 'cus', 'mod'] },
     {
         path: config.routes.profiledashboard,
         component: ProfileDashboard,

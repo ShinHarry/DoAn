@@ -24,7 +24,9 @@ export const addNew = async (news) => {
 
 export const updateNews = async (id, news) => {
     try {
-        return await httpRequest.put(`/news/${id}`, news);
+        return await httpRequest.put(`/news/${id}`, news, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
     } catch (err) {
         console.log(err);
         throw err;

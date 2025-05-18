@@ -1,118 +1,11 @@
-// import { useEffect, useState } from 'react';
-// import * as productService from '~/services/productService';
-// import classNames from 'classnames/bind';
-// import styles from './Home.module.scss';
-// import { Link } from 'react-router-dom';
-// import config from '~/config';
-// import Image from '~/components/Image';
-// import Banner from '~/layouts/components/BannerImage';
-
-// const cx = classNames.bind(styles);
-
-// function Home() {
-//     const [products, setProducts] = useState([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState('');
-//     const [page, setPage] = useState(1);
-//     const [limit, setLimit] = useState(0);
-//     const [total, setTotal] = useState(0);
-
-//     useEffect(() => {
-//         const fetchProducts = async () => {
-//             setLoading(true);
-//             try {
-//                 const response = await productService.getProducts({ page: 1, limit: 12 });
-
-//                 setProducts(response.products);
-//                 setTotal(response.total);
-//                 setLimit(response.limit);
-//             } catch (error) {
-//                 setError('Lỗi khi lấy danh sách sản phẩm');
-//             } finally {
-//                 setLoading(false);
-//             }
-//         };
-//         fetchProducts();
-//     }, [page, limit]);
-
-//     return (
-//         <div className={cx('wrapper')}>
-//             <div className={cx('slide')}>
-//                 <Banner />
-//             </div>
-
-//             <br />
-//             <h2>Danh sách sản phẩm</h2>
-
-//             {error && <p>{error}</p>}
-//             {loading ? (
-//                 <p>Đang tải...</p>
-//             ) : (
-//                 <>
-//                     <div className={cx('product-list')} tabIndex={-1}>
-//                         {products.map((product) => {
-//                             const hasDiscount = product.productSupPrice > 0;
-//                             const productFinallyPrice = product.productUnitPrice * (1 - product.productSupPrice / 100);
-//                             return (
-//                                 <div key={product._id} className={cx('product-item')}>
-//                                     <Link to={`${config.routes.productDetail.replace(':productId', product._id)}`}>
-//                                         <Image
-//                                             className={cx('product-avatar')}
-//                                             src={product.productImgs[0].link}
-//                                             alt={product.productName}
-//                                         />
-//                                     </Link>
-//                                     <div className={cx('product-info')}>
-//                                         <Link to={`${config.routes.productDetail.replace(':productId', product._id)}`}>
-//                                             <h3>{product.productName}</h3>
-//                                         </Link>
-//                                         <p>
-//                                             {hasDiscount ? (
-//                                                 <>
-//                                                     <span className={cx('old-price')}>
-//                                                         {product.productUnitPrice.toLocaleString()} VNĐ
-//                                                     </span>{' '}
-//                                                     <span className={cx('discount-price')}>
-//                                                         {productFinallyPrice.toLocaleString()} VNĐ
-//                                                     </span>
-//                                                 </>
-//                                             ) : (
-//                                                 <span className={cx('normal-price')}>
-//                                                     {product.productUnitPrice.toLocaleString()} VNĐ
-//                                                 </span>
-//                                             )}
-//                                         </p>
-//                                     </div>
-//                                 </div>
-//                             );
-//                         })}
-//                     </div>
-
-//                     {/* Phân trang */}
-//                     <div className={cx('pagination')}>
-//                         <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-//                             Trước
-//                         </button>
-//                         <span>
-//                             Trang {page} / {Math.ceil(total / limit)}
-//                         </span>
-//                         <button disabled={page * limit >= total} onClick={() => setPage(page + 1)}>
-//                             Tiếp
-//                         </button>
-//                     </div>
-//                 </>
-//             )}
-//         </div>
-//     );
-// }
-
-// export default Home;
 import { useState, useEffect, useCallback } from 'react';
 
 import * as productService from '~/services/productService';
 import * as categoryService from '~/services/categoryService';
 import * as originService from '~/services/originService';
 import * as manufacturerService from '~/services/manufacturerService';
+import { useDebounce } from '~/hooks';
+
 import config from '~/config';
 import Image from '~/components/Image';
 
@@ -124,14 +17,23 @@ const cx = classNames.bind(styles);
 
 const Home = () => {
     const [categoryMap, setCategoryMap] = useState({});
-    const [originMap, setOriginMap] = useState({});
-    const [manufacturerMap, setManufacturerMap] = useState({});
     const [categories, setCategories] = useState([]);
-    const [origins, setOrigins] = useState([]);
-    const [manufacturers, setManufacturers] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
+
+    const [originMap, setOriginMap] = useState({});
+    const [origins, setOrigins] = useState([]);
     const [selectedOrigin, setSelectedOrigin] = useState('');
+
+    const [manufacturerMap, setManufacturerMap] = useState({});
+    const [manufacturers, setManufacturers] = useState([]);
     const [selectedManufacturer, setSelectedManufacturer] = useState('');
+
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+    const [sortPrice, setSortPrice] = useState('');
+    const debouncedMinPrice = useDebounce(minPrice, 500);
+    const debouncedMaxPrice = useDebounce(maxPrice, 500);
+    // 'asc' hoặc 'desc'
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -140,7 +42,7 @@ const Home = () => {
     const [limit, setLimit] = useState(0);
     const [total, setTotal] = useState(0);
 
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     const fetchCategories = async () => {
         try {
@@ -191,8 +93,10 @@ const Home = () => {
                 category: selectedCategory,
                 origin: selectedOrigin,
                 manufacturer: selectedManufacturer,
-                sortBy: 'productName',
-                sortOrder: 'asc',
+                sortBy: sortPrice ? 'productUnitPrice' : 'productName',
+                sortOrder: sortPrice || 'asc',
+                minPrice: debouncedMinPrice || undefined,
+                maxPrice: debouncedMaxPrice || undefined,
             });
             setTotal(response.total);
             setLimit(response.limit);
@@ -203,7 +107,7 @@ const Home = () => {
         } finally {
             setLoading(false);
         }
-    }, [selectedCategory, selectedOrigin, selectedManufacturer]);
+    }, [selectedCategory, selectedOrigin, selectedManufacturer, sortPrice, debouncedMinPrice, debouncedMaxPrice]);
 
     useEffect(() => {
         fetchCategories();
@@ -214,6 +118,15 @@ const Home = () => {
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
+
+    const formatNumber = (value) => {
+        if (!value) return '';
+        return Number(value).toLocaleString('vi-VN');
+    };
+
+    const parseNumber = (formattedValue) => {
+        return formattedValue.replace(/\./g, '');
+    };
 
     return (
         <div className={cx('wrapper')}>
@@ -271,6 +184,36 @@ const Home = () => {
                                 {m.nameManufacturer}
                             </option>
                         ))}
+                    </select>
+                    <input
+                        type="text"
+                        placeholder="Giá từ"
+                        value={formatNumber(minPrice)}
+                        onChange={(e) => {
+                            const raw = parseNumber(e.target.value);
+                            if (!isNaN(raw)) {
+                                setMinPrice(raw);
+                            }
+                        }}
+                    />
+
+                    <input
+                        type="text"
+                        placeholder="Đến"
+                        value={formatNumber(maxPrice)}
+                        onChange={(e) => {
+                            const raw = parseNumber(e.target.value);
+                            if (!isNaN(raw)) {
+                                setMaxPrice(raw);
+                            }
+                        }}
+                    />
+
+                    {/* Sắp xếp giá */}
+                    <select value={sortPrice} onChange={(e) => setSortPrice(e.target.value)}>
+                        <option value="">Sắp xếp theo giá</option>
+                        <option value="asc">Giá tăng dần</option>
+                        <option value="desc">Giá giảm dần</option>
                     </select>
                 </div>
 

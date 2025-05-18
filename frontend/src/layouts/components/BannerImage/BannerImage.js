@@ -27,31 +27,35 @@ function BannerImage() {
         };
         fetchNews();
     }, []);
-   
+
     return (
-            <div className={cx('container')}>
-                <Swiper spaceBetween={30}
-                        centeredSlides={true}
-                        autoplay={{
-                        delay: 3000,
-                        disableOnInteraction: true,
-                        }}
-                        pagination={{   //dot
-                        clickable: true,
-                        }}
-                        modules={[Autoplay, Pagination, Navigation]} //Import các module cần dùng cho Swiper
-                        className={cx('mySwiper')}>
-                        
-                        {news.map((item) => (
-                            item.state && (
+        <div className={cx('container')}>
+            {error && <div className={cx('error')}>{error}</div>}
+            <Swiper
+                spaceBetween={30}
+                centeredSlides={true}
+                autoplay={{
+                    delay: 3000,
+                    disableOnInteraction: true,
+                }}
+                pagination={{
+                    //dot
+                    clickable: true,
+                }}
+                modules={[Autoplay, Pagination, Navigation]} //Import các module cần dùng cho Swiper
+                className={cx('mySwiper')}
+            >
+                {news.map(
+                    (item) =>
+                        item.state && (
                             <SwiperSlide key={item._id}>
                                 <img src={item.newImage?.link} alt={item.newImage?.alt || 'image'} />
                             </SwiperSlide>
-                            )
-                        ))}
-                </Swiper>
-            </div>
-    )
+                        ),
+                )}
+            </Swiper>
+        </div>
+    );
 }
 
 export default BannerImage;

@@ -45,10 +45,6 @@ function Sidebar() {
                     icon={<PassWordIcon />}
                     activeIcon={<PassWordIcon />}
                 />
-                {/* <MenuItem title="Banner quảng cáo" to={'news'} icon={<BannerIcon />} activeIcon={<BannerIcon />} />
-                <MenuItem title="Khuyến mãi" to={'sales'} icon={<VoucherIcon />} activeIcon={<VoucherIcon />} />
-                <MenuItem title="Hãng sản xuất" to={'manufacturers'} icon={<HomeIcon />} activeIcon={<HomeIcon />} />
-                <MenuItem title="Nơi xuất xứ" to={'origins'} icon={<OriginIcon />} activeIcon={<OriginIcon />} /> */}
             </Menu>
         </aside>
     );
