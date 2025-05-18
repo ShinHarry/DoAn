@@ -37,23 +37,44 @@ function OrderManage() {
   };
 
 
-  useEffect(() => {
-      let filtered = [...orders];
-  
-      if (statusFilter !== 'all') {
-        filtered = filtered.filter(order => order.orderStatus === statusFilter);
-      }
-  
-      if (fromDate) {
-        filtered = filtered.filter(order => new Date(order.date) >= new Date(fromDate));
-      }
-  
-      if (toDate) {
-        filtered = filtered.filter(order => new Date(order.date) <= new Date(toDate));
-      }
-  
-      setFilteredOrders(filtered);
-    }, [statusFilter, fromDate, toDate, orders]);
+ useEffect(() => {
+  let filtered = [...orders];
+
+  if (statusFilter !== 'all') {
+    filtered = filtered.filter(order => order.orderStatus === statusFilter);
+  }
+
+  // Gộp lọc theo ngày và kiểm tra hợp lệ
+  if (fromDate && toDate) {
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    if (from > to) {
+      setFilteredOrders([]); // Từ ngày vượt quá đến ngày => không hợp lệ
+      return;
+    }
+    filtered = filtered.filter(order => {
+      const orderDate = new Date(order.date);
+      return orderDate >= from && orderDate <= to;
+    });
+  } else if (fromDate) {
+    const from = new Date(fromDate);
+    filtered = filtered.filter(order => new Date(order.date) >= from);
+  } else if (toDate) {
+    const to = new Date(toDate);
+    filtered = filtered.filter(order => new Date(order.date) <= to);
+  }
+
+  if (searchTerm.trim() !== '') {
+    const lowerSearch = searchTerm.toLowerCase();
+    filtered = filtered.filter(order =>
+      order.name?.toLowerCase().includes(lowerSearch) ||
+      order._id?.toLowerCase().includes(lowerSearch)
+    );
+  }
+
+  setFilteredOrders(filtered);
+}, [orders, statusFilter, fromDate, toDate, searchTerm]);
+
 
   useEffect(() => {
     const fetchOrders = async () => {
