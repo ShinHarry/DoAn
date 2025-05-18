@@ -23,7 +23,7 @@ function Search() {
         if (query) {
             const fetchSearchResults = async () => {
                 setLoading(true);
-                const result = await searchServices.search({ page: 1, limit: 12, q: query });
+                const result = await searchServices.search({ page, limit: 12, q: query });
                 setSearchResult(result.products);
                 setLimit(result.limit);
                 setTotal(result.total);
@@ -31,7 +31,7 @@ function Search() {
             };
             fetchSearchResults();
         }
-    }, [query]);
+    }, [query, page]);
 
     return (
         <div className={cx('wrapper')}>
@@ -45,34 +45,46 @@ function Search() {
                             const hasDiscount = product.productSupPrice > 0;
                             const productFinallyPrice = product.productUnitPrice * (1 - product.productSupPrice / 100);
                             return (
-                                <div key={product._id} className={cx('product-item')}>
-                                    <Link to={`${config.routes.productDetail.replace(':productId', product._id)}`}>
-                                        <Image
-                                            className={cx('product-avatar')}
-                                            src={product.productImgs[0].link}
-                                            alt={product.productName}
-                                        />
-                                    </Link>
-                                    <div className={cx('product-info')}>
+                                <div className={cx('product-card')} key={product._id}>
+                                    <div className={cx('product-item')}>
                                         <Link to={`${config.routes.productDetail.replace(':productId', product._id)}`}>
-                                            <h3>{product.productName}</h3>
+                                            <Image
+                                                className={cx('product-image')}
+                                                src={product.productImgs?.[0]?.link || ''}
+                                                alt={product.productName}
+                                            />
+                                            <div className={cx('product-info')}>
+                                                <h3>{product.productName}</h3>
+                                                <p>
+                                                    Giá:{' '}
+                                                    {hasDiscount ? (
+                                                        <>
+                                                            <span
+                                                                style={{
+                                                                    textDecoration: 'line-through',
+                                                                    color: 'gray',
+                                                                    marginRight: '8px',
+                                                                }}
+                                                            >
+                                                                {product.productUnitPrice.toLocaleString()} VND
+                                                            </span>
+                                                            <br />
+                                                            <span style={{ color: 'red', fontWeight: 'bold' }}>
+                                                                {productFinallyPrice.toLocaleString()} VND
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        `${product.productUnitPrice.toLocaleString()} VND`
+                                                    )}
+                                                </p>
+                                                <p>
+                                                    Trạng thái:{' '}
+                                                    {product.productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}
+                                                </p>
+                                                <p>Đã bán: {product.productSoldQuantity}</p>
+                                                <p>Đánh giá: {product.productAvgRating} ⭐</p>
+                                            </div>
                                         </Link>
-                                        <p>
-                                            {hasDiscount ? (
-                                                <>
-                                                    <span className={cx('old-price')}>
-                                                        {product.productUnitPrice.toLocaleString()} VNĐ
-                                                    </span>{' '}
-                                                    <span className={cx('discount-price')}>
-                                                        {productFinallyPrice.toLocaleString()} VNĐ
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <span className={cx('normal-price')}>
-                                                    {product.productUnitPrice.toLocaleString()} VNĐ
-                                                </span>
-                                            )}
-                                        </p>
                                     </div>
                                 </div>
                             );

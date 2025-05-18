@@ -1,7 +1,6 @@
-/* Footer.module.scss */
+/* Infor.module.scss */
 
 .wrapper {
-    width: 100%;
     padding: 40px 20px;
     display: flex;
     flex-wrap: wrap;
@@ -23,7 +22,7 @@
     width: 100%;
 }
 
-.footer-item {
+.Infor-item {
     display: flex;
     align-items: center;
     background-color: #fff;
@@ -34,17 +33,14 @@
     transition: transform 0.2s;
 }
 
-.footer-icon {
+.Infor-icon {
     font-size: 32px;
     color: #3498db;
     margin-right: 16px;
     flex-shrink: 0;
 }
 
-.footer-item-description {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.Infor-item-description {
     h3 {
         margin: 0;
         font-size: 18px;

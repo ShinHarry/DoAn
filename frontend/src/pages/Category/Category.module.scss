@@ -67,3 +67,50 @@ h2 {
         height: 140px;
     }
 }
+.filter-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+
+    input,
+    select {
+        padding: 10px 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+        flex: 1 1 200px;
+        min-width: 180px;
+    }
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    align-items: center;
+    margin-top: 20px;
+
+    button {
+        padding: 8px 16px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        &:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+    }
+
+    span {
+        font-size: 16px;
+        color: #333;
+    }
+}

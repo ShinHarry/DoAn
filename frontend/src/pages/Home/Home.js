@@ -11,8 +11,9 @@ import Image from '~/components/Image';
 
 import classNames from 'classnames/bind';
 import styles from './Home.module.scss';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Banner from '~/layouts/components/BannerImage';
+import Infor from '~/layouts/components/Infor';
 const cx = classNames.bind(styles);
 
 const Home = () => {
@@ -134,6 +135,7 @@ const Home = () => {
                 <Banner />
             </div>
             <br />
+            <Infor />
             <div className={cx('product-filter')}>
                 {error && <div className={cx('error')}>{error}</div>}
                 <h1 className={cx('title')}>Danh sách sản phẩm</h1>
@@ -251,6 +253,7 @@ const Home = () => {
                                                             >
                                                                 {product.productUnitPrice.toLocaleString()} VND
                                                             </span>
+                                                            <br />
                                                             <span style={{ color: 'red', fontWeight: 'bold' }}>
                                                                 {productFinallyPrice.toLocaleString()} VND
                                                             </span>
@@ -264,6 +267,7 @@ const Home = () => {
                                                     {product.productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}
                                                 </p>
                                                 <p>Đã bán: {product.productSoldQuantity}</p>
+                                                <p>Đánh giá: {product.productAvgRating} ⭐</p>
                                             </div>
                                         </Link>
                                     </div>
