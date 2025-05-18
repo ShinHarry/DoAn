@@ -3,8 +3,7 @@ import * as httpRequest from '~/utils/httpRequest';
 //lấy đơn hàng
 export const getOrder = async (userId) => {
     try {
-        console.log("da vao dayy")
-        return await httpRequest.get("/orders");
+        return await httpRequest.get('/orders');
     } catch (err) {
         console.log(err);
         throw err;
@@ -24,8 +23,7 @@ export const updateOrderStatus = async (orderId, newStatus) => {
 
 export const getOrderManage = async () => {
     try {
-        console.log("da vao dayy")
-        return await httpRequest.get("/orderM");
+        return await httpRequest.get('/orderM');
     } catch (err) {
         console.log(err);
         throw err;
@@ -43,7 +41,6 @@ export const submitRating = async (orderId, rating) => {
     }
 };
 
-
 //Lay chi tiet don hang
 export const getOrderDetail = async (orderId) => {
     try {
@@ -52,17 +49,17 @@ export const getOrderDetail = async (orderId) => {
     } catch (err) {
         console.log(err);
         throw err;
-    }};
+    }
+};
 
 // tạo mới đơn hàng
 export const createOrder = async (orderData) => {
     try {
         console.log('Creating order with data:', orderData);
         const response = await httpRequest.post('/orders', orderData);
-        return response; 
+        return response;
     } catch (err) {
         console.error('Error creating order:', err);
-        throw err; 
+        throw err;
     }
 };
-

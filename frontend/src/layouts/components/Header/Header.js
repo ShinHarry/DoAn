@@ -303,11 +303,6 @@ function Header() {
             title: 'Đơn hàng của tôi',
             to: '/orders',
         },
-        // {
-        //     icon: <FontAwesomeIcon icon={faLocationDot} />,
-        //     title: 'Sổ địa chỉ',
-        //     to: '/address',
-        // },
 
         {
             icon: <FontAwesomeIcon icon={faSignOutAlt} />,
@@ -382,14 +377,12 @@ function Header() {
 
                     <div className={cx('actions')}>
                         {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
-                        <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
-  <button
-    className={cx('action-btn')}
-    onClick={() => navigate('/wishlist')}
-  >
-    <FiHeart />
-  </button>
-</Tippy>)}
+                            <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
+                                <button className={cx('action-btn')} onClick={() => navigate('/wishlist')}>
+                                    <FiHeart />
+                                </button>
+                            </Tippy>
+                        )}
                         {!currentUser && (
                             <Button primary to="/login">
                                 Log in

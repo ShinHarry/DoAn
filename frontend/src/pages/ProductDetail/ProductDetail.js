@@ -224,20 +224,28 @@ function ProductDetail() {
                     </div>
 
                     <div className={cx('product-quantity')}>
-                        <p className={cx('description-product')}><span>Số lượng còn lại:</span> {productQuantity}</p>
-                        <p className={cx('description-product')}><span>Số lượng đã bán:</span> {productSoldQuantity}</p>
-                        <p className={cx('description-product')}><span>Đánh giá trung bình:</span> {productAvgRating}</p>
+                        <p className={cx('description-product')}>
+                            <span>Số lượng còn lại:</span> {productQuantity}
+                        </p>
+                        <p className={cx('description-product')}>
+                            <span>Số lượng đã bán:</span> {productSoldQuantity}
+                        </p>
+                        <p className={cx('description-product')}>
+                            <span>Đánh giá trung bình:</span> {productAvgRating}
+                        </p>
                     </div>
 
                     <div className={cx('product-actions')}>
-
-{!userLoading && userData?.role === 'cus' && (
+                        {!userLoading && userData?.role === 'cus' && (
                             <>
-                        <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
-                        <button onClick={handleLike} style={{ backgroundColor: isLiked ? 'red' : 'gray', color: 'white' }}>
-                            {isLiked ? 'Bỏ thích' : 'Thích'}
-                        </button>
- </>
+                                <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
+                                <button
+                                    onClick={handleLike}
+                                    style={{ backgroundColor: isLiked ? 'red' : 'gray', color: 'white' }}
+                                >
+                                    {isLiked ? 'Bỏ thích' : 'Thích'}
+                                </button>
+                            </>
                         )}
 
                         {!userLoading && userData?.role === 'mod' && (
@@ -256,13 +264,27 @@ function ProductDetail() {
 
             <div className={cx('product-details')}>
                 <h3>Chi tiết sản phẩm</h3>
-                <p className={cx('description-product')}><span>Danh mục:</span> {productCategory.nameCategory}</p>
-                <p className={cx('description-product')}><span>Nhà sản xuất:</span> {productManufacturer.nameManufacturer}</p>
-                <p className={cx('description-product')}><span>Xuất xứ:</span> {productOrigin.nameOrigin}</p>
-                <p className={cx('description-product')}><span>Đơn vị:</span> {productUnit.nameUnit}</p>
-                <p className={cx('description-product')}><span>Bảo hành:</span> {productWarranty} tháng</p>
-                <p className={cx('description-product')}><span>Trạng thái:</span> {productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}</p>
-                <p className={cx('description-product')}><span>Mô tả:</span> {productDescription}</p>
+                <p className={cx('description-product')}>
+                    <span>Danh mục:</span> {productCategory.nameCategory}
+                </p>
+                <p className={cx('description-product')}>
+                    <span>Nhà sản xuất:</span> {productManufacturer.nameManufacturer}
+                </p>
+                <p className={cx('description-product')}>
+                    <span>Xuất xứ:</span> {productOrigin.nameOrigin}
+                </p>
+                <p className={cx('description-product')}>
+                    <span>Đơn vị:</span> {productUnit.nameUnit}
+                </p>
+                <p className={cx('description-product')}>
+                    <span>Bảo hành:</span> {productWarranty} tháng
+                </p>
+                <p className={cx('description-product')}>
+                    <span>Trạng thái:</span> {productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}
+                </p>
+                <p className={cx('description-product')}>
+                    <span>Mô tả:</span> {productDescription}
+                </p>
             </div>
         </div>
     );

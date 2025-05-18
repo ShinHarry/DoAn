@@ -6,6 +6,8 @@ import * as authService from '~/services/authService';
 export const login = (formData) => async (dispatch) => {
     try {
         const { token, user } = await authService.login(formData);
+        console.log('Login response user:', user);
+
         dispatch(loginSuccess(user));
         return { token, user }; // Trả về token và user nếu cần thiết
     } catch (err) {

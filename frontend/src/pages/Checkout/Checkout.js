@@ -9,7 +9,7 @@ import * as paymentMethodService from '~/services/paymentMethodService';
 import * as orderService from '~/services/orderService';
 import * as paymentService from '~/services/paymentService';
 import * as saleService from '~/services/saleService';
-import { toast, ToastContainer  } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(styles);
@@ -21,7 +21,7 @@ function Checkout() {
     const [shippingMethod, setShippingMethod] = useState('standard');
     const [addresses, setAddresses] = useState([]);
     const [paymentMethods, setPaymentMethods] = useState([]);
-    
+
     const [total, setTotal] = useState(0);
     const [shippingFee, setShippingFee] = useState(0);
     const [finalTotal, setFinalTotal] = useState(0);
@@ -49,12 +49,12 @@ function Checkout() {
         try {
             const userFromStorage = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
             if (!userFromStorage?.id) {
-                throw new Error("User not logged in");
+                throw new Error('User not logged in');
             }
             setUserData(userFromStorage);
             const fetchedAddresses = await userService.getUserAddresses();
             setAddresses(fetchedAddresses || []);
-            
+
             if (fetchedAddresses && fetchedAddresses.length > 0) {
                 const firstAddress = fetchedAddresses[0];
                 const firstAddressString = `${firstAddress.address}, ${firstAddress.city}, ${firstAddress.country}`;
@@ -62,13 +62,12 @@ function Checkout() {
                 setAddress(firstAddressString);
                 setPhone(firstAddress.phoneNumber);
                 setName(firstAddress.fullName);
-    
             } else {
                 setSelectedAddress('');
             }
         } catch (err) {
-            console.error("Error fetching user data/addresses:", err);
-            if (err.message === "User not logged in" || err.response?.status === 401 || err.response?.status === 403) {
+            console.error('Error fetching user data/addresses:', err);
+            if (err.message === 'User not logged in' || err.response?.status === 401 || err.response?.status === 403) {
                 navigate('/login');
             }
         }
@@ -81,7 +80,7 @@ function Checkout() {
             const data = await cartService.getCart();
             // console.log("Cart data for checkout:", data);
             if (!data.cart || data.cart.length === 0) {
-                toast.warning("Giỏ hàng của bạn đang trống. Không thể thanh toán.");
+                toast.warning('Giỏ hàng của bạn đang trống. Không thể thanh toán.');
                 navigate('/');
                 return;
             }
@@ -104,28 +103,28 @@ function Checkout() {
 
     // lấy paymment method và discount
     useEffect(() => {
-        const fetchMethod= async () => {
+        const fetchMethod = async () => {
             try {
-              const response = await paymentMethodService.getPaymentMethod(); 
-              console.log(response)
-              setPaymentMethods(response);
+                const response = await paymentMethodService.getPaymentMethod();
+                console.log(response);
+                setPaymentMethods(response);
             } catch (error) {
-              console.error('Lỗi lấy danh sách phương thức thanh toán', error);
+                console.error('Lỗi lấy danh sách phương thức thanh toán', error);
             }
-        }
+        };
         const fetchSales = async () => {
-                try {
-                  const response = await saleService.getSale(); // API lấy danh sách discount
-                  console.log("response :", response);
-                  setDiscount(response);
-                } catch (error) {
-                  console.error('Lỗi lấy danh sách khuyến mãi', error);
-                }
-              };
-              
+            try {
+                const response = await saleService.getSale(); // API lấy danh sách discount
+                console.log('response :', response);
+                setDiscount(response);
+            } catch (error) {
+                console.error('Lỗi lấy danh sách khuyến mãi', error);
+            }
+        };
+
         fetchSales();
         fetchMethod();
-        }, []);
+    }, []);
 
     useEffect(() => {
         const loadCheckoutData = async () => {
@@ -145,7 +144,6 @@ function Checkout() {
         setFinalTotal(total - discountAmount + fee);
     }, [shippingMethod, total, discountAmount]);
 
-    
     const handleShippingChange = (e) => {
         setShippingMethod(e.target.value);
     };
@@ -157,8 +155,8 @@ function Checkout() {
     const handleAddressChange = (e) => {
         const newSelectedId = e.target.value;
         setSelectedAddress(newSelectedId);
-        
-        const selectedAddr = addresses.find(addr => addr._id === newSelectedId);
+
+        const selectedAddr = addresses.find((addr) => addr._id === newSelectedId);
         if (selectedAddr) {
             const fullAddress = `${selectedAddr.address}, ${selectedAddr.city}, ${selectedAddr.country}`;
             setAddress(fullAddress);
@@ -172,50 +170,51 @@ function Checkout() {
             setDiscountAmount(0);
             setFinalTotal(total + shippingFee);
             setDiscountMessage('Không áp dụng mã giảm giá.');
-            setDiscountMessageType('infoMessage');         
+            setDiscountMessageType('infoMessage');
             return;
         }
-    
-        const foundDiscount = discount.find(item => item.name === discountCode.trim());
-    
+
+        const foundDiscount = discount.find((item) => item.name === discountCode.trim());
+
         if (!foundDiscount) {
             setDiscountMessage('Mã giảm giá đã hết hạn.');
-            setDiscountMessageType('errorMessage');            
+            setDiscountMessageType('errorMessage');
             return;
         }
         const now = new Date();
         const discountEnd = new Date(foundDiscount.dateEnd);
-    
+
         if (now > discountEnd) {
             setDiscountMessage('Mã giảm giá đã hết hạn.');
             setDiscountMessageType('errorMessage');
-            return;        
+            return;
         }
-        
+
         // Áp dụng giảm giá
-        setDiscountValue(foundDiscount.discount)
+        setDiscountValue(foundDiscount.discount);
         const discountAmountCalc = (total * discountValue) / 100;
 
         setDiscountAmount(discountAmountCalc);
-        setFinalTotal((total + shippingFee) - discountAmountCalc);
+        setFinalTotal(total + shippingFee - discountAmountCalc);
 
         setDiscountMessage('Áp dụng mã giảm giá thành công!');
-        setDiscountMessageType('successMessage');    
-    }
+        setDiscountMessageType('successMessage');
+    };
 
     const handlePlaceOrder = async () => {
         if (!selectedAddress) {
             toast.warning('Vui lòng chọn địa chỉ giao hàng!');
             return;
         }
-        if (cartItems.some(item => item.quantity > item.availableQuantity)) { // duyệt qua mảng nếu có sl lớn hơn trả về true
+        if (cartItems.some((item) => item.quantity > item.availableQuantity)) {
+            // duyệt qua mảng nếu có sl lớn hơn trả về true
             toast.error('Một số sản phẩm trong giỏ hàng không đủ số lượng tồn kho. Vui lòng kiểm tra lại giỏ hàng.');
             navigate('/cart-detail');
             return;
         }
 
         const orderDetails = {
-            orderItems: cartItems.map(item => ({
+            orderItems: cartItems.map((item) => ({
                 product: item.productId,
                 quantity: item.quantity,
                 price: item.unitPrice,
@@ -238,7 +237,7 @@ function Checkout() {
         if (paymentMethod === 'cod') {
             try {
                 const response = await orderService.createOrder(orderDetails);
-                console.log("COD Order Response:", response);
+                console.log('COD Order Response:', response);
                 // toast.error('Đặt hàng COD thành công!');
                 if (response.order?._id) {
                     navigate(`/order-success/${response.order._id}`);
@@ -246,10 +245,10 @@ function Checkout() {
                     navigate('/order-success');
                 }
             } catch (err) {
-                console.error("COD Order Error:", err);
+                console.error('COD Order Error:', err);
                 toast.error(err.response?.data?.message || 'Đặt hàng COD thất bại. Vui lòng thử lại.');
             }
-        }else if (paymentMethod === 'vnpay') {
+        } else if (paymentMethod === 'vnpay') {
             try {
                 const returnUrl = `${window.location.origin}/payment-return`;
                 sessionStorage.setItem('shippingFee', shippingFee);
@@ -260,26 +259,27 @@ function Checkout() {
 
                 const orderInfo = `Thanh toan don hang checkout #${Date.now()}`;
                 const amountVnpay = Math.round(finalTotal); // hoặc Math.floor
-                const response = await paymentService.createVnpayPaymentUrl(
-                    amountVnpay,
-                    orderInfo, 
-                    returnUrl
-                );
-                
-                console.log("VNPay URL Response:", response);
+                const response = await paymentService.createVnpayPaymentUrl(amountVnpay, orderInfo, returnUrl);
+
+                console.log('VNPay URL Response:', response);
                 if (response.success && response.paymentUrl) {
-                    console.log("VNPay URL Response: thành công");
-                    window.location.href = response.paymentUrl; 
+                    console.log('VNPay URL Response: thành công');
+                    window.location.href = response.paymentUrl;
                 } else {
-                    toast.error(response.message || 'Không thể tạo link thanh toán VNPay. Vui lòng thử lại hoặc chọn phương thức khác.');
+                    toast.error(
+                        response.message ||
+                            'Không thể tạo link thanh toán VNPay. Vui lòng thử lại hoặc chọn phương thức khác.',
+                    );
                 }
             } catch (err) {
-                console.error("VNPay Error:", err);
-                toast.error(err.response?.data?.message || 'Tạo thanh toán VNPay thất bại. Vui lòng thử lại hoặc chọn phương thức khác.');
+                console.error('VNPay Error:', err);
+                toast.error(
+                    err.response?.data?.message ||
+                        'Tạo thanh toán VNPay thất bại. Vui lòng thử lại hoặc chọn phương thức khác.',
+                );
             }
         }
         setIsLoading(false);
-
     };
 
     if (isLoading) {
@@ -292,16 +292,16 @@ function Checkout() {
 
     return (
         <div className={cx('checkoutWrapper')}>
-             <ToastContainer 
-                    position="top-center"  //  Đặt ở góc dưới bên trái
-                    autoClose={3000}         // Tự động tắt sau 3 giây (có thể chỉnh)
-                    hideProgressBar={true}  //  thanh tiến trình
-                    newestOnTop={false}    //Toast mới sẽ hiện dưới các toast cũ.
-                    closeOnClick            //Cho phép đóng toast
-                    draggable
-                />
+            <ToastContainer
+                position="top-center" //  Đặt ở góc dưới bên trái
+                autoClose={3000} // Tự động tắt sau 3 giây (có thể chỉnh)
+                hideProgressBar={true} //  thanh tiến trình
+                newestOnTop={false} //Toast mới sẽ hiện dưới các toast cũ.
+                closeOnClick //Cho phép đóng toast
+                draggable
+            />
             <div className={cx('checkoutContainer')}>
-                        <section className={cx('checkoutLeft', 'section')}>
+                <section className={cx('checkoutLeft', 'section')}>
                     <h2>Đơn hàng của bạn ({cartItems.length} sản phẩm)</h2>
                     {cartItems.map((item) => (
                         <div key={item._id} className={cx('checkoutItem')}>
@@ -312,9 +312,7 @@ function Checkout() {
                             />
                             <div className={cx('checkoutItemInfo')}>
                                 <span className={cx('checkoutItemName')}>{item.name}</span>
-                                <span className={cx('checkoutItemQuantity')}>
-                                    Số lượng: {item.quantity}
-                                </span>
+                                <span className={cx('checkoutItemQuantity')}>Số lượng: {item.quantity}</span>
                                 <span className={cx('checkoutItemPrice')}>
                                     {(item.unitPrice * item.quantity).toLocaleString()} VND
                                 </span>
@@ -330,26 +328,33 @@ function Checkout() {
                         <div className={cx('formGroup')}>
                             <div className={cx('summarySection')}>
                                 <span>Chọn địa chỉ giao hàng:</span>
-                                <select className={cx('selectSmall')} value={selectedAddress}  onChange={handleAddressChange} required>
-                                    <option value="" disabled={addresses.length > 0}>-- Chọn địa chỉ --</option>
-                                    {
-                                        addresses.map((addr, index) => {
-                                            const addressString = `${addr.address}, ${addr.city}, ${addr.country}`;
-                                            return (
-                                                <option key={index} value={addr._id}>
-                                                    {addressString}
-                                                </option>
-                                            );
-                                        })
-                                    }
+                                <select
+                                    className={cx('selectSmall')}
+                                    value={selectedAddress}
+                                    onChange={handleAddressChange}
+                                    required
+                                >
+                                    <option value="" disabled={addresses.length > 0}>
+                                        -- Chọn địa chỉ --
+                                    </option>
+                                    {addresses.map((addr, index) => {
+                                        const addressString = `${addr.address}, ${addr.city}, ${addr.country}`;
+                                        return (
+                                            <option key={index} value={addr._id}>
+                                                {addressString}
+                                            </option>
+                                        );
+                                    })}
                                 </select>
                             </div>
 
                             <div className={cx('summarySection')}>
                                 <span>Chọn phương thức giao hàng:</span>
                                 <select value={shippingMethod} onChange={handleShippingChange}>
-                                    <option value="standard">Giao hàng tiêu chuẩn ({ (20000).toLocaleString() } VND)</option>
-                                    <option value="express">Giao hàng nhanh ({ (50000).toLocaleString() } VND)</option>
+                                    <option value="standard">
+                                        Giao hàng tiêu chuẩn ({(20000).toLocaleString()} VND)
+                                    </option>
+                                    <option value="express">Giao hàng nhanh ({(50000).toLocaleString()} VND)</option>
                                 </select>
                             </div>
 
@@ -374,38 +379,39 @@ function Checkout() {
                                             const value = e.target.value;
                                             setDiscountCode(value);
                                             if (value.trim() === '') {
-                                            setDiscountAmount(0);
-                                            setFinalTotal(total + shippingFee);
-                                            setDiscountMessage('');
-                                            setDiscountMessageType('');
+                                                setDiscountAmount(0);
+                                                setFinalTotal(total + shippingFee);
+                                                setDiscountMessage('');
+                                                setDiscountMessageType('');
                                             } else {
                                                 // Nếu mã đang hiển thị "thành công", mà user gõ lại không trùng nữa → reset message
-                                                const found = discount.find(item => item.name === value.trim());
+                                                const found = discount.find((item) => item.name === value.trim());
                                                 if (!found || new Date() > new Date(found.dateEnd)) {
-                                                  setDiscountMessage('');
-                                                  setDiscountMessageType('');
-                                                  setDiscountAmount(0);
+                                                    setDiscountMessage('');
+                                                    setDiscountMessageType('');
+                                                    setDiscountAmount(0);
                                                 }
-                                              }
+                                            }
                                         }}
                                         placeholder="Nhập mã giảm giá"
                                         className={cx('discountInput')}
                                     />
-                                    <button className={cx('discountButton')} onClick={handleApplyDiscount} >Áp dụng</button>
+                                    <button className={cx('discountButton')} onClick={handleApplyDiscount}>
+                                        Áp dụng
+                                    </button>
                                 </div>
                                 {discountMessage && (
                                     <div
                                         className={cx('discountMessage', {
                                             successMessage: discountMessageType === 'successMessage',
                                             errorMessage: discountMessageType === 'errorMessage',
-                                            infoMessage: discountMessageType === 'infoMessage'
+                                            infoMessage: discountMessageType === 'infoMessage',
                                         })}
                                     >
                                         {discountMessage}
                                     </div>
                                 )}
                             </div>
-
                         </div>
 
                         <div className={cx('calculationSummary')}>
@@ -434,9 +440,17 @@ function Checkout() {
                                 primary
                                 className={cx('checkoutButton')}
                                 onClick={handlePlaceOrder}
-                                disabled={!selectedAddress || isLoading || cartItems.some(item => item.quantity > item.availableQuantity)}
+                                disabled={
+                                    !selectedAddress ||
+                                    isLoading ||
+                                    cartItems.some((item) => item.quantity > item.availableQuantity)
+                                }
                             >
-                                {isLoading ? 'Đang xử lý...' : (paymentMethod === 'vnpay' ? 'Thanh toán VNPay' : 'Đặt hàng COD')}
+                                {isLoading
+                                    ? 'Đang xử lý...'
+                                    : paymentMethod === 'vnpay'
+                                    ? 'Thanh toán VNPay'
+                                    : 'Đặt hàng COD'}
                             </Button>
                         </div>
                     </div>

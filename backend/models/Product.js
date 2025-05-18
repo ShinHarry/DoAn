@@ -42,15 +42,37 @@ const ProductSchema = new mongoose.Schema(
     },
     productAvgRating: { type: Number, default: 0 },
     productRatings: [
-  {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    rating: { type: Number, min: 1, max: 5 },
-    createdAt: { type: Date, default: Date.now }
-  }
-],
-
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        rating: { type: Number, min: 1, max: 5 },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );
+// Trong Product model, thêm đoạn này
+ProductSchema.pre("save", function (next) {
+  if (this.productQuantity === 0) {
+    this.productStatus = "out_of_stock";
+  } else {
+    this.productStatus = "available";
+  }
+  next();
+});
+
+ProductSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+
+  if (update.productQuantity !== undefined) {
+    if (update.productQuantity === 0) {
+      update.productStatus = "out_of_stock";
+    } else {
+      update.productStatus = "available";
+    }
+    this.setUpdate(update);
+  }
+  next();
+});
 
 module.exports = mongoose.model("Product", ProductSchema);
