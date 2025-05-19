@@ -50,7 +50,18 @@ function OrderDetail() {
     };
 
 const handleConfirmReceived = async () => {
-        if (window.confirm('Bạn đã chắc chắn nhận được hàng?')) {
+        const result = await Swal.fire({
+    title: 'Xác nhận đã nhận hàng?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Đã nhận',
+    cancelButtonText: 'Đóng',
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+});
+
+if (result.isConfirmed) {
+
             try {
                 await orderService.updateOrderStatus(orderId, 'completed');
                 setOrder((prev) => ({
@@ -59,7 +70,15 @@ const handleConfirmReceived = async () => {
                 }));
             } catch (error) {
                 console.error('Lỗi khi xác nhận đã nhận hàng:', error);
-                alert('Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại sau.');
+                Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'error',
+    title: 'Không thể cập nhật trạng thái đơn hàng.',
+    showConfirmButton: false,
+    timer: 3000
+});
+
             }
         }
     };
@@ -198,17 +217,39 @@ const handleConfirmReceived = async () => {
                             <button
                                 onClick={async () => {
                                     if (selectedRating === 0) {
-                                        alert('Vui lòng chọn số sao đánh giá.');
-                                        return;
-                                    }
-                                    if (feedbackText.trim().length < 30) {
-                                        alert('Phản hồi phải chứa ít nhất 30 ký tự.');
-                                        return;
-                                    }
-                                    if (!selectedProductId) {
-                                        alert('Vui lòng chọn sản phẩm cần đánh giá.');
-                                        return;
-                                    }
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'warning',
+        title: 'Vui lòng chọn số sao đánh giá.',
+        showConfirmButton: false,
+        timer: 3000
+    });
+    return;
+}
+if (feedbackText.trim().length < 30) {
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'warning',
+        title: 'Phản hồi phải chứa ít nhất 30 ký tự.',
+        showConfirmButton: false,
+        timer: 3000
+    });
+    return;
+}
+if (!selectedProductId) {
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'warning',
+        title: 'Vui lòng chọn sản phẩm cần đánh giá.',
+        showConfirmButton: false,
+        timer: 3000
+    });
+    return;
+}
+
 
                                     try {const productId = order.items[0]?.productId || order.items[0]?.product?._id;
     if (!productId) {
@@ -225,7 +266,15 @@ const handleConfirmReceived = async () => {
 
                                         await orderService.submitRating(orderId, selectedRating);
 
-                                        alert('Cảm ơn bạn đã phản hồi!');
+                                        Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'success',
+    title: 'Cảm ơn bạn đã phản hồi!',
+    showConfirmButton: false,
+    timer: 3000
+});
+
                                         setIsRating(false);
                                         setFeedbackText('');
                                         setSelectedRating(0);
@@ -233,7 +282,15 @@ const handleConfirmReceived = async () => {
                                         setOrder(prev => ({ ...prev, hasRated: true }));
                                     } catch (err) {
                                         console.error(err);
-                                        alert('Lỗi khi gửi phản hồi');
+                                        Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'error',
+    title: 'Lỗi khi gửi phản hồi',
+    showConfirmButton: false,
+    timer: 3000
+});
+
                                     }
                                 }}
                                 className={cx('submit-btn')}

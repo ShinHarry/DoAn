@@ -310,10 +310,15 @@ const [ratings, setRatings] = useState([]);
           <li key={fb._id} className={cx('feedback-item')}>
             <div className={cx('feedback-header')}>
               <img
-                src={fb.user?.userAvatar[0]?.link|| '/default-avatar.png'}
-                alt={fb.user?.userName || 'Avatar'}
-                className={cx('feedback-avatar')}
-              />
+  src={
+    fb.user?.userAvatar && fb.user.userAvatar.length > 0
+      ? fb.user.userAvatar[0].link
+      : '/users/no-avatar.png'
+  }
+  alt={fb.user?.userName || 'Avatar'}
+  className={cx('feedback-avatar')}
+/>
+
               <strong className={cx('feedback-user-name')}>{fb.user?.userName || 'Người dùng ẩn danh'}</strong>
               <div className={cx('feedback-rating')}>
   {[...Array(5)].map((_, i) => (
