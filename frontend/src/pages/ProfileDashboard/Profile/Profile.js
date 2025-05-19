@@ -196,7 +196,6 @@ function Profile() {
                                 user.userBirthday ? new Date(user.userBirthday).toLocaleDateString() : '',
                             )}
                             {displayField('Giới tính', user.userGender)}
-                            {displayField('Điểm', user.userPoint)}
                         </>
                     )}
 

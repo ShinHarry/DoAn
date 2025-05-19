@@ -179,7 +179,6 @@ function AdminDashboard() {
                                     selectedUser.userPhone ? `0${selectedUser.userPhone}` : 'Không có',
                                 )}
                                 {displayField('Giới tính', selectedUser?.userGender || 'undefined')}
-                                {displayField('Điểm', selectedUser.userPoint)}
                                 {displayField('Vai trò', selectedUser.userRole)}
                                 {displayField('Trạng thái', selectedUser.userStatus)}
 
