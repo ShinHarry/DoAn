@@ -2,8 +2,7 @@ import classNames from 'classnames/bind';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { logout } from '~/redux/actions/authActions';
 import { FiHeart } from 'react-icons/fi';
-import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedCartItems, setCartItems } from '~/redux/slices/cartSlice';
+import { useDispatch } from 'react-redux';
 import {
     faKeyboard,
     faUser,
@@ -91,7 +90,6 @@ function Header() {
     const currentUser = !!userData;
     const userId = userData?.id;
     const avatar = userData?.avatar;
-    console.log('avatar: ', avatar);
 
     const handleLogout = () => {
         try {
@@ -128,14 +126,14 @@ function Header() {
             fetchCart();
             sessionStorage.removeItem('shouldRefreshCart');
         }
-        }, []);
+    }, []);
 
     useEffect(() => {
         if (currentUser) {
             fetchCart();
         }
         const handleCartUpdated = () => {
-        fetchCart();
+            fetchCart();
         };
 
         window.addEventListener('cartUpdated', handleCartUpdated);
@@ -370,7 +368,7 @@ function Header() {
                         </Link>
                     )}
                     {!userLoading && userData?.role === 'admin' && (
-                        <Link to={`${config.routes.admindashboard}/productlist`} className={cx('logo-link')}>
+                        <Link to={`${config.routes.admindashboard}/`} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}

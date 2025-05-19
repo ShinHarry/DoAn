@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import * as paymentService from '~/services/paymentService';
 import * as orderService from '~/services/orderService';
-import * as userService from '~/services/userService';
+// import * as userService from '~/services/userService';
 
 const cx = classNames.bind(styles);
 
@@ -21,11 +21,10 @@ function PaymentReturn() {
     const [createdOrderId, setCreatedOrderId] = useState(null);
 
     useEffect(() => {
-        
         const processPaymentReturn = async () => {
             setStatus('verifying');
-            const queryParams = new URLSearchParams(location.search);  // lấy query parameters sau ? trên url chuyển sang object 
-            const paramsObject = Object.fromEntries(queryParams.entries());  //chuyển sang object 
+            const queryParams = new URLSearchParams(location.search); // lấy query parameters sau ? trên url chuyển sang object
+            const paramsObject = Object.fromEntries(queryParams.entries()); //chuyển sang object
 
             if (!paramsObject.vnp_TxnRef || !paramsObject.vnp_ResponseCode || !paramsObject.vnp_SecureHash) {
                 setStatus('error');
@@ -41,7 +40,7 @@ function PaymentReturn() {
                     // xác minh thành công
                     setStatus('processing_order');
                     setMessage('Xác thực thành công. Đang tạo đơn hàng...');
-                    setDetails({ 
+                    setDetails({
                         vnpTxnRef: paramsObject.vnp_TxnRef,
                         amount: paramsObject.vnp_Amount / 100,
                         bank: paramsObject.vnp_BankCode,
@@ -51,20 +50,22 @@ function PaymentReturn() {
                         // 2. lấy giỏ hàng hiện tại
                         const cartData = JSON.parse(sessionStorage.getItem('selectedCartItems'));
                         if (!cartData && cartData.length === 0) {
-                                throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
-                        } 
-                        console.log("du lieu", cartData)
+                            throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
+                        }
+                        console.log('du lieu', cartData);
 
                         // 3. lấy data user
-                        const userFromStorage = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
+                        const userFromStorage = JSON.parse(
+                            localStorage.getItem('user') || sessionStorage.getItem('user'),
+                        );
                         if (!userFromStorage?.id) {
-                             throw new Error('Không tìm thấy thông tin người dùng.');
+                            throw new Error('Không tìm thấy thông tin người dùng.');
                         }
-                        const userData = await userService.getUserById(userFromStorage.id);
+                        // const userData = await userService.getUserById(userFromStorage.id);
 
                         // 4.chuẩn bị thông tin chi tiết đơn hàng
                         const shippingFee = parseInt(sessionStorage.getItem('shippingFee')) || 0;
-                        const shippingAddress =sessionStorage.getItem('shippingAddress');
+                        const shippingAddress = sessionStorage.getItem('shippingAddress');
                         const discountValue = parseInt(sessionStorage.getItem('discountValue')) || 0;
                         const name = sessionStorage.getItem('name');
                         const phone = sessionStorage.getItem('phone');
@@ -77,50 +78,52 @@ function PaymentReturn() {
                         sessionStorage.removeItem('phone');
                         // console.log(discountValue)
                         const currentSubtotal = cartData.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-                        const hardcodedShippingMethod = (shippingFee === 20000) ? 'standard' : 'express';
+                        const hardcodedShippingMethod = shippingFee === 20000 ? 'standard' : 'express';
                         const discount = (currentSubtotal * discountValue) / 100;
                         const finalAmountFromVnpay = parseInt(paramsObject.vnp_Amount) / 100 - discount;
                         const orderDetails = {
-                            orderItems: cartData.map(item => ({
+                            orderItems: cartData.map((item) => ({
                                 product: item.productId,
                                 quantity: item.quantity,
                                 price: item.unitPrice,
                             })),
-                            shippingAddress: shippingAddress, 
-                            phone : phone,
-                            name : name,
+                            shippingAddress: shippingAddress,
+                            phone: phone,
+                            name: name,
                             shippingMethod: hardcodedShippingMethod,
                             shippingFee: shippingFee,
-                            totalPrice: currentSubtotal, 
-                            totalAmount: finalAmountFromVnpay, 
+                            totalPrice: currentSubtotal,
+                            totalAmount: finalAmountFromVnpay,
                             discount: discount,
                             paymentMethod: 'vnpay',
                             user: userFromStorage.id,
-                            paymentStatus: 'completed', 
-                            orderStatus: 'processing', 
-                            vnpTransactionRef: paramsObject.vnp_TxnRef 
+                            paymentStatus: 'completed',
+                            orderStatus: 'processing',
+                            vnpTransactionRef: paramsObject.vnp_TxnRef,
                         };
-                        
-                        console.log("Creating order with data:", orderDetails);
+
+                        console.log('Creating order with data:', orderDetails);
 
                         // 5. tạo order
                         const orderResponse = await orderService.createOrder(orderDetails);
-                        
-                         if (orderResponse.success && orderResponse.order?._id) {
+
+                        if (orderResponse.success && orderResponse.order?._id) {
                             window.dispatchEvent(new Event('cartUpdated'));
                             setStatus('success');
                             setMessage('Thanh toán và đặt hàng thành công! Cảm ơn bạn.');
-                            setCreatedOrderId(orderResponse.order._id); 
+                            setCreatedOrderId(orderResponse.order._id);
                         } else {
                             throw new Error(orderResponse.message || 'Không thể tạo đơn hàng sau khi thanh toán.');
                         }
-
                     } catch (orderError) {
-                        console.error("Error creating order after VNPay success:", orderError);
+                        console.error('Error creating order after VNPay success:', orderError);
                         setStatus('error');
-                        setMessage(`Thanh toán VNPay thành công nhưng đã xảy ra lỗi khi tạo đơn hàng: ${orderError.message || 'Lỗi không xác định'}. Vui lòng liên hệ hỗ trợ.`); 
+                        setMessage(
+                            `Thanh toán VNPay thành công nhưng đã xảy ra lỗi khi tạo đơn hàng: ${
+                                orderError.message || 'Lỗi không xác định'
+                            }. Vui lòng liên hệ hỗ trợ.`,
+                        );
                     }
-
                 } else {
                     // xác nhận thất bại
                     setStatus('error');
@@ -131,7 +134,7 @@ function PaymentReturn() {
                     });
                 }
             } catch (verifyError) {
-                console.error("Error verifying VNPay return:", verifyError);
+                console.error('Error verifying VNPay return:', verifyError);
                 setStatus('error');
                 setMessage('Đã xảy ra lỗi trong quá trình xác thực thanh toán.');
                 setDetails({ vnpTxnRef: paramsObject.vnp_TxnRef });
@@ -149,26 +152,45 @@ function PaymentReturn() {
 
     return (
         <div className={cx('wrapper')}>
-            <FontAwesomeIcon 
-                icon={renderIcon()} 
-                className={cx('icon', status)} 
-                spin={status === 'loading' || status === 'verifying' || status === 'processing_order'} 
+            <FontAwesomeIcon
+                icon={renderIcon()}
+                className={cx('icon', status)}
+                spin={status === 'loading' || status === 'verifying' || status === 'processing_order'}
             />
             <h1 className={cx('title')}>
                 {status === 'success' && 'Thanh toán và Đặt hàng thành công'}
                 {status === 'error' && 'Giao dịch thất bại'}
-                {(status === 'loading' || status === 'verifying' || status === 'processing_order') && 'Đang xử lý giao dịch'}
+                {(status === 'loading' || status === 'verifying' || status === 'processing_order') &&
+                    'Đang xử lý giao dịch'}
             </h1>
             <p className={cx('message')}>{message}</p>
-            
+
             {details && (
-                 <div className={cx('details')}>
-                    <p>Mã giao dịch VNPay: <code>{details.vnpTxnRef}</code></p>
-                    {createdOrderId && <p>Mã đơn hàng: <code>{createdOrderId}</code></p>}
-                    {details.amount && <p>Số tiền: <code>{details.amount.toLocaleString()} VND</code></p>}
-                    {details.bank && <p>Ngân hàng: <code>{details.bank}</code></p>}
-                    {details.responseCode && <p>Mã lỗi VNPay: <code>{details.responseCode}</code></p>}
-                 </div>
+                <div className={cx('details')}>
+                    <p>
+                        Mã giao dịch VNPay: <code>{details.vnpTxnRef}</code>
+                    </p>
+                    {createdOrderId && (
+                        <p>
+                            Mã đơn hàng: <code>{createdOrderId}</code>
+                        </p>
+                    )}
+                    {details.amount && (
+                        <p>
+                            Số tiền: <code>{details.amount.toLocaleString()} VND</code>
+                        </p>
+                    )}
+                    {details.bank && (
+                        <p>
+                            Ngân hàng: <code>{details.bank}</code>
+                        </p>
+                    )}
+                    {details.responseCode && (
+                        <p>
+                            Mã lỗi VNPay: <code>{details.responseCode}</code>
+                        </p>
+                    )}
+                </div>
             )}
 
             <div className={cx('actions')}>
@@ -176,12 +198,12 @@ function PaymentReturn() {
                     <Button outline>Về trang chủ</Button>
                 </Link>
                 {status === 'success' && (
-                     <Link to={`/orders/${createdOrderId || ''}`}>
+                    <Link to={`/orders/${createdOrderId || ''}`}>
                         <Button primary>Xem chi tiết đơn hàng</Button>
                     </Link>
                 )}
-                 {status === 'error' && message !== 'URL trả về không hợp lệ hoặc thiếu thông tin.' && (
-                     <Link to={`/checkout`}> 
+                {status === 'error' && message !== 'URL trả về không hợp lệ hoặc thiếu thông tin.' && (
+                    <Link to={`/checkout`}>
                         <Button primary>Thử lại thanh toán</Button>
                     </Link>
                 )}
@@ -190,4 +212,4 @@ function PaymentReturn() {
     );
 }
 
-export default PaymentReturn; 
+export default PaymentReturn;
