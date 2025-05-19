@@ -15,6 +15,8 @@ function OrderDetail() {
     const [isCancelling, setIsCancelling] = useState(false);
     const [isRating, setIsRating] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0);
+    const [feedbackText, setFeedbackText] = useState('');
+    const [selectedProductId, setSelectedProductId] = useState('');
 
     const handleCancelOrder = async () => {
         const result = await Swal.fire({
@@ -47,6 +49,21 @@ function OrderDetail() {
         }
     };
 
+const handleConfirmReceived = async () => {
+        if (window.confirm('Bạn đã chắc chắn nhận được hàng?')) {
+            try {
+                await orderService.updateOrderStatus(orderId, 'completed');
+                setOrder((prev) => ({
+                    ...prev,
+                    orderStatus: 'completed',
+                }));
+            } catch (error) {
+                console.error('Lỗi khi xác nhận đã nhận hàng:', error);
+                alert('Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại sau.');
+            }
+        }
+    };
+    
     // const handleCancelOrder = async () => {
     //     if (window.confirm('Bạn có chắc chắn muốn huỷ đơn hàng này?')) {
     //         try {
@@ -116,11 +133,24 @@ function OrderDetail() {
                 
                 ))}
             </ul>
-
+{(order.orderStatus === 'shipped' || order.orderStatus === 'confirm') && (
+                <div className={cx('confirm-receive-wrapper')}>
+                    <button
+                        className={cx('receive-btn')}
+                        onClick={handleConfirmReceived}
+                        disabled={order.orderStatus === 'confirm'}
+                    >
+                        {order.orderStatus === 'confirm' ? 'Chờ vận chuyển' : 'Đã nhận được hàng'}
+                    </button>
+                </div>
+            )}
             {order.orderStatus === 'completed' && (
                 <div className={cx('rating-wrapper')}>
                     {!isRating && !order.hasRated ? (
-                        <button onClick={() => setIsRating(true)} className={cx('rate-btn')}>
+                        <button onClick={() => {
+                            setIsRating(true);
+                            setSelectedProductId(order.items[0]?.productId || order.items[0]?.product?._id);
+                        }} className={cx('rate-btn')}>
                             Đánh giá đơn hàng
                         </button>
                     ) : order.hasRated ? (
@@ -129,29 +159,85 @@ function OrderDetail() {
                         </button>
                     ) : (
                         <div className={cx('rating-box')}>
+                            {order.items.length > 1 && (
+                                <select
+                                    value={selectedProductId}
+                                    onChange={(e) => setSelectedProductId(e.target.value)}
+                                    style={{ marginTop: '10px', padding: '8px', width: '100%', fontSize: '14px' }}
+                                >
+                                    {order.items.map((item, index) => {
+                                        const pid = item.productId || item.product?._id;
+                                        return (
+                                            <option key={index} value={pid}>
+                                                {item.productName}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            )}
+
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <span
                                     key={star}
                                     className={cx('star', { active: selectedRating >= star })}
                                     onClick={() => setSelectedRating(star)}
+                                    style={{ cursor: 'pointer', fontSize: '24px', color: selectedRating >= star ? '#ffc107' : '#e4e5e9' }}
                                 >
                                     ★
                                 </span>
                             ))}
+
+                            <textarea
+                                placeholder="Viết phản hồi của bạn về sản phẩm..."
+                                value={feedbackText}
+                                onChange={(e) => setFeedbackText(e.target.value)}
+                                rows={4}
+                                style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '14px' }}
+                            />
+
                             <button
                                 onClick={async () => {
-                                    try {
+                                    if (selectedRating === 0) {
+                                        alert('Vui lòng chọn số sao đánh giá.');
+                                        return;
+                                    }
+                                    if (feedbackText.trim().length < 30) {
+                                        alert('Phản hồi phải chứa ít nhất 30 ký tự.');
+                                        return;
+                                    }
+                                    if (!selectedProductId) {
+                                        alert('Vui lòng chọn sản phẩm cần đánh giá.');
+                                        return;
+                                    }
+
+                                    try {const productId = order.items[0]?.productId || order.items[0]?.product?._id;
+    if (!productId) {
+      alert('Không tìm thấy ID sản phẩm để gửi phản hồi');
+      return;
+    }
+                                        await orderService.submitFeedback({
+                                            product: selectedProductId,
+                                            user: order.user,
+                                            order: order._id,
+                                            comment: feedbackText.trim(),
+                                            rating: selectedRating,
+                                        });
+
                                         await orderService.submitRating(orderId, selectedRating);
-                                        alert('Cảm ơn bạn đã đánh giá!');
+
+                                        alert('Cảm ơn bạn đã phản hồi!');
                                         setIsRating(false);
-                                        // Update order.hasRated = true locally
-                                        setOrder((prev) => ({ ...prev, hasRated: true }));
+                                        setFeedbackText('');
+                                        setSelectedRating(0);
+                                        setSelectedProductId('');
+                                        setOrder(prev => ({ ...prev, hasRated: true }));
                                     } catch (err) {
                                         console.error(err);
-                                        alert('Lỗi khi gửi đánh giá');
+                                        alert('Lỗi khi gửi phản hồi');
                                     }
                                 }}
                                 className={cx('submit-btn')}
+                                style={{ marginTop: '10px' }}
                             >
                                 Xác nhận
                             </button>
