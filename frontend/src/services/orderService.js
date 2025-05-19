@@ -20,6 +20,25 @@ export const updateOrderStatus = async (orderId, newStatus) => {
         throw error;
     }
 };
+//Đánh giá
+export const submitFeedback = async (feedbackData) => {
+  try {
+    const response = await httpRequest.post('/feedback', feedbackData);
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi gửi phản hồi:', error);
+    throw error;
+  }
+};
+export const submitRating = async (orderId, rating) => {
+    try {
+        const response = await httpRequest.post(`/orders/${orderId}/rating`, { rating });
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi gửi đánh giá:', error);
+        throw error;
+    }
+};
 
 export const getOrderManage = async () => {
     try {
@@ -30,16 +49,7 @@ export const getOrderManage = async () => {
     }
 };
 
-//Đánh giá
-export const submitRating = async (orderId, rating) => {
-    try {
-        const response = await httpRequest.post(`/orders/${orderId}/rating`, { rating });
-        return response.data;
-    } catch (error) {
-        console.error('Lỗi gửi đánh giá:', error);
-        throw error;
-    }
-};
+
 
 //Lay chi tiet don hang
 export const getOrderDetail = async (orderId) => {

@@ -167,6 +167,25 @@ router.get("/search", async (req, res) => {
   }
 });
 
+
+//Lấy data đánh giá sản phẩm
+router.get("/rating/:productId", async (req, res) => {
+  try {
+    console.log("da vao day")
+    const product = await Product.findById(req.params.productId).select('productAvgRating productRatings');
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    res.json({
+      productAvgRating: product.productAvgRating,
+      productRatings: product.productRatings,
+    });
+  } catch (error) {
+    console.error("Lỗi lấy rating sản phẩm:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
 // API lấy chi tiết sản phẩm theo ID
 router.get("/:id", async (req, res) => {
   try {

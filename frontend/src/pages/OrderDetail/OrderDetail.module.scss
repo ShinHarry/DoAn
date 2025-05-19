@@ -92,6 +92,28 @@ strong {
     color: gold;
   }
 }
+.confirm-receive-wrapper {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.receive-btn {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.receive-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
 
 .submit-btn {
   padding: 6px 12px;
@@ -150,17 +172,4 @@ ul li p {
   }
 }
 
-.item-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
 
-  img {
-      flex-shrink: 0;
-  }
-}
-
-.item-info {
-  display: flex;
-  flex-direction: column;
-}

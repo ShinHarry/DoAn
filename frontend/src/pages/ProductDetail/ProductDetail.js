@@ -11,19 +11,47 @@ import Swal from 'sweetalert2';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import Slider from 'react-slick';
-
+import moment from 'moment';
+import * as feedbackService from '~/services/feedbackService';
 const cx = classNames.bind(styles);
 
 function ProductDetail() {
     const { productId } = useParams();
     const [product, setProduct] = useState(null);
     const [productLoading, setProductLoading] = useState(true);
-
+const [ratings, setRatings] = useState([]);
     const [userData, setUserData] = useState(null);
     const [userLoading, setUserLoading] = useState(true);
 
     const [isLiked, setIsLiked] = useState(false);
     const navigate = useNavigate();
+    const [feedbacks, setFeedbacks] = useState([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(true);
+
+
+    useEffect(() => {
+  if (!productId) return;
+
+  const fetchRatingsAndFeedbacks = async () => {
+    setFeedbackLoading(true);
+    try {
+      const ratingsData = await feedbackService.getRatingsByProductId(productId);
+      const feedbackData = await feedbackService.getFeedbacksByProductId(productId);
+      console.log("du llieu", feedbackData);
+
+      // bạn có thể xử lý hoặc lưu vào state
+      setRatings(ratingsData);
+      setFeedbacks(feedbackData);
+    } catch (error) {
+      console.error(error);
+    }
+    setFeedbackLoading(false);
+  };
+
+  fetchRatingsAndFeedbacks();
+}, [productId]);
+
+
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -91,7 +119,6 @@ function ProductDetail() {
         try {
             const response = await cartService.addToCart(productId, 1);
             if (response.success) {
-                window.dispatchEvent(new Event('cartUpdated'));
                 Swal.fire('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng', 'success');
             } else {
                 Swal.fire('Thêm thất bại', response.message || 'Không thể thêm sản phẩm vào giỏ hàng.', 'error');
@@ -225,68 +252,92 @@ function ProductDetail() {
                     </div>
 
                     <div className={cx('product-quantity')}>
-                        <p className={cx('description-product')}>
-                            <span>Số lượng còn lại:</span> {productQuantity}
-                        </p>
-                        <p className={cx('description-product')}>
-                            <span>Số lượng đã bán:</span> {productSoldQuantity}
-                        </p>
-                        <p className={cx('description-product')}>
-                            <span>Đánh giá trung bình:</span> {productAvgRating}
-                        </p>
+                        <p className={cx('description-product')}><span>Số lượng còn lại:</span> {productQuantity}</p>
+                        <p className={cx('description-product')}><span>Số lượng đã bán:</span> {productSoldQuantity}</p>
+                        <p className={cx('description-product')}><span>Đánh giá trung bình:</span> {productAvgRating}</p>
                     </div>
 
                     <div className={cx('product-actions')}>
-                        {!userLoading && userData?.role === 'cus' && (
-                            <>
-                                <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
-                                <button
-                                    onClick={handleLike}
-                                    style={{ backgroundColor: isLiked ? 'red' : 'gray', color: 'white' }}
-                                >
-                                    {isLiked ? 'Bỏ thích' : 'Thích'}
-                                </button>
-                            </>
-                        )}
+  {userData?.role !== 'mod' && (
+    <>
+      <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
+      <button
+        onClick={handleLike}
+        style={{ backgroundColor: isLiked ? 'red' : 'gray', color: 'white' }}
+      >
+        {isLiked ? 'Bỏ thích' : 'Thích'}
+      </button>
+    </>
+  )}
 
-                        {!userLoading && userData?.role === 'mod' && (
-                            <>
-                                <Link to={config.routes.updateProduct.replace(':productId', product._id)}>
-                                    <button>Sửa sản phẩm</button>
-                                </Link>
-                                <button onClick={handleDeleteProduct} className={cx('delete-button')}>
-                                    Xóa sản phẩm
-                                </button>
-                            </>
-                        )}
-                    </div>
+  {userData?.role === 'mod' && (
+    <>
+      <Link to={config.routes.updateProduct.replace(':productId', product._id)}>
+        <button>Sửa sản phẩm</button>
+      </Link>
+      <button onClick={handleDeleteProduct} className={cx('delete-button')}>
+        Xóa sản phẩm
+      </button>
+    </>
+  )}
+</div>
+
                 </div>
             </div>
 
             <div className={cx('product-details')}>
                 <h3>Chi tiết sản phẩm</h3>
-                <p className={cx('description-product')}>
-                    <span>Danh mục:</span> {productCategory.nameCategory}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Nhà sản xuất:</span> {productManufacturer.nameManufacturer}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Xuất xứ:</span> {productOrigin.nameOrigin}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Đơn vị:</span> {productUnit.nameUnit}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Bảo hành:</span> {productWarranty} tháng
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Trạng thái:</span> {productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}
-                </p>
-                <p className={cx('description-product')}>
-                    <span>Mô tả:</span> {productDescription}
-                </p>
+                <p className={cx('description-product')}><span>Danh mục:</span> {productCategory.nameCategory}</p>
+                <p className={cx('description-product')}><span>Nhà sản xuất:</span> {productManufacturer.nameManufacturer}</p>
+                <p className={cx('description-product')}><span>Xuất xứ:</span> {productOrigin.nameOrigin}</p>
+                <p className={cx('description-product')}><span>Đơn vị:</span> {productUnit.nameUnit}</p>
+                <p className={cx('description-product')}><span>Bảo hành:</span> {productWarranty} tháng</p>
+                <p className={cx('description-product')}><span>Trạng thái:</span> {productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}</p>
+                <p className={cx('description-product')}><span>Mô tả:</span> {productDescription}</p>
             </div>
+<div className={cx('product-feedback')}>
+  <h3>Đánh giá sản phẩm</h3>
+  {feedbackLoading ? (
+    <p>Đang tải đánh giá...</p>
+  ) : feedbacks.length === 0 ? (
+    <p>Chưa có đánh giá nào.</p>
+  ) : (
+    <ul className={cx('feedback-list')}>
+
+      {feedbacks.map((fb) => {
+        const rating = fb.rating || 0;
+        return (
+          <li key={fb._id} className={cx('feedback-item')}>
+            <div className={cx('feedback-header')}>
+              <img
+                src={fb.user?.userAvatar[0]?.link|| '/default-avatar.png'}
+                alt={fb.user?.userName || 'Avatar'}
+                className={cx('feedback-avatar')}
+              />
+              <strong className={cx('feedback-user-name')}>{fb.user?.userName || 'Người dùng ẩn danh'}</strong>
+              <div className={cx('feedback-rating')}>
+  {[...Array(5)].map((_, i) => (
+    <span
+      key={i}
+      className={cx('star', i < (fb.rating || 0) ? 'filled' : '')}
+      aria-label={i < (fb.rating || 0) ? 'Đã đánh giá' : 'Chưa đánh giá'}
+    >
+      ★
+    </span>
+  ))}
+</div>
+            </div>
+            <p className={cx('feedback-comment')}>{fb.comment}</p>
+            <small className={cx('feedback-time')}>{moment(fb.createdAt).fromNow()}</small>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</div>
+
+
+
         </div>
     );
 }
