@@ -89,7 +89,7 @@ router.put(
         userEmail,
         userPhone,
         userGender,
-        userAddress,
+        // userAddress,
         userBirthday,
       } = req.body;
 
@@ -118,7 +118,7 @@ router.put(
         userEmail: userEmail,
         userPhone: userPhone,
         userGender: userGender,
-        userAddress: userAddress,
+        // userAddress: userAddress,
         userBirthday: userBirthday,
       };
 

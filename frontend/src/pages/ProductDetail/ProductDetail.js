@@ -321,18 +321,19 @@ function ProductDetail() {
                     <ul className={cx('feedback-list')}>
                         {feedbacks.map((fb) => {
                             const rating = fb.rating || 0;
-                            const avatar = fb?.avatar;
-                            console.log('user:', fb.user);
-
-                            console.log('avt', avatar?.userAvatar[0]?.link);
                             return (
                                 <li key={fb._id} className={cx('feedback-item')}>
                                     <div className={cx('feedback-header')}>
                                         <img
-                                            src={fb.user?.userAvatar[0]?.link || ''}
+                                            src={
+                                                fb.user?.userAvatar && fb.user.userAvatar.length > 0
+                                                    ? fb.user.userAvatar[0].link
+                                                    : '/users/no-avatar.png'
+                                            }
                                             alt={fb.user?.userName || 'Avatar'}
                                             className={cx('feedback-avatar')}
                                         />
+
                                         <strong className={cx('feedback-user-name')}>
                                             {fb.user?.userName || 'Người dùng ẩn danh'}
                                         </strong>
