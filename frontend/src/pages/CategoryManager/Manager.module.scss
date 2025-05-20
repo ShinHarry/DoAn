@@ -4,7 +4,14 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
+.cancelBtn {
+    background-color: #ccc;
+    color: #000;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+}
 .table {
   width: 100%;
   border-collapse: collapse;

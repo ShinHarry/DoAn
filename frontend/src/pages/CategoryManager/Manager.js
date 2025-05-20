@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styles from './Manager.module.scss';
 import * as categoryService from '~/services/categoryService';
 import Swal from 'sweetalert2';
@@ -13,6 +13,8 @@ function Manager() {
         imageFile: null,
     });
     const [refresh, setRefresh] = useState(false);
+
+    const imageInputRef = useRef(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -31,9 +33,35 @@ function Manager() {
     }, [refresh]);
 
     const handleDelete = async (id) => {
-        await categoryService.deleteCategory(id);
-        setCategories(categories.filter((cat) => cat._id !== id));
-    };
+    const result = await Swal.fire({
+        title: 'Bạn có chắc muốn xoá?',
+        text: 'Hành động này không thể hoàn tác!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xoá',
+        cancelButtonText: 'Huỷ',
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await categoryService.deleteCategory(id);
+            setCategories(categories.filter((cat) => cat._id !== id));
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Xoá danh mục thành công!',
+                showConfirmButton: false,
+                timer: 3000,
+            });
+        } catch (err) {
+            Swal.fire('Lỗi!', 'Xoá danh mục thất bại.', 'error');
+        }
+    }
+};
+
 
     const handleEdit = (id) => {
         setEditingId(id);
@@ -41,26 +69,47 @@ function Manager() {
     };
 
     const handleSave = async (id) => {
-        const cat = categories.find((c) => c._id === id);
-        let data;
+    const cat = categories.find((c) => c._id === id);
+    const { nameCategory, description } = cat;
 
-        if (editingImage[id]) {
-            data = new FormData();
-            data.append('nameCategory', cat.nameCategory);
-            data.append('description', cat.description);
-            data.append('image', editingImage[id]);
-        } else {
-            data = {
-                nameCategory: cat.nameCategory,
-                description: cat.description,
-            };
-        }
+    if (!nameCategory.trim() || !description.trim()) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Lỗi!',
+            text: 'Tên danh mục và mô tả không được để trống.',
+        });
+        return;
+    }
 
-        const updated = await categoryService.updateCategory(id, data);
-        const updatedList = categories.map((c) => (c._id === id ? updated : c));
-        setCategories(updatedList);
-        setEditingId(null);
-    };
+    let data;
+    if (editingImage[id]) {
+        data = new FormData();
+        data.append('nameCategory', nameCategory);
+        data.append('description', description);
+        data.append('image', editingImage[id]);
+    } else {
+        data = { nameCategory, description };
+    }
+
+    try {
+    const updated = await categoryService.updateCategory(id, data);
+    const updatedList = categories.map((c) => (c._id === id ? updated : c));
+    setCategories(updatedList);
+    setEditingId(null);
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Sửa danh mục sản phẩm thành công!',
+        showConfirmButton: false,
+        timer: 3000,
+    });
+} catch (err) {
+    Swal.fire('Lỗi!', 'Cập nhật danh mục thất bại.', 'error');
+}
+
+};
+
 
     const handleInputChange = (e, id, field) => {
         const updated = categories.map((c) =>
@@ -104,9 +153,16 @@ function Manager() {
         try {
             await categoryService.addCategory(formData);
             setNewCategory({ nameCategory: '', description: '', imageFile: null });
-            setRefresh((prev) => !prev); // Đảo giá trị để kích hoạt useEffect
-            // Optionally show success message
-            Swal.fire('Thành công!', 'Danh mục đã được thêm.', 'success');
+            if (imageInputRef.current) imageInputRef.current.value = '';
+            setRefresh((prev) => !prev);
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Danh mục đã được thêm!',
+                showConfirmButton: false,
+                timer: 3000,
+            });
         } catch (err) {
             console.error('Lỗi thêm danh mục:', err);
             Swal.fire('Lỗi!', 'Thêm danh mục thất bại.', 'error');
@@ -174,20 +230,33 @@ function Manager() {
                                 )}
                             </td>
                             <td>
-                                {editingId === cat._id ? (
-                                    <button onClick={() => handleSave(cat._id)}>Lưu</button>
-                                ) : (
-                                    <button onClick={() => handleEdit(cat._id)}>Sửa</button>
-                                )}
-                                <button className={styles.deleteBtn} onClick={() => handleDelete(cat._id)}>
-                                    Xoá
-                                </button>
-                            </td>
+    {editingId === cat._id ? (
+        <>
+            <button onClick={() => handleSave(cat._id)}>Lưu</button>
+            <button className={styles.cancelBtn} onClick={() => setEditingId(null)}>
+                Huỷ
+            </button>
+        </>
+    ) : (
+        <>
+            <button onClick={() => handleEdit(cat._id)}>Sửa</button>
+            <button className={styles.deleteBtn} onClick={() => handleDelete(cat._id)}>
+                Xoá
+            </button>
+        </>
+    )}
+</td>
+
                         </tr>
                     ))}
                     <tr>
                         <td>
-                            <input type="file" accept="image/*" onChange={handleImageChange} />
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                ref={imageInputRef}
+                            />
                         </td>
                         <td>
                             <input
