@@ -43,9 +43,7 @@ function ProductDetail() {
             setFeedbackLoading(true);
             try {
                 const feedbackData = await feedbackService.getFeedbacksByProductId(productId);
-                console.log('du llieu', feedbackData);
 
-                // bạn có thể xử lý hoặc lưu vào state
                 setFeedbacks(feedbackData);
             } catch (error) {
                 console.error(error);

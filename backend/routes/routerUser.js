@@ -38,14 +38,8 @@ router.put(
   async (req, res) => {
     try {
       const userId = req.params.userId;
-      const {
-        userName,
-        userEmail,
-        userPhone,
-        userGender,
-        // userAddress,
-        userBirthday,
-      } = req.body;
+      const { userName, userEmail, userPhone, userGender, userBirthday } =
+        req.body;
 
       const currentUser = await User.findById(userId);
       if (!currentUser) {
