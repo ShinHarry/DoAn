@@ -16,20 +16,6 @@ const UserSchema = new mongoose.Schema(
       link: { type: String },
       alt: { type: String },
     },
-    cart: {
-      type: [
-        {
-          _id: {
-            type: mongoose.Schema.Types.ObjectId,
-            default: () => new mongoose.Types.ObjectId(),
-          }, // ID riêng cho mỗi cart item
-          product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-          quantity: { type: Number, default: 1 },
-          unitPrice: { type: Number, default: 0 },
-        },
-      ],
-      default: [],
-    },
     userAddress: {
       type: [
         {

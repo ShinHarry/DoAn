@@ -21,10 +21,6 @@ const Footer = () => {
                             <a href="google.com">
                                 <h3>SMarket - Thiên đường công nghệ</h3>
                             </a>
-                            {/* <FontAwesomeIcon icon="fa-solid fa-headset" /> */}
-                            <span class="call-us-title">Liên hệ với chúng tôi</span>
-                            <span class="call-us-text">0362025195</span>
-
                         </div>
                     </div>
                     <div className={cx('footer-item')}>

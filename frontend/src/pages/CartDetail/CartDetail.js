@@ -173,6 +173,7 @@ function CartDetail() {
                                 <input
                                     type="number"
                                     value={item.quantity}
+                                    readOnly
                                     onChange={(e) => handleUpdateQuantity(item._id, Math.max(1, parseInt(e.target.value) || 1))}
                                     className={cx('quantity-input')}
                                     min="1"
