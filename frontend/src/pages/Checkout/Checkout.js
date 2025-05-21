@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState, useCallback } from 'react';
 import classNames from 'classnames/bind';
 import Button from '~/components/Button';
 import styles from './Checkout.module.scss';
-import * as cartService from '~/services/cartService';
 import * as userService from '~/services/userService';
 import * as paymentMethodService from '~/services/paymentMethodService';
 import * as orderService from '~/services/orderService';
@@ -12,12 +11,13 @@ import * as paymentService from '~/services/paymentService';
 import * as saleService from '~/services/saleService';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { fetchUser } from '~/redux/actions/authActions';
 
 const cx = classNames.bind(styles);
 
 function Checkout() {
     const navigate = useNavigate();
-    const cartItemsFromRedux = useSelector(state => state.cart.selectedCartItems);
+    // const cartItemsFromRedux = useSelector((state) => state.cart.selectedCartItems);
     const [cartItems, setCartItems] = useState([]);
     const [discount, setDiscount] = useState([]);
     const [shippingMethod, setShippingMethod] = useState('standard');
@@ -30,7 +30,6 @@ function Checkout() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [userData, setUserData] = useState(null);
     // payment method
     const [paymentMethod, setPaymentMethod] = useState('cod');
     // address
@@ -45,16 +44,12 @@ function Checkout() {
     const [discountMessage, setDiscountMessage] = useState('');
     const [discountMessageType, setDiscountMessageType] = useState('');
     //
-
+    const currentUser = useSelector((state) => state.auth.login.currentUser);
+    const dispatch = useDispatch();
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
         try {
-            const userFromStorage = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
-            if (!userFromStorage?.id) {
-                throw new Error('User not logged in');
-            }
-            setUserData(userFromStorage);
-            const fetchedAddresses = await userService.getUserAddresses();
+            const fetchedAddresses = await userService.getUserAddresses(currentUser?.user?._id);
             setAddresses(fetchedAddresses || []);
 
             if (fetchedAddresses && fetchedAddresses.length > 0) {
@@ -73,6 +68,7 @@ function Checkout() {
                 navigate('/login');
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate]);
 
     //lấy sản phẩm trong giỏ
@@ -81,11 +77,10 @@ function Checkout() {
         try {
             const cartData = JSON.parse(sessionStorage.getItem('selectedCartItems'));
             if (!cartData && cartData.length === 0) {
-                    throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
-            } 
+                throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
+            }
             setCartItems(cartData);
-            const tempTotal = cartData.reduce(
-                (sum, item) => sum + item.unitPrice * item.quantity, 0);
+            const tempTotal = cartData.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
             setTotal(tempTotal);
         } catch (err) {
             console.error('Error fetching cart for checkout:', err);
@@ -100,6 +95,10 @@ function Checkout() {
 
     // lấy paymment method và discount
     useEffect(() => {
+        if (!currentUser) {
+            dispatch(fetchUser());
+        }
+
         const fetchMethod = async () => {
             try {
                 const response = await paymentMethodService.getPaymentMethod();
@@ -121,6 +120,7 @@ function Checkout() {
 
         fetchSales();
         fetchMethod();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -189,7 +189,7 @@ function Checkout() {
         // Áp dụng giảm giá
         const discountPercent = foundDiscount.discount;
         const discountAmountCalc = (total * discountValue) / 100;
-        
+
         setDiscountValue(discountPercent);
         setDiscountAmount(discountAmountCalc);
         setFinalTotal(total + shippingFee - discountAmountCalc);
@@ -224,7 +224,7 @@ function Checkout() {
             totalAmount: finalTotal,
             discount: discountAmount || 0,
             paymentMethod,
-            user: userData?.id,
+            user: currentUser?.user?.id,
         };
 
         console.log('Placing Order:', orderDetails);

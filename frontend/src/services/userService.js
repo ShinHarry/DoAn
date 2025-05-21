@@ -1,5 +1,14 @@
 import * as httpRequest from '~/utils/httpRequest';
 
+export const getMe = async (userId) => {
+    try {
+        return await httpRequest.get(`/users/me`);
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
+
 export const getUserById = async (userId) => {
     try {
         return await httpRequest.get(`/users/${userId}`);
@@ -36,9 +45,9 @@ export const getAddressByUserId = async (userId) => {
 // --- Thêm phần quản lý địa chỉ--- //
 
 // lấy addresses người dùng hiện tại
-export const getUserAddresses = async () => {
+export const getUserAddresses = async (userId) => {
     try {
-        const response = await httpRequest.get('/users/me/addresses');
+        const response = await httpRequest.get(`/users/${userId}/addresses`);
         return response.addresses; // []
     } catch (err) {
         console.error('Error getting user addresses:', err);
@@ -48,7 +57,7 @@ export const getUserAddresses = async () => {
 
 // thêm địa chỉ mới người dùng hiện tại
 export const addAddress = async (addressData) => {
-    console.log(addressData);
+    console.log('addressData:', addressData);
     try {
         const response = await httpRequest.post('/users/me/addresses', addressData);
         return response;
@@ -59,10 +68,10 @@ export const addAddress = async (addressData) => {
 };
 
 // xóa địa chỉ
-export const deleteAddress = async (addressId) => {
+export const deleteAddress = async (data) => {
     try {
         const response = await httpRequest.del('/users/me/addresses', {
-            data: { addressId: addressId },
+            data,
         });
         return response;
     } catch (err) {

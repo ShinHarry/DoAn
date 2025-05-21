@@ -2,24 +2,22 @@ import * as httpRequest from '~/utils/httpRequest';
 
 export const login = async ({ userNameAccount, userPassword, rememberMe }) => {
     try {
-        const res = await httpRequest.post('auth/login', { userNameAccount, userPassword });
-
-        const token = res.token;
+        const res = await httpRequest.post('auth/login', { userNameAccount, userPassword, rememberMe });
         const user = res.user;
-        if (rememberMe) {
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-        } else {
-            sessionStorage.setItem('token', token);
-            sessionStorage.setItem('user', JSON.stringify(user));
-        }
-
-        return { token, user };
+        return { user };
     } catch (error) {
         throw error;
     }
 };
-
+export const fetchUser = async () => {
+    try {
+        const res = await httpRequest.get('users/me');
+        console.log('fetchUser', res);
+        return res;
+    } catch (err) {
+        throw err;
+    }
+};
 export const register = async (registerData) => {
     try {
         const res = await httpRequest.post('auth/register', registerData);
@@ -33,6 +31,16 @@ export const forgotPassword = async (email) => {
     try {
         const res = await httpRequest.post('auth/forgot-password', email);
         return res;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const logout = async () => {
+    try {
+        await httpRequest.post('auth/logout');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
     } catch (error) {
         throw error;
     }

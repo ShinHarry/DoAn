@@ -2,46 +2,49 @@ import classNames from 'classnames/bind';
 import styles from './Sidebar.module.scss';
 import Menu, { MenuItem } from './Menu';
 import { LocationIcon, PassWordIcon, ProfileIcon } from '~/components/Icons';
-import { jwtDecode } from 'jwt-decode';
+import * as authService from '~/services/authService';
+import { useEffect, useState } from 'react';
 
 const cx = classNames.bind(styles);
 
 function Sidebar() {
-    const getToken = () => {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) navigator('/login');
-        try {
-            const decoded = jwtDecode(token);
-            return {
-                userId: decoded.userId,
-                userRole: decoded.userRole,
-                avatar: decoded.userAvatar || null,
-            };
-        } catch (error) {
-            console.error('Token decode error:', error);
-            return null;
-        }
-    };
-    const { userId } = getToken() || {};
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await authService.fetchUser();
+                setUser(response);
+                console.log('fetchUser', response);
+            } catch (err) {
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUser();
+    }, []);
     return (
         <aside className={cx('wrapper')}>
+            {loading && <div>Đang kiểm tra quyền truy cập...</div>}
             <Menu>
                 <MenuItem
                     title="Thông tin cá nhân"
-                    to={`profile/${userId}`}
+                    to={`profile/${user?.user?._id}`}
                     icon={<ProfileIcon />}
                     activeIcon={<ProfileIcon />}
                 />
                 <MenuItem
                     title="Sổ địa chỉ"
-                    to={'profile/me/address'}
+                    to={`profile/${user?.user?._id}/address`}
                     icon={<LocationIcon />}
                     activeIcon={<LocationIcon />}
                 />
 
                 <MenuItem
                     title="Quên mật khẩu"
-                    to={`profile/${userId}/changepassword`}
+                    to={`profile/${user?.user?._id}/changepassword`}
                     icon={<PassWordIcon />}
                     activeIcon={<PassWordIcon />}
                 />

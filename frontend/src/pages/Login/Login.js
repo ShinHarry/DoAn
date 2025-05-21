@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { login } from '~/redux/actions/authActions';
 import classNames from 'classnames/bind';
 import styles from './Login.module.scss';
@@ -18,54 +18,60 @@ function Login() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const currentUser = useSelector((state) => state.auth.login.currentUser);
-
-    useEffect(() => {
-        if (currentUser) {
-            const role = currentUser.role;
-            if (role === 'admin') {
-                navigate('/admindashboard');
-            } else if (role === 'mod') {
-                navigate('/moddashboard');
-            } else if (role === 'cus') {
-                navigate('/');
-            }
-        }
-    }, [currentUser, navigate]);
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            await dispatch(
+            const result = await dispatch(
                 login({
                     userNameAccount: username,
                     userPassword: password,
                     rememberMe,
                 }),
             );
-            toast.success('Đăng nhập thành công!', {
+
+            const user = result?.user;
+            console.log('user: ', user);
+            if (user) {
+                const role = user.userRole;
+                const status = user.userStatus;
+
+                if (status === 'banned') {
+                    toast.error('Tài khoản của bạn đã bị khóa!', {
+                        position: 'top-center',
+                        autoClose: 3000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        draggable: true,
+                    });
+                    return;
+                }
+
+                toast.success('Đăng nhập thành công!', {
+                    position: 'top-center',
+                    autoClose: 3000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    draggable: true,
+                });
+
+                if (role === 'admin') {
+                    navigate('/admindashboard');
+                } else if (role === 'mod') {
+                    navigate('/moddashboard');
+                } else if (role === 'cus') {
+                    navigate('/');
+                }
+            }
+        } catch (err) {
+            const message = err.response?.data?.message || 'Đăng nhập thất bại, vui lòng thử lại.';
+            setError(message);
+            console.log('err:', err);
+            toast.error(message, {
                 position: 'top-center',
                 autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                draggable: true,
             });
-        } catch (err) {
-            if (err.response?.data?.message) {
-                setError(err.response.data.message);
-                toast.error(err.response.data.message, {
-                    position: 'top-center',
-                    autoClose: 3000,
-                });
-            } else {
-                setError('Đăng nhập thất bại, vui lòng thử lại.');
-                toast.error('Đăng nhập thất bại, vui lòng thử lại.', {
-                    position: 'top-center',
-                    autoClose: 3000,
-                });
-            }
         }
     };
 

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import * as productServices from '~/services/productService';
-import * as cartService from '~/services/cartService';
-import * as wishlistService from '~/services/wishlistService';
-import classNames from 'classnames/bind';
-import styles from './ProductDetail.module.scss';
-import config from '~/config';
-import Image from '~/components/Image';
+import { useDispatch, useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import Slider from 'react-slick';
 import moment from 'moment';
+import classNames from 'classnames/bind';
+
+import * as productServices from '~/services/productService';
+import * as cartService from '~/services/cartService';
+import * as wishlistService from '~/services/wishlistService';
+import { fetchUser } from '~/redux/actions/authActions';
+import styles from './ProductDetail.module.scss';
+import config from '~/config';
+import Image from '~/components/Image';
 import * as feedbackService from '~/services/feedbackService';
 const cx = classNames.bind(styles);
 
@@ -19,27 +22,30 @@ function ProductDetail() {
     const { productId } = useParams();
     const [product, setProduct] = useState(null);
     const [productLoading, setProductLoading] = useState(true);
-    const [ratings, setRatings] = useState([]);
-    const [userData, setUserData] = useState(null);
-    const [userLoading, setUserLoading] = useState(true);
 
     const [isLiked, setIsLiked] = useState(false);
     const navigate = useNavigate();
     const [feedbacks, setFeedbacks] = useState([]);
     const [feedbackLoading, setFeedbackLoading] = useState(true);
 
+    const currentUser = useSelector((state) => state.auth.login.currentUser);
+    const dispatch = useDispatch();
+    console.log('currentUser', currentUser);
+    useEffect(() => {
+        if (!currentUser) {
+            dispatch(fetchUser());
+        }
+    }, [currentUser, dispatch]);
     useEffect(() => {
         if (!productId) return;
 
         const fetchRatingsAndFeedbacks = async () => {
             setFeedbackLoading(true);
             try {
-                const ratingsData = await feedbackService.getRatingsByProductId(productId);
                 const feedbackData = await feedbackService.getFeedbacksByProductId(productId);
                 console.log('du llieu', feedbackData);
 
                 // bạn có thể xử lý hoặc lưu vào state
-                setRatings(ratingsData);
                 setFeedbacks(feedbackData);
             } catch (error) {
                 console.error(error);
@@ -49,18 +55,6 @@ function ProductDetail() {
 
         fetchRatingsAndFeedbacks();
     }, [productId]);
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-        if (storedUser) {
-            try {
-                setUserData(JSON.parse(storedUser));
-            } catch (error) {
-                console.error('Failed to parse user data:', error);
-            }
-        }
-        setUserLoading(false);
-    }, []);
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -77,11 +71,12 @@ function ProductDetail() {
     }, [productId]);
 
     useEffect(() => {
-        if (!userData || !product) return;
+        if (!currentUser || !product) return;
 
         const checkLiked = async () => {
             try {
-                const data = await wishlistService.getWishlistByUser(userData._id);
+                console.log('currentUser.user._id', currentUser.user._id);
+                const data = await wishlistService.getWishlistByUser(currentUser.user._id);
                 const existed = data.find((item) => item.productId === product._id);
                 setIsLiked(!!existed);
             } catch (err) {
@@ -90,10 +85,10 @@ function ProductDetail() {
         };
 
         checkLiked();
-    }, [userData, product]);
+    }, [currentUser, product]);
 
     const handleAddToCart = async () => {
-        if (!userData) {
+        if (!currentUser) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Bạn chưa đăng nhập',
@@ -127,7 +122,7 @@ function ProductDetail() {
     };
 
     const handleLike = async () => {
-        if (!userData) {
+        if (!currentUser) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Bạn chưa đăng nhập',
@@ -139,7 +134,7 @@ function ProductDetail() {
 
         if (isLiked) {
             try {
-                const existing = await wishlistService.getWishlistByUser(userData._id);
+                const existing = await wishlistService.getWishlistByUser(currentUser.user._id);
                 const item = existing.find((i) => i.productId === product._id);
                 if (item) {
                     await wishlistService.deleteWishlist(item._id);
@@ -261,7 +256,7 @@ function ProductDetail() {
                     </div>
 
                     <div className={cx('product-actions')}>
-                        {userData?.role !== 'mod' && (
+                        {currentUser?.user?.userRole !== 'mod' && (
                             <>
                                 <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
                                 <button
@@ -273,7 +268,7 @@ function ProductDetail() {
                             </>
                         )}
 
-                        {userData?.role === 'mod' && (
+                        {currentUser?.user?.userRole === 'mod' && (
                             <>
                                 <Link to={config.routes.updateProduct.replace(':productId', product._id)}>
                                     <button>Sửa sản phẩm</button>
@@ -320,7 +315,6 @@ function ProductDetail() {
                 ) : (
                     <ul className={cx('feedback-list')}>
                         {feedbacks.map((fb) => {
-                            const rating = fb.rating || 0;
                             return (
                                 <li key={fb._id} className={cx('feedback-item')}>
                                     <div className={cx('feedback-header')}>

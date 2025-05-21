@@ -9,7 +9,7 @@ const verifyToken = require("../middlewares/Auth/verifyToken");
 // Get all
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const orderList = await Order.find({ user: userId });
 
     const order = orderList.map((item) => ({
@@ -35,84 +35,86 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
- //Đánh giá
-router.post('/:orderId/rating', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { rating } = req.body;
+//Đánh giá
+// router.post('/:orderId/rating', async (req, res) => {
+//   try {
+//     const { orderId } = req.params;
+//     const { rating } = req.body;
 
-    const order = await Order.findById(orderId).populate('orderDetails.product');
+//     const order = await Order.findById(orderId).populate('orderDetails.product');
 
-    if (!order || order.orderStatus !== 'completed') {
-      return res.status(400).json({ message: 'Đơn hàng không hợp lệ hoặc chưa hoàn tất.' });
-    }
+//     if (!order || order.orderStatus !== 'completed') {
+//       return res.status(400).json({ message: 'Đơn hàng không hợp lệ hoặc chưa hoàn tất.' });
+//     }
 
-    if (order.hasRated) {
-      return res.status(400).json({ message: 'Đơn hàng đã được đánh giá trước đó.' });
-    }
+//     if (order.hasRated) {
+//       return res.status(400).json({ message: 'Đơn hàng đã được đánh giá trước đó.' });
+//     }
 
-    for (const item of order.orderDetails) {
-      const product = await Product.findById(item.product._id);
-      if (!product) {
-        console.error('Không tìm thấy sản phẩm với id:', item.product._id);
-        continue;
-      }
+//     for (const item of order.orderDetails) {
+//       const product = await Product.findById(item.product._id);
+//       if (!product) {
+//         console.error('Không tìm thấy sản phẩm với id:', item.product._id);
+//         continue;
+//       }
 
-      if (!product.productRatings) product.productRatings = [];
+//       if (!product.productRatings) product.productRatings = [];
 
-      product.productRatings.push({ userId: order.user, rating });
+//       product.productRatings.push({ userId: order.user, rating });
 
-      const total = product.productRatings.reduce((acc, cur) => acc + cur.rating, 0);
-      const avg = total / product.productRatings.length;
-      product.productAvgRating = parseFloat(avg.toFixed(1));
+//       const total = product.productRatings.reduce((acc, cur) => acc + cur.rating, 0);
+//       const avg = total / product.productRatings.length;
+//       product.productAvgRating = parseFloat(avg.toFixed(1));
 
-      await product.save();
-    }
+//       await product.save();
+//     }
 
-    order.hasRated = true;
-    await order.save();
+//     order.hasRated = true;
+//     await order.save();
 
-    res.json({ message: 'Đánh giá đã được lưu.' });
-  } catch (err) {
-    console.error('Lỗi khi đánh giá:', err);
-    res.status(500).json({ message: 'Lỗi khi đánh giá.', error: err.message });
-  }
-});
+//     res.json({ message: 'Đánh giá đã được lưu.' });
+//   } catch (err) {
+//     console.error('Lỗi khi đánh giá:', err);
+//     res.status(500).json({ message: 'Lỗi khi đánh giá.', error: err.message });
+//   }
+// });
 
-
-
-router.post('/:orderId/rating', async (req, res) => {
+router.post("/:orderId/rating", async (req, res) => {
   try {
     const { orderId } = req.params;
     const { feedbacks } = req.body;
 
-    const order = await Order.findById(orderId).populate('orderDetails.product');
+    const order = await Order.findById(orderId).populate(
+      "orderDetails.product"
+    );
 
-    if (!order || order.orderStatus !== 'completed') {
-      return res.status(400).json({ message: 'Đơn hàng không hợp lệ hoặc chưa hoàn tất.' });
+    if (!order || order.orderStatus !== "completed") {
+      return res
+        .status(400)
+        .json({ message: "Đơn hàng không hợp lệ hoặc chưa hoàn tất." });
     }
 
     if (order.hasRated) {
-      return res.status(400).json({ message: 'Đơn hàng đã được đánh giá trước đó.' });
+      return res
+        .status(400)
+        .json({ message: "Đơn hàng đã được đánh giá trước đó." });
     }
-
-
 
     for (const feedback of feedbacks) {
       const { productId, rating, comment } = feedback;
 
       const product = await Product.findById(productId);
       if (!product) {
-        console.error('Không tìm thấy sản phẩm:', productId);
+        console.error("Không tìm thấy sản phẩm:", productId);
         continue;
       }
       // Lưu vào productRatings
-    //   const ratingData = { userId: order.user, rating };
-    // product.productRatings.push(ratingData);
-    //   const total = product.productRatings.reduce((acc, cur) => acc + cur.rating, 0);
-    //   const avg = total / product.productRatings.length;
-    //   product.productAvgRating = parseFloat(avg.toFixed(1));
-    //   await product.save();
+      //   const ratingData = { userId: order.user, rating };
+      // product.productRatings.push(ratingData);
+      //   const total = product.productRatings.reduce((acc, cur) => acc + cur.rating, 0);
+      //   const avg = total / product.productRatings.length;
+      //   product.productAvgRating = parseFloat(avg.toFixed(1));
+      //   await product.save();
 
       // Lưu vào Feedback
       const newFeedback = new Feedback({
@@ -120,7 +122,7 @@ router.post('/:orderId/rating', async (req, res) => {
         user: order.user,
         order: order._id,
         comment,
-        rating
+        rating,
       });
 
       await newFeedback.save();
@@ -129,10 +131,10 @@ router.post('/:orderId/rating', async (req, res) => {
     order.hasRated = true;
     await order.save();
 
-    res.json({ message: 'Đánh giá và nhận xét đã được lưu.' });
+    res.json({ message: "Đánh giá và nhận xét đã được lưu." });
   } catch (err) {
-    console.error('Lỗi khi đánh giá:', err);
-    res.status(500).json({ message: 'Lỗi khi đánh giá.', error: err.message });
+    console.error("Lỗi khi đánh giá:", err);
+    res.status(500).json({ message: "Lỗi khi đánh giá.", error: err.message });
   }
 });
 
@@ -280,7 +282,7 @@ router.post("/", verifyToken, async (req, res) => {
     discount,
     paymentMethod,
   } = req.body;
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   if (
     !orderItems ||

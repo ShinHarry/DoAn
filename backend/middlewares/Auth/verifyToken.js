@@ -2,25 +2,27 @@ const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
   try {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({ message: "Bạn cần đăng nhập." });
     }
 
-    const decoded = jwt.verify(token, process.env.secret_token);
+    const decoded = jwt.verify(token, process.env.SECRET_TOKEN);
+
     req.user = {
-      id: decoded.userId,
-      role: decoded.role,
-      avatar: decoded.userAvatar || null, // phòng trường hợp không có
+      _id: decoded.userId,
+      userRole: decoded.role,
+      userAvatar: decoded.userAvatar || null,
     };
 
     next();
   } catch (err) {
-    return res
-      .status(403)
-      .json({ message: "Token không hợp lệ hoặc đã hết hạn." });
+    // Phân biệt lỗi rõ ràng hơn (hết hạn vs sai token)
+    if (err.name === "TokenExpiredError") {
+      return res.status(403).json({ message: "Token đã hết hạn." });
+    }
+    return res.status(403).json({ message: "Token không hợp lệ." });
   }
 };
 

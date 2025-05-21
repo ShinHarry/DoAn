@@ -14,7 +14,12 @@ router.get("/", async (req, res) => {
       .limit(parseInt(limit))
       .lean();
     const total = await Category.countDocuments();
-    res.json({ categories, total, page: parseInt(page), limit: parseInt(limit) });
+    res.json({
+      categories,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -24,7 +29,8 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const category = await Category.findById(req.params.id).lean();
-    if (!category) return res.status(404).json({ message: "Category not found" });
+    if (!category)
+      return res.status(404).json({ message: "Category not found" });
     res.json(category);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -49,9 +55,13 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
     });
 
     await newCategory.save();
-    res.status(201).json({ message: "Thêm danh mục thành công!", category: newCategory });
+    res
+      .status(201)
+      .json({ message: "Thêm danh mục thành công!", category: newCategory });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi thêm danh mục", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Lỗi khi thêm danh mục", error: error.message });
   }
 });
 

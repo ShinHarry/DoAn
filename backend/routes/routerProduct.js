@@ -3,10 +3,12 @@ const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
-const Category = require("../models/Category"); // Giả sử bạn có model Category
-const Origin = require("../models/Origin"); // Giả sử bạn có model Origin
+const Category = require("../models/Category");
+const Origin = require("../models/Origin");
 const Manufacturer = require("../models/Manufacturer");
 const { uploadProduct } = require("../middlewares/uploadImage/uploads");
+const verifyToken = require("../middlewares/Auth/verifyToken");
+const authPage = require("../middlewares/Auth/authoziration");
 const BASE_URL = process.env.BASE_URL;
 
 //API lấy danh sách sản phẩm
@@ -167,12 +169,12 @@ router.get("/search", async (req, res) => {
   }
 });
 
-
 //Lấy data đánh giá sản phẩm
 router.get("/rating/:productId", async (req, res) => {
   try {
-    console.log("da vao day")
-    const product = await Product.findById(req.params.productId).select('productAvgRating productRatings');
+    const product = await Product.findById(req.params.productId).select(
+      "productAvgRating productRatings"
+    );
     if (!product) return res.status(404).json({ message: "Product not found" });
 
     res.json({
@@ -184,7 +186,6 @@ router.get("/rating/:productId", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
 
 // API lấy chi tiết sản phẩm theo ID
 router.get("/:id", async (req, res) => {
@@ -204,96 +205,105 @@ router.get("/:id", async (req, res) => {
   }
 });
 // API thêm sản phẩm mới
-router.post("/", uploadProduct.array("productImgs", 10), async (req, res) => {
-  try {
-    const {
-      productName,
-      productUnitPrice,
-      productSupPrice,
-      productQuantity,
-      productWarranty,
-      productStatus,
-      productCategory,
-      productUnit,
-      productOrigin,
-      productManufacturer,
-      productDescription,
-      productSoldQuantity = 0,
-      productAvgRating = 0,
-    } = req.body;
+router.post(
+  "/",
+  verifyToken,
+  authPage(["mod"]),
+  uploadProduct.array("productImgs", 10),
+  async (req, res) => {
+    try {
+      const {
+        productName,
+        productUnitPrice,
+        productSupPrice,
+        productQuantity,
+        productWarranty,
+        productStatus,
+        productCategory,
+        productUnit,
+        productOrigin,
+        productManufacturer,
+        productDescription,
+        productSoldQuantity = 0,
+        productAvgRating = 0,
+      } = req.body;
 
-    let productImgs = [];
-    if (req.files && req.files.length > 0) {
-      productImgs = req.files.map((file) => ({
-        link: `${BASE_URL}public/products/${file.filename}`,
-        alt: productName,
-      }));
+      let productImgs = [];
+      if (req.files && req.files.length > 0) {
+        productImgs = req.files.map((file) => ({
+          link: `${BASE_URL}public/products/${file.filename}`,
+          alt: productName,
+        }));
+      }
+
+      const newProduct = new Product({
+        productName,
+        productUnitPrice,
+        productSupPrice,
+        productQuantity,
+        productWarranty,
+        productStatus,
+        productCategory,
+        productDescription,
+        productManufacturer,
+        productOrigin,
+        productUnit,
+        productSoldQuantity,
+        productAvgRating,
+        productImgs: productImgs,
+      });
+      await newProduct.save();
+      res
+        .status(201)
+        .json({ message: "Thêm sản phẩm thành công!", product: newProduct });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Lỗi khi thêm sản phẩm", error });
     }
-
-    const newProduct = new Product({
-      productName,
-      productUnitPrice,
-      productSupPrice,
-      productQuantity,
-      productWarranty,
-      productStatus,
-      productCategory,
-      productDescription,
-      productManufacturer,
-      productOrigin,
-      productUnit,
-      productSoldQuantity,
-      productAvgRating,
-      productImgs: productImgs,
-    });
-    await newProduct.save();
-    res
-      .status(201)
-      .json({ message: "Thêm sản phẩm thành công!", product: newProduct });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi khi thêm sản phẩm", error });
   }
-});
+);
 
 // API cập nhật sản phẩm
-router.put("/:id", uploadProduct.array("productImgs", 10), async (req, res) => {
-  try {
-    const updatedData = req.body;
+router.put(
+  "/:id",
+  verifyToken,
+  authPage(["mod"]),
+  uploadProduct.array("productImgs", 10),
+  async (req, res) => {
+    try {
+      const updatedData = req.body;
 
-    const existingProduct = await Product.findById(req.params.id);
-    if (!existingProduct) {
-      return res.status(404).json({ message: "Product not found" });
+      const existingProduct = await Product.findById(req.params.id);
+      if (!existingProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      let newImgs = [];
+      if (req.files && req.files.length > 0) {
+        newImgs = req.files.map((file) => ({
+          link: `${BASE_URL}public/products/${file.filename}`,
+          alt: req.body.productName,
+        }));
+      }
+
+      updatedData.productImgs =
+        newImgs.length > 0 ? newImgs : existingProduct.productImgs;
+
+      const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
+        updatedData,
+        { new: true, runValidators: true }
+      );
+
+      res.json(updatedProduct);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-
-    let newImgs = [];
-    if (req.files && req.files.length > 0) {
-      newImgs = req.files.map((file) => ({
-        link: `${BASE_URL}public/products/${file.filename}`,
-        alt: req.body.productName,
-      }));
-    }
-
-    updatedData.productImgs =
-      newImgs.length > 0 ? newImgs : existingProduct.productImgs;
-
-    console.log(req.body);
-    console.log(req.files);
-
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      updatedData,
-      { new: true, runValidators: true }
-    );
-
-    res.json(updatedProduct);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
-});
+);
 
 // API xóa sản phẩm
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
     if (!deletedProduct)

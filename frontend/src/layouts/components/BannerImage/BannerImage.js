@@ -18,7 +18,6 @@ function BannerImage() {
         const fetchNews = async () => {
             try {
                 const response = await newService.getNew();
-                console.log(response);
                 setNews(response);
             } catch (error) {
                 console.error(error);

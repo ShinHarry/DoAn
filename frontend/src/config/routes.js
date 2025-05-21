@@ -7,7 +7,7 @@ const routes = {
     // Hồ sơ người dùng
     profiledashboard: '/profiledashboard',
     profile: 'profile/:userId',
-    address: 'profile/me/address',
+    address: 'profile/:userId/address',
     changepassWord: 'profile/:userId/changepassword',
 
     home: '/',
@@ -43,6 +43,7 @@ const routes = {
     orderSuccess: '/order-success/:orderId?',
     paymentReturn: '/payment-return',
     categoryManager: '/categoryManager',
+    unauthorized: '/unauthorized',
 };
 
 export default routes;

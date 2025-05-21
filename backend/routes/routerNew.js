@@ -4,6 +4,7 @@ const News = require("../models/New");
 require("dotenv").config();
 const { uploadBanner } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
+const authPage = require("../middlewares/Auth/authoziration");
 
 const BASE_URL = process.env.BASE_URL;
 
@@ -23,6 +24,7 @@ router.post(
   "/",
   uploadBanner.single("newImage"),
   verifyToken,
+  authPage(["mod"]),
   async (req, res) => {
     try {
       const { title, summary, content, author, state } = req.body;
@@ -62,7 +64,7 @@ router.post(
 );
 
 // lấy chi tiết
-router.get("/:id", async (req, res) => {
+router.get("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
 
@@ -79,6 +81,7 @@ router.get("/:id", async (req, res) => {
 router.put(
   "/:id",
   verifyToken,
+  authPage(["mod"]),
   uploadBanner.single("newImage"),
   async (req, res) => {
     try {
@@ -118,7 +121,7 @@ router.put(
 );
 
 // Delete news
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const deleted = await News.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "News not found" });

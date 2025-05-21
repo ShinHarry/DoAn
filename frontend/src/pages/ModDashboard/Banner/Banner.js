@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import * as newService from '~/services/newService';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './Banner.module.scss';
-import Swal from 'sweetalert2'; // thư viện hiện alert
+import Swal from 'sweetalert2';
 import Button from '~/components/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -43,7 +43,6 @@ function Banner() {
             try {
                 await newService.deleteNewById(id);
                 Swal.fire('Đã xóa!', 'Banner đã được xóa thành công.', 'success');
-                // Ví dụ: gọi lại danh sách nếu cần
                 setBanners(news.filter((item) => item._id !== id));
             } catch (error) {
                 Swal.fire('Lỗi!', 'Xóa banner thất bại.', 'error');

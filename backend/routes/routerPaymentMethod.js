@@ -3,7 +3,6 @@ const router = express.Router();
 const PaymentMethod = require("../models/PaymentMethod");
 require("dotenv").config();
 
-// Get all news
 router.get("/", async (req, res) => {
   try {
     const paymentList = await PaymentMethod.find();
