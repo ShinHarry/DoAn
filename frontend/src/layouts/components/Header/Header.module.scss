@@ -15,6 +15,15 @@
     box-shadow: 0px 1px 1px rgb(0 0 0 / 12%);
     background-color: var(--white);
 }
+.loginLink {
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+        color: #0056b3;
+    }
+}
 
 .inner {
     height: 100%;
