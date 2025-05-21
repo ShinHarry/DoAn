@@ -5,6 +5,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const mongoose = require('mongoose');
+const ExcelJS = require('exceljs');
 
 // hàm giúp lấy khoảng thời gian theo từng loại
 const getPeriodDateRange = (period, date = new Date()) => {
@@ -35,9 +36,10 @@ const getPeriodDateRange = (period, date = new Date()) => {
 
 // 1. Thống kê doanh thu
 router.get('/revenue', async (req, res) => {
-    const { period } = req.query; // 'daily', 'weekly', 'monthly', 'yearly'
-    let { targetDate } = req.query; // Optional: YYYY-MM-DD
-    targetDate = targetDate ? new Date(targetDate) : new Date();  // xử lý nêú có truyền ngày lên
+    // console.log(req.query)
+    const { period, by , targetDate: rawTargetDate} = req.query; // 'daily', 'weekly', 'monthly', 'yearly'
+    // console.log(period ,by)
+    targetDate = rawTargetDate  ? new Date(rawTargetDate ) : new Date();  // xử lý nêú có truyền ngày lên
 
     if (isNaN(targetDate.getTime())) {
         return res.status(400).json({ message: "targetDate không hợp lệ." });
@@ -46,22 +48,29 @@ router.get('/revenue', async (req, res) => {
     let groupByFormat;
     let startDate, endDate;
     const pipeline = [];
+    // console.log(by)
+    const condition = (by === 'expected') ? 'createdAt' : 'completeAt';
 
     // Điều kiện lọc cơ bản: lọc theo thời gian
     const matchStage = {
         $match: {   // giống where Sql 
-            createdAt: { 
+            [condition]: { 
                 // Sẽ được cập nhật bên dưới
             }
         }
     };
+    if (condition === 'createdAt') {
+         matchStage.$match.orderStatus = { $nin: ['cancelled', 'returned'] };
+    }
+    // console.log(matchStage)
 
     if (period === 'daily') {
         const range = getPeriodDateRange('daily', targetDate);
         startDate = range.startDate;
         endDate = range.endDate;
-        matchStage.$match.createdAt = { $gte: startDate, $lte: endDate };
-        groupByFormat = { $hour: "$createdAt" }; // Nhóm theo giờ trong ngày
+        console.log(startDate ,endDate )
+        matchStage.$match[condition] = { $gte: startDate, $lte: endDate };
+        groupByFormat = { $hour: `$${condition}` }; // Nhóm theo giờ trong ngày
         pipeline.push(matchStage, {
             $group: {  // nhóm và tính
                 _id: groupByFormat,  // Mỗi giờ là 1 nhóm
@@ -82,8 +91,8 @@ router.get('/revenue', async (req, res) => {
         const range = getPeriodDateRange('weekly', targetDate);
         startDate = range.startDate;
         endDate = range.endDate;
-        matchStage.$match.createdAt = { $gte: startDate, $lte: endDate };
-        groupByFormat = { $isoDayOfWeek: "$createdAt" }; // 1 (Mon) đến 7 (Sun)
+        matchStage.$match[condition] = { $gte: startDate, $lte: endDate };
+        groupByFormat = { $isoDayOfWeek: `$${condition}` }; // 1 (Mon) đến 7 (Sun)
         pipeline.push(matchStage, {
             $group: {
                 _id: groupByFormat,
@@ -118,8 +127,8 @@ router.get('/revenue', async (req, res) => {
         const range = getPeriodDateRange('monthly', targetDate);
         startDate = range.startDate;
         endDate = range.endDate;
-        matchStage.$match.createdAt = { $gte: startDate, $lte: endDate };
-        groupByFormat = { $dayOfMonth: "$createdAt" }; // Group by ngày của tháng
+        matchStage.$match[condition] = { $gte: startDate, $lte: endDate };
+        groupByFormat = { $dayOfMonth: `$${condition}` }; // Group by ngày của tháng
         pipeline.push(matchStage, {
             $group: {
                 _id: groupByFormat,
@@ -140,8 +149,8 @@ router.get('/revenue', async (req, res) => {
         const range = getPeriodDateRange('yearly', targetDate);
         startDate = range.startDate;
         endDate = range.endDate;
-        matchStage.$match.createdAt = { $gte: startDate, $lte: endDate };
-        groupByFormat = { $month: "$createdAt" }; // Group by tháng của năm
+        matchStage.$match[condition] = { $gte: startDate, $lte: endDate };
+        groupByFormat = { $month: `$${condition}` }; // Group by tháng của năm
         pipeline.push(matchStage, {
             $group: {
                 _id: groupByFormat,
@@ -174,8 +183,220 @@ router.get('/revenue', async (req, res) => {
     }
 });
 
-// 2. Thống kê sản phẩm (/api/statistics/products?groupBy=category&sortBy=soldQuantity...)
+// 2. Thống kê doanh thu theo range
+router.get('/revenueByRange', async (req, res) => {
+    // console.log(req.query)
+    const { fromDate, toDate, by = 'expected' } = req.query; 
 
+    if (!fromDate || !toDate) {
+        return res.status(400).json({ message: 'fromDate và toDate là bắt buộc.' });
+    }
+
+    const startDate = new Date(fromDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(toDate);
+    endDate.setHours(23, 59, 59, 999);
+
+    console.log(startDate, endDate)
+
+    const pipeline = [];
+    // console.log(by)
+    const condition = (by === 'expected') ? 'createdAt' : 'completeAt';
+
+    const diffMs = endDate.getTime() - startDate.getTime();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+
+    let period;
+    if (diffMs <= oneDayMs) {
+        period = 'daily';
+    } else if (diffMs > oneDayMs && diffMs <= 7 * oneDayMs) {
+        period = 'weekly';
+    } else if (diffMs > 7 * oneDayMs && diffMs <= 31 * oneDayMs) {
+        period = 'monthly';
+    } else {
+        period = 'yearly';
+    }
+    // console.log(period)
+
+    // Điều kiện lọc cơ bản: lọc theo thời gian
+    const matchStage = {
+        $match: { [condition]: { $gte: startDate, $lte: endDate }}
+    };
+    if (condition === 'createdAt') {
+         matchStage.$match.orderStatus = { $nin: ['cancelled', 'returned'] };
+    }
+    // console.log(matchStage)
+    if (period === 'daily') {
+        pipeline.push(matchStage, {
+            $group: {  // nhóm và tính
+                _id: { $hour: `$${condition}` },  // Mỗi giờ là 1 nhóm
+                totalRevenue: { $sum: "$totalAmount" },  // Tính tổng doanh thu trong giờ đó
+                orderCount: { $sum: 1 } // Đếm số đơn hàng trong giờ đó
+            }
+        }, {
+            $sort: { "_id": 1 }  // Sắp xếp giờ tăng dần
+        }, {
+            $project: {  //output
+                _id: 0, // ẩn, bỏ trường _id
+                label: { $concat: [ { $toString: "$_id" }, ":00" ] }, // Format: "0:00", "1:00", ... "23:00"
+                value: "$totalRevenue",
+                orderCount: "$orderCount"
+            }
+        });
+    } else if (period === 'weekly' || period === 'monthly') {
+        pipeline.push(matchStage, {
+            $group: {
+                _id: {$dateToString: { format: "%m-%d", date: `$${condition}` }},
+                totalRevenue: { $sum: "$totalAmount" },
+                orderCount: { $sum: 1 }
+            }
+        }, {
+            $sort: { "_id": 1 }
+        }, {
+            $project: {
+                _id: 0,
+                label: "$_id",
+                value: "$totalRevenue",
+                orderCount: "$orderCount"
+            }
+        });
+
+    } else if (period === 'yearly') {
+        pipeline.push(matchStage, {
+            $group: {
+                _id: {$dateToString: { format: "%m-%Y", date: `$${condition}` }},
+                totalRevenue: { $sum: "$totalAmount" },
+                orderCount: { $sum: 1 }
+            }
+        }, {
+            $sort: { "_id": 1 }
+        }, {
+            $project: {
+                _id: 0,
+                label: "$_id",
+                value: "$totalRevenue",
+                orderCount: "$orderCount"
+            }
+        });
+    } else {
+        return res.status(400).json({ message: "Khoảng thời gian (period) không hợp lệ." });
+    }
+
+    try {
+        const results = await Order.aggregate(pipeline); // trả về mảng obbject
+        // console.log(results)
+        res.json({
+            message: `Dữ liệu doanh thu theo ${period} (Từ ${startDate.toLocaleDateString()} đến ${endDate.toLocaleDateString()})`,
+            data: results
+        });
+    } catch (error) {
+        console.error("Error fetching revenue statistics:", error);
+        res.status(500).json({ message: "Lỗi khi lấy thống kê doanh thu", error: error.message });
+    }
+});
+
+// 4. Xuất file Excel thống kê doanh thu
+router.get('/revenue/export', async (req, res) => {
+    try {
+        const { fromDate, toDate, period = 'monthly', by = 'expected' } = req.query;
+        console.log(fromDate, toDate, period, by)
+        let startDate, endDate;
+
+        // Xử lý ngày tháng năm được chọn
+        if (fromDate && toDate) {
+            startDate = new Date(fromDate);
+            startDate.setHours(0, 0, 0, 0);
+
+            endDate = new Date(toDate);
+            endDate.setHours(23, 59, 59, 999);
+            } else {
+            // Nếu không truyền from/to thì tính theo period
+            const range = getPeriodDateRange(period, new Date());
+            startDate = range.startDate;
+            endDate = range.endDate;
+        }
+        console.log(startDate, endDate)
+        const condition = (by === 'expected') ? 'createdAt' : 'completeAt';
+
+        const matchStage = {
+            $match: {
+                [condition]: { $gte: startDate, $lte: endDate }
+            }
+        };
+
+        if (condition === 'completeAt') {
+            matchStage.$match.orderStatus = 'completed';
+        }
+        if (condition === 'createdAt') {
+         matchStage.$match.orderStatus = { $nin: ['cancelled', 'returned'] };
+    }
+        console.log(by, matchStage)
+        const pipeline=[];
+        pipeline.push(matchStage,{
+            $sort: { [condition]: 1 }
+        },{
+            $project:{
+                _id :0,
+                orderCode: "$_id",
+                totalAmount: "$totalAmount",
+                paymentMethod: "$paymentMethod",
+                paymentStatus: "$paymentStatus",
+                createdAt: "$createdAt",
+                completeAt: "$completeAt",
+            }
+        })
+
+        // Lấy dữ liệu doanh thu
+        const orders = await Order.aggregate(pipeline);
+        console.log(orders)
+        // Tạo workbook và worksheet mới
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Thống kê doanh thu');
+
+        // Thiết lập header
+        worksheet.columns = [
+            { header: (condition === 'createdAt') ? 'Ngày tạo đơn' : 'Ngày hoàn thành', key: condition, width: 20 },
+            { header: 'Mã đơn hàng', key: 'orderCode', width: 25 },
+            { header: 'Tổng tiền', key: 'totalAmount', width: 15 },
+            { header: 'Phương thức thanh toán', key: 'paymentMethod', width: 25 },
+            { header: 'Trạng thái thanh toán', key: 'paymentStatus', width: 20 }
+        ];
+
+        // Thêm dữ liệu vào worksheet
+        worksheet.addRows(orders.map(order => ({
+            [condition]: order[condition] ? order[condition].toLocaleString('vi-VN') : '',
+            orderCode: order.orderCode,
+            totalAmount: order.totalAmount,
+            paymentMethod: order.paymentMethod,
+            paymentStatus: order.paymentStatus
+        })));
+
+        // Tính tổng doanh thu
+        const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+        worksheet.addRow({}); // Thêm dòng trống
+        worksheet.addRow({ totalAmount: `Tổng doanh thu: ${totalRevenue.toLocaleString('vi-VN')} VNĐ` });
+
+        // Format tiền tệ cho cột totalAmount
+        worksheet.getColumn('totalAmount').numFmt = '#,##0';
+
+        // Thiết lập style cho header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+        // Thiết lập header response
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="Revenue-Statistics.xlsx"');
+        await workbook.xlsx.write(res); //ghi nội dung file Excel vào res dạng binary
+        res.end(); // phản hồi kết thúc
+
+    } catch (error) {
+        console.error("Lỗi khi xuất Excel thống kê doanh thu:", error);
+        res.status(500).json({ message: "Lỗi khi xuất Excel thống kê doanh thu", error: error.message });
+    }
+});
+
+// 3. Thống kê sản phẩm (/api/statistics/products?groupBy=category&sortBy=soldQuantity...)
 router.get('/categories', async (req, res) => {
     try {
         const categories = await Category.find({}, '_id nameCategory').sort({ nameCategory: 1 }); // chỉ lấy id, name
@@ -365,7 +586,7 @@ router.get('/products', async (req, res) => {
     }
 );
 
-// 3. Xuất file Excel ( cho sản phẩm: /api/statistics/products/export)
+// 4. Xuất file Excel ( cho sản phẩm: /api/statistics/products/export)
 router.get('/products/export', async (req, res) => {
     try {
         const { groupBy, sortBy, sortOrder, categoryId } = req.query;
@@ -374,7 +595,6 @@ router.get('/products/export', async (req, res) => {
         const cleanedData = productData.map(({ id, ...rest }) => rest);
         // console.log("Excel export data:", cleanedData);
         // Tạo file Excel
-        const ExcelJS = require('exceljs');
         const workbook = new ExcelJS.Workbook();  // tạo file exel
         const worksheet = workbook.addWorksheet('ThongKeSanPham');  // tạo worksheet trong file excel
 
@@ -424,7 +644,7 @@ router.get('/products/export', async (req, res) => {
     }
 });
 
-// 4. Thống kê khách hàng (/api/statistics/customers?sortBy=totalSpent)
+// 5. Thống kê khách hàng (/api/statistics/customers?sortBy=totalSpent)
 async function buildCustomersStatisticsPipeline({ sortBy, sortOrder = 'desc' }) {
     
  const sortOrderValue = sortOrder === 'asc' ? 1 : -1;
@@ -502,7 +722,7 @@ router.get('/customers', async (req, res) => {
     }
 });
 
-// 5. Xuất file Excel ( cho khách hàng: /api/statistics/customers/export)
+// 6. Xuất file Excel ( cho khách hàng: /api/statistics/customers/export)
 router.get('/customers/export', async (req, res) => {
     try {
         const { sortBy = 'totalSpent', sortOrder = 'desc' } = req.query;
@@ -511,7 +731,6 @@ router.get('/customers/export', async (req, res) => {
         const cleanedData = customersData.map(({ id, ...rest }) => rest);
         // console.log("Excel export data:", cleanedData);
         // Tạo file Excel
-        const ExcelJS = require('exceljs');
         const workbook = new ExcelJS.Workbook();  // tạo file exel
         const worksheet = workbook.addWorksheet('ThongKeKhachHang');  // tạo worksheet trong file excel
 
@@ -544,7 +763,7 @@ router.get('/customers/export', async (req, res) => {
     }
 });
 
-// 5. Thống kê trạng thái đơn hàng (/api/statistics/orders/status)
+// 7. Thống kê trạng thái đơn hàng (/api/statistics/orders/status)
 router.get('/orders/status', async (req, res) => {
     try {
         const statusCounts = await Order.aggregate([

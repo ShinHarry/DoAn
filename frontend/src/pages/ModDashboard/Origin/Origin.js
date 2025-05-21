@@ -68,7 +68,8 @@ function Origin() {
             setFormData(initialFormData); // Reset form
             setEditingId(null);
             setIsEditing(false);
-            setShowForm(false); // Ẩn form
+            setShowModal(false);
+            // setShowForm(false); // Ẩn form
             await fetchOrigins();
         } catch (err) {
             console.error('Error handle Origin:', err);
@@ -285,98 +286,6 @@ function Origin() {
                     </div>
                 </div>
             )}
-            {/* {showForm && (
-                <form onSubmit={handleSubmit} className={cx('form')}>
-                    <div className={cx('form-group')}>
-                        <label>Tên nơi xuất xứ:</label>
-                        <input
-                            type="text"
-                            name="nameOrigin"
-                            value={formData.nameOrigin}
-                            onChange={handleChange}
-                            placeholder="Nhập nơi xuất xứ"
-                            required
-                        />
-                    </div>
-
-                    <div className={cx('form-group')}>
-                        <label>Mô tả:</label>
-                        <input
-                            type="text"
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Nhập mô tả"
-                            required
-                        />
-                    </div>
-
-                    <div className={cx('form-group')}>
-                        <label htmlFor="phone">Số điện thoại</label>
-                        <input
-                            type="text"
-                            id="phone"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={(e) => {
-                                // Chỉ giữ lại ký tự số
-                                const numericValue = e.target.value.replace(/\D/g, '');
-                                // Đảm bảo bắt đầu bằng 0 hoặc rỗng (để cho phép người dùng gõ dần)
-                                if (numericValue === '' || numericValue.startsWith('0')) {
-                                    setFormData((prev) => ({ ...prev, phone: numericValue }));
-                                }
-                            }}
-                            pattern="0\d{9}"
-                            maxLength="10"
-                            placeholder="SDT bắt đầu bằng số 0 VD : 0348274919"
-                            required
-                        />
-                    </div>
-                    <div className={cx('form-group')}>
-                        <label htmlFor="address">Địa chỉ cụ thể</label>
-                        <input
-                            type="text"
-                            id="address"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            placeholder="Nhập địa chỉ cụ thể"
-                            required
-                        />
-                    </div>
-                    <div className={cx('form-group')}>
-                        <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Nhập email"
-                            required
-                        />
-                    </div>
-
-                    <div className={cx('formActions')}>
-                        <button
-                            type="button"
-                            className={cx('submit-btn')}
-                            onClick={() => {
-                                setShowForm(false);
-                                setFormData(initialFormData);
-                                setIsEditing(false);
-                                setEditingId(null);
-                            }}
-                        >
-                            Hủy
-                        </button>
-
-                        <button type="submit" className={cx('submit-btn')} disabled={isLoading}>
-                            {isLoading ? 'Đang lưu...' : isEditing ? 'Cập nhật nơi xuất xứ' : 'Thêm nơi nơi xuất xứ'}
-                        </button>
-                    </div>
-                </form>
-            )} */}
         </div>
     );
 }

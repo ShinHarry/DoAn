@@ -1,16 +1,37 @@
 import * as httpRequest from '~/utils/httpRequest';
 
 // 1. Thống kê doanh thu
-export const getRevenueStatistics = async (period) => {
-    try {
-        return await httpRequest.get('/statistics/revenue' , { params: { period } });
+export const getRevenueStatistics = async (params) => {
+    try { //params: { period }
+        return await httpRequest.get('/statistics/revenue' , { params });
     } catch (err) {
         console.log(err);
         throw err;
     }
 };
+// 2. Thống kê doanh thu theo rangerange
+export const getRevenueByDateRange = async (params) => {
+    try { //params: { period }
+        return await httpRequest.get('/statistics/revenueByRange' , { params });
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
+// 3. Xuất Excel thống kê doanh thu
+export const exportRevenueToExcel = (params) => {
+    try{
+        return httpRequest.default.get('statistics/revenue/export', {
+            params,
+            responseType: 'blob',
+        });
+    } catch (err) {
+            console.log(err);
+            throw err;
+    }
+};
 
-// 2. Thống kê sản phẩm
+// 4. Thống kê sản phẩm
 export const getProductStatistics = (params) => {
     // params: { groupBy, sortBy, sortOrder }
     try {
@@ -31,7 +52,7 @@ export const getCategoryList = () => {
     }
 }; 
 
-// 3. Xuất Excel  (cho sản phẩm)
+// 5. Xuất Excel  (cho sản phẩm)
 export const exportProductsToExcel = (params) => {
     try {
         return httpRequest.default.get('statistics/products/export', { 
@@ -52,13 +73,13 @@ export const exportProductsToExcel = (params) => {
     }
 };
 
-// 4. Thống kê khách hàng
+// 6. Thống kê khách hàng
 export const getCustomerStatistics = (params) => {
     // params: { sortBy, sortOrder }
     return httpRequest.get('statistics/customers', { params });
 };
 
-// 5. Xuất Excel  (cho khách hàng)
+// 7. Xuất Excel  (cho khách hàng)
 export const exportCustomersToExcel = (params) => {
     try {
         return httpRequest.default.get('statistics/customers/export', { 
@@ -71,7 +92,7 @@ export const exportCustomersToExcel = (params) => {
     }
 };
 
-// 6. Thống kê trạng thái đơn hàng
+// 8. Thống kê trạng thái đơn hàng
 export const getOrderStatusStatistics = () => {
     return httpRequest.get('statistics/orders/status');
 };

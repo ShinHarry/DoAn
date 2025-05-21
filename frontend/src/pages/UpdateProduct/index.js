@@ -118,6 +118,7 @@ function UpdateProduct() {
             formData.append('productName', product.productName);
             formData.append('productUnitPrice', product.productUnitPrice);
             formData.append('productSupPrice', product.productSupPrice);
+            formData.append('productQuantity', product.productQuantity);
             formData.append('productCategory', product.productCategory);
             formData.append('productUnit', product.productUnit);
             formData.append('productManufacturer', product.productManufacturer);
