@@ -16,7 +16,14 @@ import * as statisticsService from '~/services/statisticsService';
 import { FaDownload, FaChartLine, FaBox, FaUsers, FaShoppingCart } from 'react-icons/fa';
 import classNames from 'classnames/bind';
 import styles from './Statistics.module.scss';
-
+//date
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TextField } from '@mui/material';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
+//npm install @emotion/react @emotion/styled
 //npm add react-chartjs-2 chart.js chartjs-plugin-datalabels
 
 const cx = classNames.bind(styles);
@@ -37,7 +44,22 @@ ChartJS.register(
 function Statistics() {
     // doanh thu
     const [revenueData, setRevenueData] = useState(null);
-    const [revenuePeriod, setRevenuePeriod] = useState('monthly'); // ngày, tuần , tháng , năm
+    const [revenuePeriod, setRevenuePeriod] = useState({
+        period: 'monthly',
+        by : 'expected',
+    }); // ngày, tuần , tháng , năm
+    const [statisticRange, setStatisticRange] = useState({
+        fromDate: null,
+        toDate: null,
+        by: 'expected',
+    }); // range time
+    const [mergedParams, setMergedParams] = useState({
+        fromDate: null,
+        toDate: null,
+        period: 'monthly',
+        by: 'expected'
+    }); // export revennue
+
     //sản phẩm
     const [productStats, setProductStats] = useState(null);
     const [productParams, setProductParams] = useState({
@@ -62,6 +84,7 @@ function Statistics() {
             try {
                 // setLoading(true);
                 const response = await statisticsService.getRevenueStatistics(revenuePeriod);
+                // console.log(response)
                 setRevenueData(response);
                 setError('');
             } catch (err) {
@@ -74,6 +97,34 @@ function Statistics() {
         };
         fetchRevenue();
     }, [revenuePeriod]);
+
+    //thống kê doanh thu theo range
+    const handleRangeStatisticsRevenue = async () => {
+        if (!statisticRange.fromDate || !statisticRange.toDate || statisticRange.toDate < statisticRange.fromDate ) {
+            alert("Vui lòng chọn đầy đủ ngày và ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!");
+            return;
+        }
+        
+        try {
+            const response = await statisticsService.getRevenueByDateRange(statisticRange);
+            setRevenueData(response);
+            console.log("Kết quả thống kê riêng:", response);
+            // setState(response.data); nếu muốn hiển thị
+        } catch (err) {
+            console.error("Lỗi khi thống kê riêng:", err);
+            alert("Không thể lấy thống kê theo thời gian đã chọn.");
+        }
+    };
+
+    //Cập nhật lại giá trị để export revenue
+    useEffect(() => {
+        setMergedParams({
+            fromDate: statisticRange.fromDate,
+            toDate: statisticRange.toDate,
+            period: revenuePeriod.period,
+            by: statisticRange.by,
+        });
+    }, [statisticRange, revenuePeriod]);
 
     // Fetch lấy danh mục sp
     useEffect(() => {
@@ -163,6 +214,9 @@ function Statistics() {
             } else if (type === 'customer') {
                 response = await statisticsService.exportCustomersToExcel(params);
                 filename = 'customer_statistics.xlsx';
+            }else if(type === 'revenue') {
+                response = await statisticsService.exportRevenueToExcel(params);
+                filename = 'revenue_statistics.xlsx';
             }
             // Xử lý file download
             // const disposition = response.headers['content-disposition'];
@@ -178,7 +232,7 @@ function Statistics() {
             link.parentNode.removeChild(link); // xóa khỏi DOM
             window.URL.revokeObjectURL(url); //Giải phóng URL Blob vừa tạo, để trình duyệt giải phóng tài nguyên.
         } catch (err) {
-            console.error('Lỗi xuất excel sản phẩm:', err);
+            console.error('Lỗi xuất excel:', err);
             alert('Không thể xuất file Excel.');
         }
     };
@@ -188,18 +242,21 @@ function Statistics() {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
+ const handleDateChange = (type, date) => {
+    // const iso = date ? date.toISOString().split('T')[0] : null;
+    const localDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
+    setStatisticRange((prev) => ({ ...prev, [type]: localDate }));
+  };
+
     // Format chart data
     const revenueChartData = {
         labels: revenueData?.data?.map((d) => d.label) || [],
         datasets: [
             {
                 label: `Doanh thu theo ${
-                    revenuePeriod === 'daily'
-                        ? 'ngày'
-                        : revenuePeriod === 'weekly'
-                        ? 'tuần'
-                        : revenuePeriod === 'monthly'
-                        ? 'tháng'
+                    revenuePeriod === 'daily' ? 'ngày'
+                        : revenuePeriod === 'weekly' ? 'tuần'
+                        : revenuePeriod === 'monthly' ? 'tháng'
                         : 'năm'
                 }`,
                 data: revenueData?.data?.map((d) => d.value) || [],
@@ -219,33 +276,30 @@ function Statistics() {
     };
 
     //format pie data
+    const orderStatusColor = {
+        processing: 'rgba(255, 159, 64, 0.8)',
+        confirmed: 'rgba(54, 162, 235, 0.8)',
+        shipped: 'rgba(255, 206, 86, 0.8)',
+        completed: 'rgba(75, 192, 192, 0.8)',
+        cancelled: 'rgba(204, 11, 11, 0.8)',
+        returned: 'rgba(201, 203, 207, 0.8)',
+    };
+    const statusLabels = ['processing', 'confirmed', 'shipped', 'completed', 'cancelled', 'returned'];
+
     const orderStatusChartData = {
-        labels: orderStatusStats
-            ? Object.keys(orderStatusStats).map((status) =>
-                  status === 'processing'
-                      ? 'Đang xử lý'
-                      : status === 'confirmed'
-                      ? 'Đã xác nhận'
-                      : status === 'shipped'
-                      ? 'Đang giao'
-                      : status === 'completed'
-                      ? 'Hoàn thành'
-                      : status === 'cancelled'
-                      ? 'Đã hủy'
-                      : status,
-              )
-            : [],
+        labels: statusLabels.map((status) =>
+            status === 'processing' ? 'Đang xử lý'
+            : status === 'confirmed' ? 'Đã xác nhận'
+            : status === 'shipped' ? 'Đang giao'
+            : status === 'completed' ? 'Hoàn thành'
+            : status === 'cancelled' ? 'Đã hủy'
+            : status === 'returned' ? 'Hoàn trả'
+            : status
+        ),
         datasets: [
             {
-                data: orderStatusStats ? Object.values(orderStatusStats) : [],
-                backgroundColor: [
-                    'rgba(255, 159, 64, 0.8)', // processing
-                    'rgba(54, 162, 235, 0.8)', // confirmed
-                    'rgba(255, 206, 86, 0.8)', // shipped
-                    'rgba(75, 192, 192, 0.8)', // completed
-                    'rgba(153, 102, 255, 0.8)', // cancelled
-                    'rgba(201, 203, 207, 0.8)', // returnde
-                ],
+                data: statusLabels.map((status) => orderStatusStats?.[status] || 0),
+                backgroundColor: statusLabels.map((status) => orderStatusColor[status]),
                 borderColor: 'white',
                 borderWidth: 2,
             },
@@ -307,9 +361,58 @@ function Statistics() {
                 <div className={cx('card')}>
                     <div className={cx('cardHeader')}>
                         <h2 className={cx('cardTitle')}>Thống kê Doanh thu</h2>
+                        <button
+                            onClick={() => {
+                                handleExport({ type: 'revenue', params: mergedParams });
+                            }}
+                            className={cx('exportButton')}
+                        >
+                            <FaDownload className={cx('buttonIcon')} /> Xuất Excel
+                        </button>
+                    </div>
+
+                    <div className={cx('selectTime')}>
+                        <div className={cx('leftControls')}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+                            <span>Từ:</span>
+                            <DatePicker
+                                value={statisticRange.fromDate ? dayjs(statisticRange.fromDate) : null}
+                                onChange={(date) => handleDateChange('fromDate', date)}
+                                format="DD/MM/YYYY"
+                                renderInput={(params) => <TextField {...params} size="small" className={cx('dateInput')} />}
+                            />
+
+                            <span>Đến:</span>
+                            <DatePicker
+                                value={statisticRange.toDate ? dayjs(statisticRange.toDate) : null}
+                                onChange={(date) => handleDateChange('toDate', date)}
+                                format="DD/MM/YYYY"
+                                renderInput={(params) => <TextField {...params} size="small" className={cx('dateInput')} />}
+                            />
+                            <button className={cx('exportButton')} onClick={handleRangeStatisticsRevenue}>
+                                Thống kê
+                            </button>
+                        </LocalizationProvider>
+                        </div>
+             
+                        <div className={cx('rightControls')}>
+                            <select
+                            value={revenuePeriod.by}
+                            onChange={(e) => {
+                                setRevenuePeriod({ ...revenuePeriod, by: e.target.value })
+                                setStatisticRange({ ...statisticRange, by: e.target.value })
+                            }}
+                            className={cx('select')}
+                        >
+                            <option value="expected">Dự kiến</option>
+                            <option value="reality">Thực tế</option>
+                        </select>
                         <select
-                            value={revenuePeriod}
-                            onChange={(e) => setRevenuePeriod(e.target.value)}
+                            value={revenuePeriod.period}
+                            onChange={(e) => {
+                                setRevenuePeriod({ ...revenuePeriod, period: e.target.value });
+                                setStatisticRange({...statisticRange, fromDate: null, toDate: null});
+                            }}
                             className={cx('select')}
                         >
                             <option value="daily">Theo ngày</option>
@@ -317,7 +420,24 @@ function Statistics() {
                             <option value="monthly">Theo tháng</option>
                             <option value="yearly">Theo năm</option>
                         </select>
+                        </div>
                     </div>
+                     
+                     <div className={cx('summaryContainer')}>
+                        <div className={cx('summaryBox', 'revenueBox')}>
+                            <h3 className={cx('summaryTitle')}>🔹 Doanh thu 💰</h3>
+                            <p className={cx('summaryValue', 'revenueValue')}>
+                                {formatCurrency(revenueData?.data?.reduce((acc, item) => acc + item.value, 0) || 0)}
+                            </p>
+                        </div>
+                        <div className={cx('summaryBox', 'orderBox')}>
+                            <h3 className={cx('summaryTitle')}>🔸 Số đơn hàng 📦</h3>
+                            <p className={cx('summaryValue', 'orderValue')}>
+                                {(revenueData?.data?.reduce((acc, item) => acc + item.orderCount, 0) || 0) + ' đơn'}
+                            </p>
+                        </div>
+                    </div>
+                     
                     <div className={cx('chartContainer')}>
                         {revenueData?.data ? (
                             <Line
@@ -573,13 +693,52 @@ function Statistics() {
                         <h2 className={cx('cardTitle')}>
                             <FaShoppingCart className={cx('titleIcon')} /> Trạng thái Đơn hàng
                         </h2>
+                        <div>
+                            <button
+                                onClick={() => {
+                                    handleExport({ type: 'revenue', params: mergedParams });
+                                }}
+                                className={cx('exportButton')}
+                            >
+                                <FaDownload className={cx('buttonIcon')} /> Xuất Excel
+                            </button>
+                            <select
+                                value={revenuePeriod.by}
+                                onChange={(e) => {
+                                    
+                                }}
+                                className={cx('select')}
+                            >
+                                <option value="completed">Hoàn thành</option>
+                                <option value="processing">Đang xử lý</option>
+                                <option value="confirmed">Đã xác nhận</option>
+                                <option value="shipped">Đang giao</option>
+                                <option value="cancelled">Đã hủy</option>
+                                <option value="returned">Hoàn trả</option>
+                            </select>
+                        </div>
                     </div>
                     <div className={cx('chartContainer')}>
-                        {orderStatusStats && Object.keys(orderStatusStats).length > 0 ? (
-                            <Pie data={orderStatusChartData} options={orderStatusChartOptions} />
-                        ) : (
-                            <p className={cx('noData')}>Không có dữ liệu trạng thái đơn hàng</p>
-                        )}
+                            {orderStatusStats && Object.keys(orderStatusStats).length > 0 ? (
+                                <Pie data={orderStatusChartData} options={orderStatusChartOptions} />
+                            ) : (
+                                <p className={cx('noData')}>Không có dữ liệu trạng thái đơn hàng</p>
+                            )}
+
+                        <div className={cx('verticalSummary')}>
+                            <div className={cx('StatusOrderBox', 'revenueBox')}>
+                                <h3 className={cx('summaryTitle')}>💰 Tổng số tiền</h3>
+                                <p className={cx('summaryValue')}>
+                                    {formatCurrency(revenueData?.data?.reduce((acc, item) => acc + item.value, 0) || 0)}
+                                </p>
+                            </div>
+                            <div className={cx('StatusOrderBox', 'orderBox')}>
+                                <h3 className={cx('summaryTitle')}>📦 Tổng đơn hàng</h3>
+                                <p className={cx('summaryValue')}>
+                                    {(revenueData?.data?.reduce((acc, item) => acc + item.orderCount, 0) || 0) + ' đơn'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

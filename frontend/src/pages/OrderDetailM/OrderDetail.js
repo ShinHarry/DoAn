@@ -4,7 +4,7 @@ import * as orderService from '~/services/orderService';
 import { FiX } from 'react-icons/fi';
 import styles from './OrderDetail.module.scss';
 import classNames from 'classnames/bind';
-
+import Swal from 'sweetalert2';
 const cx = classNames.bind(styles);
 
 function OrderDetail() {
@@ -68,7 +68,7 @@ function OrderDetail() {
                 </button>
             </div>
 
-            <p><strong>Người đặt:</strong> {order.user}</p>
+            <p><strong>Người đặt:</strong> {order.name}</p>
             <p><strong>Số điện thoại:</strong> {order.phone}</p>
             <p><strong>Địa chỉ:</strong> {order.address}</p>
             <p><strong>Ngày đặt:</strong> {new Date(order.createdAt).toLocaleString()}</p>
@@ -99,24 +99,75 @@ function OrderDetail() {
         : getButtonLabel()}
     </button>
 
-    <button
-      className={cx('return-btn')}
-      disabled={order.orderStatus !== 'completed'}
-      onClick={async () => {
-        const confirmReturn = window.confirm('Xác nhận đánh dấu đơn này là hoàn trả?');
-        if (confirmReturn) {
-          try {
-            await orderService.updateOrderStatus(order._id, 'returned');
-            setOrder(prev => ({ ...prev, orderStatus: 'returned' }));
-          } catch (error) {
-            console.error('Lỗi cập nhật trạng thái hoàn trả:', error);
-            alert('Không thể cập nhật trạng thái đơn hoàn trả.');
-          }
-        }
-      }}
-    >
-      {order.orderStatus === 'returned' ? 'Đã hoàn trả' : 'Đơn hoàn trả'}
-    </button>
+
+<button
+  className={cx('return-btn')}
+  disabled={
+    order.orderStatus !== 'completed' &&
+    order.orderStatus !== 'shipped'
+  }
+  onClick={async () => {
+    let confirmMsg = '';
+    let nextStatus = '';
+    let newPaymentStatus = order.paymentStatus;
+
+    if (order.orderStatus === 'completed') {
+      confirmMsg = 'Xác nhận đánh dấu đơn này là hoàn trả?';
+      nextStatus = 'returned';
+    } else if (order.orderStatus === 'shipped') {
+      confirmMsg = 'Khách không nhận hàng. Bạn có chắc muốn hủy đơn?';
+      nextStatus = 'cancelled';
+      newPaymentStatus = 'failed';
+    }
+
+    const result = await Swal.fire({
+      title: 'Xác nhận hành động',
+      text: confirmMsg,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Xác nhận',
+      cancelButtonText: 'Huỷ',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await orderService.updateOrderStatus(order._id, nextStatus, newPaymentStatus);
+        setOrder(prev => ({
+          ...prev,
+          orderStatus: nextStatus,
+          paymentStatus: newPaymentStatus
+        }));
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Cập nhật trạng thái thành công',
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      } catch (error) {
+        console.error('Lỗi cập nhật trạng thái đơn hàng:', error);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'Không thể cập nhật trạng thái đơn hàng',
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
+    }
+  }}
+>
+  {order.orderStatus === 'returned'
+    ? 'Đã hoàn trả'
+    : order.orderStatus === 'shipped'
+    ? 'Khách không nhận hàng'
+    : 'Đơn hoàn trả'}
+</button>
+
+
   </div>
 )}
 
