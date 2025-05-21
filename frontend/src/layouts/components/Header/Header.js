@@ -506,6 +506,7 @@ function Header() {
                                                 <input
                                                     type="number"
                                                     value={item.quantity}
+                                                    readOnly
                                                     // đamr bảo ko nhâp < 1
                                                     onChange={(e) =>
                                                         handleUpdateQuantity(

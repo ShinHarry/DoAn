@@ -61,9 +61,78 @@
   gap: 10px;
 }
 
+.selectTime{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  width:100%;
+}
+
+.leftControls,
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dateInput {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.summaryContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin: 16px 0;
+
+    .summaryBox {
+      flex: 1;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      height: 100px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      .summaryTitle {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 8px;
+          color: #333;
+      }
+
+      .summaryValue {
+          font-size: 20px;
+          font-weight: bold;
+      }
+
+      .revenueValue {
+          color: #007bff;
+      }
+
+      .orderValue {
+          color: #dc3545;
+      }
+    }
+
+    .revenueBox {
+      background-color: #e6f4ff;
+    }
+
+    .orderBox {
+      background-color: #ffe6e6;
+    }
+}
 
 .select {
   padding: 8px 12px;
+  margin-right: 10px;
   border-radius: 5px;
   border: 1px solid #dcdde1;
   background-color: white;
