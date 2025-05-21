@@ -284,6 +284,7 @@ function Statistics() {
                 : status === 'shipped' ? 'Đang giao'
                 : status === 'completed' ? 'Hoàn thành'
                 : status === 'cancelled' ? 'Đã hủy'
+                : status === 'returned' ? 'Hoàn đơn'
                 : status,
               )
             : [],
@@ -296,7 +297,7 @@ function Statistics() {
                     'rgba(255, 206, 86, 0.8)', // shipped
                     'rgba(75, 192, 192, 0.8)', // completed
                     'rgba(153, 102, 255, 0.8)', // cancelled
-                    'rgba(201, 203, 207, 0.8)', // returnde
+                    'rgba(201, 203, 207, 0.8)', // returned
                 ],
                 borderColor: 'white',
                 borderWidth: 2,
