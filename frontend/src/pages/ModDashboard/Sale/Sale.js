@@ -56,10 +56,10 @@ function Sale() {
     return (
         <div className={cx('wrapper')}>
             <div className={cx('header')}>
-                <h2>Danh sách khuyến mãi</h2>
+                <h2>Danh sách mã giảm giá</h2>
                 <div className={cx('box-add-btn')}>
                     <Button className={cx('add-btn')} onClick={() => handleAddNew()}>
-                        <FontAwesomeIcon icon={faPlus} /> Thêm khuyến mãi
+                        <FontAwesomeIcon icon={faPlus} /> Thêm mã
                     </Button>
                 </div>
             </div>
@@ -67,7 +67,7 @@ function Sale() {
                 <thead>
                     <tr>
                         <th>STT</th>
-                        <th>Tên khuyến mãi</th>
+                        <th>Mã giảm giá</th>
                         <th>Ngày bắt đầu</th>
                         <th>Ngày kết thúc</th>
                         <th>Giảm giá (%)</th>

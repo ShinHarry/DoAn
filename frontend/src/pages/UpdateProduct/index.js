@@ -5,6 +5,7 @@ import * as originService from '~/services/originService';
 import * as categoryService from '~/services/categoryService';
 import * as unitService from '~/services/unitService';
 import * as productServices from '~/services/productService';
+import Swal from 'sweetalert2';
 
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './UpdateProduct.module.scss';
@@ -129,10 +130,20 @@ function UpdateProduct() {
                 });
             }
             await productService.updateProduct(productId, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            alert('Sửa sản phẩm thành công!');
-            navigate('/');
+    headers: { 'Content-Type': 'multipart/form-data' },
+});
+Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'success',
+    title: 'Sửa sản phẩm thành công!',
+    showConfirmButton: false,
+    timer: 2500,
+    timerProgressBar: true,
+});
+
+setTimeout(() => navigate('/moddashboard/productlist'), 3000);
+
         } catch (error) {
             setError('Có lỗi xảy ra khi sửa sản phẩm. Vui lòng thử lại.1');
             console.log(error);
