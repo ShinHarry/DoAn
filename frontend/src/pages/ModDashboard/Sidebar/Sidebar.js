@@ -24,7 +24,7 @@ function Sidebar() {
                     icon={<FileIcon />}
                     activeIcon={<FileIcon />}
                 />
-                <MenuItem title="Khuyến mãi" to={'sales'} icon={<VoucherIcon />} activeIcon={<VoucherIcon />} />
+                <MenuItem title="Mã giảm giá" to={'sales'} icon={<VoucherIcon />} activeIcon={<VoucherIcon />} />
                 <MenuItem title="Hãng sản xuất" to={'manufacturers'} icon={<HomeIcon />} activeIcon={<HomeIcon />} />
                 <MenuItem title="Nơi xuất xứ" to={'origins'} icon={<OriginIcon />} activeIcon={<OriginIcon />} />
                 <MenuItem title="Thống kê" to={'statistics'} icon={<FileIcon />} activeIcon={<FileIcon />} />
