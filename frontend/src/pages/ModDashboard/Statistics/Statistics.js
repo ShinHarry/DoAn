@@ -276,28 +276,30 @@ function Statistics() {
     };
 
     //format pie data
+    const orderStatusColor = {
+        processing: 'rgba(255, 159, 64, 0.8)',
+        confirmed: 'rgba(54, 162, 235, 0.8)',
+        shipped: 'rgba(255, 206, 86, 0.8)',
+        completed: 'rgba(75, 192, 192, 0.8)',
+        cancelled: 'rgba(204, 11, 11, 0.8)',
+        returned: 'rgba(201, 203, 207, 0.8)',
+    };
+    const statusLabels = ['processing', 'confirmed', 'shipped', 'completed', 'cancelled', 'returned'];
+
     const orderStatusChartData = {
-        labels: orderStatusStats
-            ? Object.keys(orderStatusStats).map((status) =>
-                status === 'processing' ? 'Đang xử lý'
-                : status === 'confirmed' ? 'Đã xác nhận'
-                : status === 'shipped' ? 'Đang giao'
-                : status === 'completed' ? 'Hoàn thành'
-                : status === 'cancelled' ? 'Đã hủy'
-                : status,
-              )
-            : [],
+        labels: statusLabels.map((status) =>
+            status === 'processing' ? 'Đang xử lý'
+            : status === 'confirmed' ? 'Đã xác nhận'
+            : status === 'shipped' ? 'Đang giao'
+            : status === 'completed' ? 'Hoàn thành'
+            : status === 'cancelled' ? 'Đã hủy'
+            : status === 'returned' ? 'Hoàn trả'
+            : status
+        ),
         datasets: [
             {
-                data: orderStatusStats ? Object.values(orderStatusStats) : [],
-                backgroundColor: [
-                    'rgba(255, 159, 64, 0.8)', // processing
-                    'rgba(54, 162, 235, 0.8)', // confirmed
-                    'rgba(255, 206, 86, 0.8)', // shipped
-                    'rgba(75, 192, 192, 0.8)', // completed
-                    'rgba(153, 102, 255, 0.8)', // cancelled
-                    'rgba(201, 203, 207, 0.8)', // returnde
-                ],
+                data: statusLabels.map((status) => orderStatusStats?.[status] || 0),
+                backgroundColor: statusLabels.map((status) => orderStatusColor[status]),
                 borderColor: 'white',
                 borderWidth: 2,
             },
@@ -423,13 +425,13 @@ function Statistics() {
                      
                      <div className={cx('summaryContainer')}>
                         <div className={cx('summaryBox', 'revenueBox')}>
-                            <h3 className={cx('summaryTitle')}>🔹 Doanh thu</h3>
+                            <h3 className={cx('summaryTitle')}>🔹 Doanh thu 💰</h3>
                             <p className={cx('summaryValue', 'revenueValue')}>
                                 {formatCurrency(revenueData?.data?.reduce((acc, item) => acc + item.value, 0) || 0)}
                             </p>
                         </div>
                         <div className={cx('summaryBox', 'orderBox')}>
-                            <h3 className={cx('summaryTitle')}>🔸 Số đơn hàng</h3>
+                            <h3 className={cx('summaryTitle')}>🔸 Số đơn hàng 📦</h3>
                             <p className={cx('summaryValue', 'orderValue')}>
                                 {(revenueData?.data?.reduce((acc, item) => acc + item.orderCount, 0) || 0) + ' đơn'}
                             </p>
@@ -691,13 +693,52 @@ function Statistics() {
                         <h2 className={cx('cardTitle')}>
                             <FaShoppingCart className={cx('titleIcon')} /> Trạng thái Đơn hàng
                         </h2>
+                        <div>
+                            <button
+                                onClick={() => {
+                                    handleExport({ type: 'revenue', params: mergedParams });
+                                }}
+                                className={cx('exportButton')}
+                            >
+                                <FaDownload className={cx('buttonIcon')} /> Xuất Excel
+                            </button>
+                            <select
+                                value={revenuePeriod.by}
+                                onChange={(e) => {
+                                    
+                                }}
+                                className={cx('select')}
+                            >
+                                <option value="completed">Hoàn thành</option>
+                                <option value="processing">Đang xử lý</option>
+                                <option value="confirmed">Đã xác nhận</option>
+                                <option value="shipped">Đang giao</option>
+                                <option value="cancelled">Đã hủy</option>
+                                <option value="returned">Hoàn trả</option>
+                            </select>
+                        </div>
                     </div>
                     <div className={cx('chartContainer')}>
-                        {orderStatusStats && Object.keys(orderStatusStats).length > 0 ? (
-                            <Pie data={orderStatusChartData} options={orderStatusChartOptions} />
-                        ) : (
-                            <p className={cx('noData')}>Không có dữ liệu trạng thái đơn hàng</p>
-                        )}
+                            {orderStatusStats && Object.keys(orderStatusStats).length > 0 ? (
+                                <Pie data={orderStatusChartData} options={orderStatusChartOptions} />
+                            ) : (
+                                <p className={cx('noData')}>Không có dữ liệu trạng thái đơn hàng</p>
+                            )}
+
+                        <div className={cx('verticalSummary')}>
+                            <div className={cx('StatusOrderBox', 'revenueBox')}>
+                                <h3 className={cx('summaryTitle')}>💰 Tổng số tiền</h3>
+                                <p className={cx('summaryValue')}>
+                                    {formatCurrency(revenueData?.data?.reduce((acc, item) => acc + item.value, 0) || 0)}
+                                </p>
+                            </div>
+                            <div className={cx('StatusOrderBox', 'orderBox')}>
+                                <h3 className={cx('summaryTitle')}>📦 Tổng đơn hàng</h3>
+                                <p className={cx('summaryValue')}>
+                                    {(revenueData?.data?.reduce((acc, item) => acc + item.orderCount, 0) || 0) + ' đơn'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

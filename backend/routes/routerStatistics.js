@@ -59,7 +59,9 @@ router.get('/revenue', async (req, res) => {
             }
         }
     };
-
+    if (condition === 'createdAt') {
+         matchStage.$match.orderStatus = { $nin: ['cancelled', 'returned'] };
+    }
     // console.log(matchStage)
 
     if (period === 'daily') {
@@ -221,6 +223,9 @@ router.get('/revenueByRange', async (req, res) => {
     const matchStage = {
         $match: { [condition]: { $gte: startDate, $lte: endDate }}
     };
+    if (condition === 'createdAt') {
+         matchStage.$match.orderStatus = { $nin: ['cancelled', 'returned'] };
+    }
     // console.log(matchStage)
     if (period === 'daily') {
         pipeline.push(matchStage, {
@@ -323,6 +328,9 @@ router.get('/revenue/export', async (req, res) => {
         if (condition === 'completeAt') {
             matchStage.$match.orderStatus = 'completed';
         }
+        if (condition === 'createdAt') {
+         matchStage.$match.orderStatus = { $nin: ['cancelled', 'returned'] };
+    }
         console.log(by, matchStage)
         const pipeline=[];
         pipeline.push(matchStage,{
