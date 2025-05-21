@@ -1,16 +1,35 @@
+import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import * as authService from '~/services/authService';
 
 function RequireAuth({ children, allowedRoles }) {
     const location = useLocation();
-    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-    const user = storedUser ? JSON.parse(storedUser) : null;
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await authService.fetchUser();
+                setUser(response);
+                console.log('fetchUser', response);
+            } catch (err) {
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    if (loading) return <div>Đang kiểm tra quyền truy cập...</div>;
 
     if (!user) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (!allowedRoles.includes(user.role)) {
-        return <Navigate to="/" replace />;
+    if (!allowedRoles.includes(user.user.userRole)) {
+        return <Navigate to="/unauthorized" replace />;
     }
 
     return children;

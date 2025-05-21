@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './Address.module.scss';
 import Button from '~/components/Button';
@@ -21,54 +21,44 @@ const initialFormData = {
 };
 
 function AddressUI() {
+    const { userId } = useParams();
     const [addresses, setAddresses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState(initialFormData);
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
     const [showModal, setShowModal] = useState(false);
 
-    // lấy userdata
-    useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
-        if (!storedUser) {
-            navigate('/login');
-        } else {
-            setUser(storedUser);
-        }
-    }, [navigate]);
+    console.log('userId', userId);
 
-    // Fetch lấy address
     const fetchAddresses = useCallback(async () => {
-        if (!user) return;
+        if (!userId) return;
         setIsLoading(true);
         setError(null);
         try {
-            const response = await userService.getUserAddresses(user.id);
-            setAddresses(response || []); // đảm bảo là 1 array
+            const response = await userService.getUserAddresses(userId);
+            setAddresses(response || []);
         } catch (err) {
             console.error('Error fetching addresses:', err);
             setError('Không thể tải danh sách địa chỉ.');
-            // xử lý lỗi unauthorized
+
             if (err.response?.status === 401 || err.response?.status === 403) {
                 navigate('/login');
             }
         } finally {
             setIsLoading(false);
         }
-    }, [user, navigate]);
+    }, [navigate]);
 
     // có người dùng thì gọi fetchAddress
     useEffect(() => {
-        if (user) {
+        if (userId) {
             fetchAddresses();
         }
-    }, [user, fetchAddresses]);
+    }, [userId, fetchAddresses]);
 
     // xử lý thay đổi input
     const handleInputChange = (e) => {
@@ -79,14 +69,14 @@ function AddressUI() {
     // xử lý thêm địa chỉ mới
     const handleAddOrUpdateAddress = async (e) => {
         e.preventDefault();
-        if (!user) return;
+        if (!userId) return;
         setIsLoading(true);
         try {
             if (isEditing && editingId) {
-                await userService.updateAddress({ ...formData, addressId: editingId });
+                await userService.updateAddress({ ...formData, addressId: editingId, userId });
                 toast.success('Cập nhật địa chỉ thành công!');
             } else {
-                await userService.addAddress(formData);
+                await userService.addAddress({ ...formData, userId });
                 toast.success('Thêm địa chỉ thành công!');
             }
 
@@ -107,7 +97,7 @@ function AddressUI() {
 
     // xử lý xóa address
     const handleDeleteAddress = async (addressId) => {
-        if (!user) return;
+        if (!userId) return;
         const result = await Swal.fire({
             title: 'Bạn có chắc muốn xóa đia chỉ này?',
             text: 'Thao tác này không thể hoàn tác.',
@@ -121,7 +111,7 @@ function AddressUI() {
         if (result.isConfirmed) {
             setIsLoading(true);
             try {
-                await userService.deleteAddress(addressId);
+                await userService.deleteAddress({ addressId, userId });
                 toast.success('Xóa địa chỉ thành công!');
                 await fetchAddresses();
             } catch (err) {
@@ -140,7 +130,7 @@ function AddressUI() {
         setEditingId(null);
     };
     // Render logic
-    if (!user) {
+    if (!userId) {
         return null;
     }
 

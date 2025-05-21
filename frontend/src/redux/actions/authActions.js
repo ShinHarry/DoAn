@@ -1,30 +1,35 @@
-// src/redux/actions/authActions.js
 import { loginSuccess, logoutSuccess, registerStart, registerSuccess, registerFailure } from '../slices/authSlice';
-
 import * as authService from '~/services/authService';
 
 export const login = (formData) => async (dispatch) => {
     try {
-        const { token, user } = await authService.login(formData);
-        console.log('Login response user:', user);
-
-        dispatch(loginSuccess(user));
-        return { token, user }; // Trả về token và user nếu cần thiết
+        const res = await authService.login(formData);
+        console.log('Login successful:', res);
+        dispatch(loginSuccess(res));
+        return res;
     } catch (err) {
         console.error('Login failed:', err.message);
         throw err;
     }
 };
+export const fetchUser = () => async (dispatch) => {
+    try {
+        const user = await authService.fetchUser();
+        console.log('Fetch user successful:', user);
+        dispatch(loginSuccess(user));
+        return user;
+    } catch (err) {
+        // console.error('Fetch user failed:', err.message);
+    }
+};
+
 export const logout = () => async (dispatch) => {
     try {
-        // Gọi API nếu cần hoặc đơn giản chỉ xóa token
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
-        dispatch(logoutSuccess());
+        await authService.logout(); // Gọi API logout trên server
+        dispatch(logoutSuccess()); // Sau đó reset state user trên client
     } catch (err) {
         console.error('Logout failed:', err.message);
+        throw err;
     }
 };
 

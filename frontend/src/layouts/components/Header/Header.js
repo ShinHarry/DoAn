@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { logout } from '~/redux/actions/authActions';
 import { FiHeart } from 'react-icons/fi';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
     faKeyboard,
     faUser,
@@ -28,7 +28,7 @@ import Image from '~/components/Image';
 import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
 import { useEffect, useState, useCallback } from 'react';
-
+import { fetchUser } from '~/redux/actions/authActions';
 // cart
 import Drawer from '@mui/material/Drawer';
 import { IoCloseSharp } from 'react-icons/io5';
@@ -47,8 +47,6 @@ function Header() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [categoryMap, setCategoryMap] = useState({});
-    const [userData, setUserData] = useState(null);
-    const [userLoading, setUserLoading] = useState(true);
     //cart
     const [cartItems, setCartItems] = useState([]);
     const [openCartPanel, setOpenCartPanel] = useState(false);
@@ -58,16 +56,11 @@ function Header() {
     const [totalPrice, setTotalPrice] = useState(0);
     //cart
 
+    const currentUser = useSelector((state) => state.auth.login.currentUser);
     useEffect(() => {
-        const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-        if (storedUser) {
-            try {
-                setUserData(JSON.parse(storedUser));
-            } catch (error) {
-                console.error('Failed to parse user data:', error);
-            }
+        if (!currentUser) {
+            dispatch(fetchUser());
         }
-        setUserLoading(false);
 
         const fetchCategories = async () => {
             try {
@@ -77,24 +70,23 @@ function Header() {
                     map[cat.nameCategory.trim()] = cat._id;
                 });
                 setCategoryMap(map);
-                setLoading(true);
             } catch (error) {
                 setError('Không thể tải danh mục. Vui lòng thử lại.');
+            } finally {
                 setLoading(true);
             }
         };
 
         fetchCategories();
-    }, []);
+    }, [currentUser, dispatch]);
 
-    const currentUser = !!userData;
-    const userId = userData?.id;
-    const avatar = userData?.avatar;
+    const userId = currentUser?.user?._id || '';
+    const userRole = currentUser?.user?.userRole;
+    const avatar = currentUser?.user?.userAvatar[0]?.link || '';
 
     const handleLogout = () => {
         try {
             dispatch(logout());
-            setUserData(null);
             setCartItems([]);
             navigate('/');
         } catch (error) {
@@ -126,6 +118,7 @@ function Header() {
             fetchCart();
             sessionStorage.removeItem('shouldRefreshCart');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -357,22 +350,22 @@ function Header() {
                 <div className={cx('loading')}>Loading...</div>
             ) : (
                 <div className={cx('inner')}>
-                    {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && (
                         <Link to={config.routes.home} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {!userLoading && userData?.role === 'mod' && (
+                    {userRole === 'mod' && (
                         <Link to={`${config.routes.moddashboard}/productlist`} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {!userLoading && userData?.role === 'admin' && (
+                    {userRole === 'admin' && (
                         <Link to={`${config.routes.admindashboard}/`} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && (
                         <>
                             <Menu items={MENU_ITEMS}>
                                 <button className={cx('action-btn')}>
@@ -384,7 +377,7 @@ function Header() {
                     )}
 
                     <div className={cx('actions')}>
-                        {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && (
                             <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
                                 <button className={cx('action-btn')} onClick={() => navigate('/wishlist')}>
                                     <FiHeart />
@@ -396,41 +389,23 @@ function Header() {
                                 Log in
                             </Button>
                         )}
-                        {!userLoading && userData?.role === 'cus' && (
-                            <Menu items={currentUser ? userCusMenu : MENU_ITEMS}>
-                                {currentUser && (
-                                    <Image
-                                        className={cx('user-avatar')}
-                                        src={avatar[0]?.link || ''}
-                                        alt="Avatar User"
-                                    />
-                                )}
+                        {userRole === 'cus' && (
+                            <Menu items={userCusMenu}>
+                                <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />
                             </Menu>
                         )}
-                        {!userLoading && userData?.role === 'mod' && (
+                        {userRole === 'mod' && (
                             <Menu items={currentUser ? userModMenu : MENU_ITEMS}>
-                                {currentUser && (
-                                    <Image
-                                        className={cx('user-avatar')}
-                                        src={avatar[0]?.link || ''}
-                                        alt="Avatar User"
-                                    />
-                                )}
+                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
-                        {!userLoading && userData?.role === 'admin' && (
+                        {userRole === 'admin' && (
                             <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
-                                {currentUser && (
-                                    <Image
-                                        className={cx('user-avatar')}
-                                        src={avatar[0]?.link || ''}
-                                        alt="Avatar User"
-                                    />
-                                )}
+                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
 
-                        {!userLoading && userData?.role !== 'mod' && userData?.role !== 'admin' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && (
                             <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
                                 <button className={cx('action-btn')} onClick={handleOpenCart}>
                                     <CartIcons />

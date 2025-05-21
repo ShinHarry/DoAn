@@ -2,26 +2,11 @@ import axios from 'axios';
 
 const httpRequest = axios.create({
     baseURL: process.env.REACT_APP_BASE_URL,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },
 });
-
-export const getToken = () => {
-    return localStorage.getItem('token') || sessionStorage.getItem('token');
-};
-
-//  Interceptor thêm Authorization header vào mọi request nếu có token
-httpRequest.interceptors.request.use(
-    (config) => {
-        const token = getToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error),
-);
 
 export const get = async (path, options = {}) => {
     const response = await httpRequest.get(path, options);

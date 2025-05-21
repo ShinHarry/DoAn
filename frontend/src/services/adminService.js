@@ -19,6 +19,7 @@ export const updateUserById = async (userId, userData) => {
         // formData.append('userPhone', userData.userPhone);
         // formData.append('userGender', userData.userGender);
         formData.append('userRole', userData.userRole);
+        formData.append('userStatus', userData.userStatus);
 
         const response = await httpRequest.put(`/admindashboard/${userId}`, formData, {
             headers: {

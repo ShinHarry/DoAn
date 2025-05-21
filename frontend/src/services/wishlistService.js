@@ -2,6 +2,7 @@ import * as httpRequest from '~/utils/httpRequest';
 
 export const getWishlistByUser = async (userId) => {
     try {
+        console.log('userId:', userId);
         return await httpRequest.get('/wishlist', {
             params: { userId },
         });

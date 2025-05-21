@@ -39,13 +39,13 @@ import OrderManage from '~/pages/OrderManage';
 import CategoryManager from '~/pages/CategoryManager';
 import OrderDetailM from '~/pages/OrderDetailM';
 
-
 import ProfileDashboard from '~/pages/ProfileDashboard';
 import ChangePassWord from '~/pages/ProfileDashboard/ChangePassWord';
 import Profile from '~/pages/ProfileDashboard/Profile';
 import Address from '~/pages/ProfileDashboard/Address';
 
 import NotFound from '~/pages/NotFound/NotFound';
+import UnAuthorized from '~/pages/UnAuthorized';
 
 import { LayoutNoFooter } from '~/layouts';
 // Public routes
@@ -57,7 +57,7 @@ const publicRoutes = [
     { path: config.routes.search, component: Search },
     { path: config.routes.productDetail, component: ProductDetail },
     { path: config.routes.category, component: Category },
-    { path: config.routes.notfound, component: NotFound, layout: null },
+    { path: config.routes.unauthorized, component: UnAuthorized, layout: null },
 ];
 
 const privateRoutes = [
@@ -149,7 +149,7 @@ const privateRoutes = [
             },
         ],
     },
-    { path: config.routes.order, component: Order, roles: ['cus', 'mod'] ,layout: LayoutNoFooter },
+    { path: config.routes.order, component: Order, roles: ['cus', 'mod'], layout: LayoutNoFooter },
     { path: config.routes.address, component: Address, roles: ['cus', 'mod'] },
     { path: config.routes.checkout, component: Checkout, roles: ['cus', 'mod'] },
     { path: '/cart-detail', component: CartDetail, roles: ['cus', 'mod'] },
@@ -157,8 +157,7 @@ const privateRoutes = [
     { path: '/payment-return', component: PaymentReturn, roles: ['cus', 'mod'] },
     { path: '/orders/:orderId', component: OrderDetail, roles: ['cus', 'mod'] },
     { path: config.routes.wishlist, component: Wishlist, roles: ['cus', 'mod'] },
-    
-    
+
     { path: '/orderDetailM/:orderId', component: OrderDetailM, roles: ['mod'] },
 ];
 

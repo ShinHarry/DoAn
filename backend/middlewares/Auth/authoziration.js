@@ -1,13 +1,11 @@
 const authPage = (permissions) => {
   return (req, res, next) => {
     const user = req.user;
-
     if (!user) {
       return res.status(401).json("Vui lòng đăng nhập!");
     }
 
-    const role = user.role;
-
+    const role = user.userRole;
     if (!permissions.includes(role)) {
       return res
         .status(403)

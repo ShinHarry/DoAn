@@ -27,6 +27,10 @@ function AdminDashboard() {
             setLoading(true);
             try {
                 const response = await adminService.getUser();
+                if (response.length === 0) {
+                    setError('Không có người dùng nào trong hệ thống');
+                }
+                console.log('response:', response);
                 setUsers(response);
             } catch (err) {
                 setError('Lỗi khi lấy danh sách người dùng');
@@ -173,6 +177,8 @@ function AdminDashboard() {
                             <>
                                 <Image src={selectedUser.userAvatar?.[0]?.link} className={cx('modal-avatar')} />
                                 {displayField('Tên', selectedUser.userName)}
+                                {displayField('Tên đăng nhập', selectedUser.userNameAccount)}
+
                                 {displayField('Email', selectedUser.userEmail)}
                                 {displayField(
                                     'Số điện thoại',
@@ -183,16 +189,22 @@ function AdminDashboard() {
                                 {displayField('Trạng thái', selectedUser.userStatus)}
 
                                 <div className={cx('modal-actions')}>
-                                    <button onClick={handleEditClick}>Chỉnh sửa</button>
-                                    <button onClick={handleDelete}>Xóa</button>
-                                    <button onClick={handleCloseModal}>Đóng</button>
+                                    <button className={cx('modal-actions-edit-btn')} onClick={handleEditClick}>
+                                        Chỉnh sửa
+                                    </button>
+                                    <button className={cx('modal-actions-deletl-btn')} onClick={handleDelete}>
+                                        Xóa
+                                    </button>
+                                    <button className={cx('modal-actions-close-btn')} onClick={handleCloseModal}>
+                                        Đóng
+                                    </button>
                                 </div>
                             </>
                         ) : (
                             <form onSubmit={handleSubmit} className={cx('edit-form')}>
                                 {error && <p className={cx('form-error')}>{error}</p>}
 
-                                <div className={cx('form-group')}>
+                                {/* <div className={cx('form-group')}>
                                     <label className={cx('label')}>Tên: </label>
                                     <input
                                         type="text"
@@ -226,7 +238,7 @@ function AdminDashboard() {
                                         maxLength={10}
                                         className={cx('input')}
                                     />
-                                </div>
+                                </div> */}
 
                                 <div className={cx('form-group')}>
                                     <label className={cx('label')}>Trạng thái: </label>

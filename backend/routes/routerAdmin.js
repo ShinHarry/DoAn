@@ -1,13 +1,10 @@
-// routes/routerUser.js
-
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const { uploadUser } = require("../middlewares/uploadImage/uploads");
-const verifyToken = require("../middlewares/Auth/verifyToken");
+
 const mongoose = require("mongoose");
 
-// Lấy danh sách người dùng
 router.get("/", async (req, res) => {
   try {
     const users = await User.find();
@@ -17,13 +14,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Cập nhật thông tin người dùng
 router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
   try {
     // const { userId, userName, userEmail, userPhone, userGender, userRole } =
     //   req.body;
-    const { userId, userName, userRole } = req.body;
-    // Kiểm tra người dùng tồn tại
+    const { userId, userName, userRole, userStatus } = req.body;
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "Người dùng không tồn tại" });
@@ -47,9 +42,9 @@ router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
       // userPhone,
       // userGender,
       userRole,
+      userStatus,
     };
 
-    // Nếu có ảnh đại diện mới, cập nhật ảnh
     if (req.file) {
       updatedData.userAvatar = [
         {
@@ -59,7 +54,6 @@ router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
       ];
     }
 
-    // Cập nhật người dùng
     const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
       new: true,
     });
@@ -72,20 +66,15 @@ router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
       .json({ message: "Đã xảy ra lỗi khi cập nhật người dùng" });
   }
 });
-// Xóa người dùng
 router.delete("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Kiểm tra người dùng tồn tại
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "Người dùng không tồn tại" });
     }
-
-    // Xóa người dùng
     await User.findByIdAndDelete(userId);
-
     return res.status(200).json({ message: "Xóa người dùng thành công" });
   } catch (error) {
     console.error("Lỗi xóa người dùng:", error);
