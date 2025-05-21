@@ -469,10 +469,19 @@ function Header() {
                             <div className={cx('emptyCart')}>
                                 <FontAwesomeIcon icon={faCartPlus} className={cx('emptyCartIcon')} />
                                 <p className={cx('emptyCartText')}>
-                                    {!currentUser
-                                        ? 'Vui lòng đăng nhập để xem giỏ hàng'
-                                        : 'Giỏ hàng của bạn đang trống'}
+                                    {!currentUser ? (
+                                        <>
+                                            Vui lòng{' '}
+                                            <Link to="/login" className={cx('loginLink')}>
+                                                đăng nhập
+                                            </Link>{' '}
+                                            để xem giỏ hàng
+                                        </>
+                                    ) : (
+                                        'Giỏ hàng của bạn đang trống'
+                                    )}
                                 </p>
+
                             </div>
                         ) : (
                             cartItems.map((item) => (
