@@ -61,7 +61,6 @@ function Profile() {
     };
 
     const handleSave = async () => {
-        // Kiểm tra độ dài và định dạng số điện thoại
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(editedUser.userPhone)) {
             setError('Số điện thoại phải gồm đúng 10 chữ số.');
@@ -190,7 +189,7 @@ function Profile() {
                             {displayField('Tên', user.userName)}
                             {displayField('Email', user.userEmail)}
                             {displayField('Tên tài khoản', user.userNameAccount)}
-                            {displayField('Số điện thoại', user.userPhone ? `0${user.userPhone}` : 'Không có')}
+                            {displayField('Số điện thoại', user.userPhone ? user.userPhone : 'Không có')}
                             {displayField(
                                 'Ngày sinh',
                                 user.userBirthday ? new Date(user.userBirthday).toLocaleDateString() : '',

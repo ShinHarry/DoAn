@@ -3,6 +3,7 @@ import styles from './AdminDashboard.module.scss';
 import { useState, useEffect } from 'react';
 import * as adminService from '~/services/adminService';
 import Image from '~/components/Image';
+import Swal from 'sweetalert2';
 
 const cx = classNames.bind(styles);
 
@@ -82,17 +83,26 @@ function AdminDashboard() {
             setError('Cập nhật thất bại. Vui lòng thử lại!');
         }
     };
-
     const handleDelete = async () => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này không?')) {
-            try {
-                await adminService.deleteUserById(selectedUser._id);
-                setUsers((prev) => prev.filter((user) => user._id !== selectedUser._id));
-                setSelectedUser(null);
-                setError('');
-            } catch (err) {
-                setError('Xóa người dùng thất bại. Vui lòng thử lại!');
-            }
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc chắn muốn xóa user này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await adminService.deleteUserById(selectedUser._id);
+            setUsers((prev) => prev.filter((user) => user._id !== selectedUser._id));
+            setSelectedUser(null);
+            setError('');
+        } catch (error) {
+            console.error('Lỗi khi xóa sản phẩm:', error);
+            Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
         }
     };
     const handleCloseModal = () => {

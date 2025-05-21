@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema(
     userEmail: { type: String },
     userNameAccount: { type: String },
     userPassword: { type: String },
-    userPhone: { type: Number },
+    userPhone: { type: String },
     userBirthday: { type: Date },
     userGender: { type: String },
     userRole: { type: String },
@@ -38,11 +38,11 @@ const UserSchema = new mongoose.Schema(
           address: { type: String, required: true },
           city: { type: String, required: true },
           country: { type: String, required: true },
-          _id:{ type: mongoose.Schema.Types.ObjectId, auto: true }
-        }
+          _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+        },
       ],
       default: [],
-    }
+    },
   },
   { timestamps: true }
 );
