@@ -109,6 +109,7 @@ function Unit() {
             <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar closeOnClick draggable />
             <div className={cx('header')}>
                 <h2>Danh sách hãng sản xuất</h2>
+                {error && <p>{error}</p>}
                 <Button
                     className={cx('add-btn')}
                     onClick={() => {

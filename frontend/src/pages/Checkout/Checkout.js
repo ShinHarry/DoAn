@@ -17,7 +17,7 @@ const cx = classNames.bind(styles);
 
 function Checkout() {
     const navigate = useNavigate();
-    // const cartItemsFromRedux = useSelector((state) => state.cart.selectedCartItems);
+    // const cartItemsFromRedux = useSelector((state) => state.cart.items);
     const [cartItems, setCartItems] = useState([]);
     const [discount, setDiscount] = useState([]);
     const [shippingMethod, setShippingMethod] = useState('standard');
@@ -45,6 +45,7 @@ function Checkout() {
     const [discountMessageType, setDiscountMessageType] = useState('');
     //
     const currentUser = useSelector((state) => state.auth.login.currentUser);
+
     const dispatch = useDispatch();
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
@@ -224,10 +225,9 @@ function Checkout() {
             totalAmount: finalTotal,
             discount: discountAmount || 0,
             paymentMethod,
-            user: currentUser?.user?.id,
         };
 
-        console.log('Placing Order:', orderDetails);
+        // console.log('Placing Order:', orderDetails);
         setIsLoading(true);
 
         if (paymentMethod === 'cod') {

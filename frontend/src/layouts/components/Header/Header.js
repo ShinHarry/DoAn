@@ -29,6 +29,7 @@ import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
 import { useEffect, useState, useCallback } from 'react';
 import { fetchUser } from '~/redux/actions/authActions';
+    
 // cart
 import Drawer from '@mui/material/Drawer';
 import { IoCloseSharp } from 'react-icons/io5';
@@ -112,14 +113,14 @@ function Header() {
         }
     }, [currentUser]);
 
-    useEffect(() => {
-        const shouldRefresh = sessionStorage.getItem('shouldRefreshCart');
-        if (shouldRefresh === 'true') {
-            fetchCart();
-            sessionStorage.removeItem('shouldRefreshCart');
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // useEffect(() => {
+    //     const shouldRefresh = sessionStorage.getItem('shouldRefreshCart');
+    //     if (shouldRefresh === 'true') {
+    //         fetchCart();
+    //         sessionStorage.removeItem('shouldRefreshCart');
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, []);
 
     useEffect(() => {
         if (currentUser) {
@@ -254,7 +255,8 @@ function Header() {
             toast.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
             return;
         }
-        // dispatch(setSelectedCartItems(selectedItems)); // Gửi vào Redux
+
+        // dispatch(saveSelectedCartItems(selectedItems));  // Gửi vào Redux
         sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
         setOpenCartPanel(false);
         navigate('/checkout');

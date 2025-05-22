@@ -74,6 +74,8 @@ function Statistics() {
     const [customerParams, setCustomerParams] = useState({ sortBy: 'totalSpent', sortOrder: 'desc' });
     //order
     const [orderStatusStats, setOrderStatusStats] = useState(null);
+    const [orderStatus, setOrderStatus] = useState('completed');
+    const [orderValue, setOrderValue] = useState(null)
     //orther
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -202,6 +204,24 @@ function Statistics() {
         fetchOrderStatus();
     }, []);
 
+    // Fetch lấy tiền + đơn theo orderStatus
+    useEffect(() => {
+        const fetchValueOrder = async () => {
+            try {
+                const response = await statisticsService.getValueOrderStatus(orderStatus);
+                setOrderValue(response);
+                setError('');
+            } catch (err) {
+                console.error('Lỗi lấy thống kê orderStatus:', err);
+                setError('Không thể tải thống kê OrderStatus.');
+                setOrderValue(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchValueOrder();
+    }, [orderStatus]);
+
     //function xuất excel
     const handleExport = async ({ type, params }) => {
         try {
@@ -214,9 +234,12 @@ function Statistics() {
             } else if (type === 'customer') {
                 response = await statisticsService.exportCustomersToExcel(params);
                 filename = 'customer_statistics.xlsx';
-            }else if(type === 'revenue') {
+            }else if (type === 'revenue') {
                 response = await statisticsService.exportRevenueToExcel(params);
                 filename = 'revenue_statistics.xlsx';
+            }else if (type === 'order') {
+                response = await statisticsService.exportOrderToExcel(params);
+                filename = 'order_statistics.xlsx';
             }
             // Xử lý file download
             // const disposition = response.headers['content-disposition'];
@@ -696,17 +719,15 @@ function Statistics() {
                         <div>
                             <button
                                 onClick={() => {
-                                    handleExport({ type: 'revenue', params: mergedParams });
+                                    handleExport({ type: 'order', params: orderStatus });
                                 }}
                                 className={cx('exportButton')}
                             >
                                 <FaDownload className={cx('buttonIcon')} /> Xuất Excel
                             </button>
                             <select
-                                value={revenuePeriod.by}
-                                onChange={(e) => {
-                                    
-                                }}
+                                value={orderStatus}
+                                onChange={(e) => {setOrderStatus(e.target.value)}}
                                 className={cx('select')}
                             >
                                 <option value="completed">Hoàn thành</option>
@@ -729,13 +750,13 @@ function Statistics() {
                             <div className={cx('StatusOrderBox', 'revenueBox')}>
                                 <h3 className={cx('summaryTitle')}>💰 Tổng số tiền</h3>
                                 <p className={cx('summaryValue')}>
-                                    {formatCurrency(revenueData?.data?.reduce((acc, item) => acc + item.value, 0) || 0)}
+                                    {formatCurrency(orderValue?.data[0]?.totalRevenue || 0)}
                                 </p>
                             </div>
                             <div className={cx('StatusOrderBox', 'orderBox')}>
                                 <h3 className={cx('summaryTitle')}>📦 Tổng đơn hàng</h3>
                                 <p className={cx('summaryValue')}>
-                                    {(revenueData?.data?.reduce((acc, item) => acc + item.orderCount, 0) || 0) + ' đơn'}
+                                    {(orderValue?.data[0]?.orderCount || 0) + ' đơn'}
                                 </p>
                             </div>
                         </div>
