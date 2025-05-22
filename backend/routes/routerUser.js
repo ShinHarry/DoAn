@@ -6,7 +6,8 @@ const { uploadUser } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
 const dotenv = require("dotenv");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
+
 const mongoose = require("mongoose");
 
 dotenv.config();
