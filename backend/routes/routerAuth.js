@@ -91,7 +91,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { userNameAccount, userPassword, rememberMe } = req.body;
-
+    console.log("req.body: ", req.body);
     const user = await User.findOne({ userNameAccount });
     if (!user) {
       return res.status(400).json({ message: "Tên đăng nhập không tồn tại." });
@@ -114,7 +114,7 @@ router.post("/login", async (req, res) => {
       process.env.SECRET_TOKEN,
       { expiresIn: "7d" } // Thời hạn token dài nhất để đồng bộ với cookie
     );
-
+    console.log("token: ", token);
     // Tính maxAge cookie dựa vào rememberMe
     const maxAge = rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 7 ngày hoặc 1 ngày
 
