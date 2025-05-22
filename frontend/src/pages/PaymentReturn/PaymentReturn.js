@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import {useDispatch,useSelector } from 'react-redux';
 // import { clearSelectedCartItems } from '~/redux/slices/cartSlice'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import classNames from 'classnames/bind';
@@ -7,29 +6,19 @@ import styles from './PaymentReturn.module.scss';
 import Button from '~/components/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { fetchUser } from '~/redux/actions/authActions';
 import * as paymentService from '~/services/paymentService';
 import * as orderService from '~/services/orderService';
-// import * as userService from '~/services/userService';
 
 const cx = classNames.bind(styles);
 
 function PaymentReturn() {
     const location = useLocation();
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const currentUser  = useSelector((state) => state.auth.login.currentUser);
+
     const [status, setStatus] = useState('loading'); // loading, verifying, processing_order, success, error
     const [message, setMessage] = useState('Đang xác thực thanh toán...');
     const [details, setDetails] = useState(null);
     const [createdOrderId, setCreatedOrderId] = useState(null);
-
-    useEffect(() => {
-        if (!currentUser) {
-            dispatch(fetchUser());
-        }
-
-    }, [currentUser, dispatch]);
 
     useEffect(() => {
         const processPaymentReturn = async () => {
@@ -65,15 +54,7 @@ function PaymentReturn() {
                         }
                         console.log('du lieu', cartData);
 
-                        // 3. lấy data user
-                        const userId = currentUser?.user?._id;
-                        if (!userId) {
-                            throw new Error('Không tìm thấy thông tin người dùng.');
-                        }
-                        console.log("du liẹu user: ", currentUser , userId)
-                        // const userData = await userService.getUserById(userFromStorage.id);
-
-                        // 4.chuẩn bị thông tin chi tiết đơn hàng
+                        // 3.chuẩn bị thông tin chi tiết đơn hàng
                         const shippingFee = parseInt(sessionStorage.getItem('shippingFee')) || 0;
                         const shippingAddress = sessionStorage.getItem('shippingAddress');
                         const discountValue = parseInt(sessionStorage.getItem('discountValue')) || 0;
@@ -86,7 +67,7 @@ function PaymentReturn() {
                         sessionStorage.removeItem('discountValue');
                         sessionStorage.removeItem('name');
                         sessionStorage.removeItem('phone');
-                        // console.log(discountValue)
+
                         const currentSubtotal = cartData.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
                         const hardcodedShippingMethod = shippingFee === 20000 ? 'standard' : 'express';
                         const discount = (currentSubtotal * discountValue) / 100;
@@ -106,16 +87,13 @@ function PaymentReturn() {
                             totalAmount: finalAmountFromVnpay,
                             discount: discount,
                             paymentMethod: 'vnpay',
-                            user: userId,
                             paymentStatus: 'completed',
                             orderStatus: 'processing',
-                            vnpTransactionRef: paramsObject.vnp_TxnRef,
+                            // vnpTransactionRef: paramsObject.vnp_TxnRef,
                         };
 
+                        // 4. tạo order
                         console.log('Creating order with data:', orderDetails);
-
-                        // 5. tạo order
-                        console.log(orderDetails)
                         const orderResponse = await orderService.createOrder(orderDetails);
 
                         if (orderResponse.success && orderResponse.order?._id) {
