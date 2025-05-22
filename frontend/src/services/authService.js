@@ -12,7 +12,6 @@ export const login = async ({ userNameAccount, userPassword, rememberMe }) => {
 export const fetchUser = async () => {
     try {
         const res = await httpRequest.get('users/me');
-        console.log('fetchUser', res);
         return res;
     } catch (err) {
         throw err;

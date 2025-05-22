@@ -61,19 +61,19 @@
     gap: 10px;
 }
 
-.selectTime{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  width:100%;
+.selectTime {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
 .leftControls,
 .rightControls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .dateInput {
@@ -89,56 +89,56 @@
     margin: 16px 0;
 
     .summaryBox {
-      flex: 1;
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 16px;
-      height: 100px;
-      text-align: center;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+        flex: 1;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        height: 100px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
 
-      .summaryTitle {
-          font-size: 16px;
-          font-weight: 600;
-          margin-bottom: 8px;
-          color: #333;
-      }
+        .summaryTitle {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
 
-      .summaryValue {
-          font-size: 20px;
-          font-weight: bold;
-      }
+        .summaryValue {
+            font-size: 20px;
+            font-weight: bold;
+        }
 
-      .revenueValue {
-          color: #007bff;
-      }
+        .revenueValue {
+            color: #007bff;
+        }
 
-      .orderValue {
-          color: #dc3545;
-      }
+        .orderValue {
+            color: #dc3545;
+        }
     }
 
     .revenueBox {
-      background-color: #e6f4ff;
+        background-color: #e6f4ff;
     }
 
     .orderBox {
-      background-color: #ffe6e6;
+        background-color: #ffe6e6;
     }
 }
 
 .select {
-  padding: 8px 12px;
-  margin-right: 10px;
-  border-radius: 5px;
-  border: 1px solid #dcdde1;
-  background-color: white;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
+    padding: 8px 12px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #dcdde1;
+    background-color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
 
     &:hover {
         border-color: #a0a0a0;
@@ -272,21 +272,15 @@
 }
 
 .filterLabel {
-<<<<<<< HEAD
     font-size: 13px;
     color: #555;
     font-weight: 500;
-}
-=======
-  font-size: 13px;
-  color: #555;
-  font-weight: 500;
 }
 //
 .verticalSummary {
     display: flex;
     flex-direction: column;
-     text-align: center;
+    text-align: center;
     gap: 1rem;
     margin-left: 1rem;
 
@@ -311,13 +305,8 @@
         color: #0077cc;
     }
 
-
     .orderBox {
         background-color: #ffe6e6;
         color: #cc0000;
     }
 }
-
-
-
->>>>>>> d6b3325f7675dec1b2bde6bc3a96a7761e7e6095
