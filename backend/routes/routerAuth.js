@@ -111,7 +111,7 @@ router.post("/login", async (req, res) => {
         role: user.userRole,
         status: user.userStatus,
       },
-      process.env.secret_token,
+      process.env.SECRET_TOKEN,
       { expiresIn: "7d" } // Thời hạn token dài nhất để đồng bộ với cookie
     );
 
