@@ -277,6 +277,19 @@
     font-weight: 500;
 }
 
+.searchInput {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+}
+
 //
 .verticalSummary {
     display: flex;

@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
@@ -300,7 +299,7 @@ router.get('/revenueByRange', async (req, res) => {
 router.get('/revenue/export', async (req, res) => {
     try {
         const { fromDate, toDate, period = 'monthly', by = 'expected' } = req.query;
-        console.log(fromDate, toDate, period, by)
+        // console.log(fromDate, toDate, period, by)
         let startDate, endDate;
 
         // Xử lý ngày tháng năm được chọn
@@ -316,7 +315,7 @@ router.get('/revenue/export', async (req, res) => {
             startDate = range.startDate;
             endDate = range.endDate;
         }
-        console.log(startDate, endDate)
+        // console.log(startDate, endDate)
         const condition = (by === 'expected') ? 'createdAt' : 'completeAt';
 
         const matchStage = {
@@ -331,7 +330,7 @@ router.get('/revenue/export', async (req, res) => {
         if (condition === 'createdAt') {
          matchStage.$match.orderStatus = { $nin: ['cancelled', 'returned'] };
     }
-        console.log(by, matchStage)
+        // console.log(by, matchStage)
         const pipeline=[];
         pipeline.push(matchStage,{
             $sort: { [condition]: 1 }
@@ -349,7 +348,7 @@ router.get('/revenue/export', async (req, res) => {
 
         // Lấy dữ liệu doanh thu
         const orders = await Order.aggregate(pipeline);
-        console.log(orders)
+        // console.log(orders)
         // Tạo workbook và worksheet mới
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Thống kê doanh thu');
@@ -853,7 +852,7 @@ router.get('/order/value/:value', async (req, res) => {
 router.get('/order/export', async (req, res) => {
     try {
         const { value } = req.query;
-        console.log(value)
+        // console.log(value)
 
         if (!value) {
             return res.json({
