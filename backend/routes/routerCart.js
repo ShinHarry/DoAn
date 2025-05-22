@@ -11,7 +11,8 @@ const verifyToken = require('../middlewares/Auth/verifyToken'); // Import verify
 router.use(verifyToken);
 // Lấy cart
 router.get("/", async (req, res) => {
-  const userId = req.user.id; // userId người dùng
+  const userId = req.user._id; // userId người dùng
+//   console.log(userId)
   try {
       const cartItems = await CartProduct.find({ userId: userId }) // tim theo userId
           .populate({
@@ -48,7 +49,7 @@ router.get("/", async (req, res) => {
 // Thêm sản phẩm vào giỏ hoặc cập nhật số lượng nếu có
 router.post("/", async (req, res) => {
     // console.log("da vaod ay")
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { productId, quantity } = req.body;
 
     if (!productId || !quantity || quantity < 1) {
@@ -132,7 +133,7 @@ router.post("/", async (req, res) => {
 
 // cập nhật lại số lượng sản phẩm trong giỏ
 router.put("/:itemId", async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { itemId } = req.params;
     const { quantity } = req.body;
 
@@ -190,7 +191,7 @@ router.put("/:itemId", async (req, res) => {
 
 // xóa sản phẩm khỏi giỏ
 router.delete("/:itemId", async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { itemId } = req.params;
 
     try {

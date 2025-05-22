@@ -805,5 +805,132 @@ router.get('/orders/status', async (req, res) => {
     }
 });
 
+//8. lấy value theo order status
+router.get('/order/value/:value', async (req, res) => {
+    try{
+        const value  = req.params.value;
+        // console.log(value)
+        if (!value) {
+            return res.json({
+                message: "Không tìm thấy dữ liệu để thống kê",
+                data: []
+            });
+        }
+
+        const pipeline = [
+            { $match: { orderStatus: value } },
+            {
+                $group: {
+                    _id: "$orderStatus",
+                    totalRevenue: { $sum: "$totalAmount" },
+                    orderCount: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    status: "$_id",
+                    totalRevenue: 1,
+                    orderCount: 1
+                }
+            }
+        ];
+        const results = await Order.aggregate(pipeline)
+        // console.log(results)
+        res.json({
+            message: 'Thống kê orderStatus',
+            data: results
+        });
+    } catch (error) {
+        console.error("Error fetching customer statistics:", error);
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê", error: error.message
+        });
+    }
+});
+
+//9. Xuất exel cho orderStatus
+router.get('/order/export', async (req, res) => {
+    try {
+        const { value } = req.query;
+        console.log(value)
+
+        if (!value) {
+            return res.json({
+                message: "Không tìm thấy dữ liệu để thống kê",
+                data: []
+            });
+        }
+    
+        const pipeline=[];
+        pipeline.push(
+            { $match: { orderStatus: value } },
+            {
+            $project:{
+                _id :0,
+                orderCode: "$_id",
+                totalAmount: "$totalAmount",
+                paymentMethod: "$paymentMethod",
+                paymentStatus: "$paymentStatus",
+                createdAt: "$createdAt",
+                completeAt: "$completeAt",
+                orderStatus: "$orderStatus"
+            }
+        })
+
+        // Lấy dữ liệu doanh thu
+        const orders = await Order.aggregate(pipeline);
+        // console.log(orders)
+        // Tạo workbook và worksheet mới
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Thống kê doanh thu');
+
+        // Thiết lập header
+        worksheet.columns = [
+            { header: 'Ngày tạo đơn' , key: 'create', width: 20 },
+            { header: 'Ngày hoàn thành' , key: 'complete', width: 20 },
+            { header: 'Mã đơn hàng', key: 'orderCode', width: 25 },
+            { header: 'Tổng tiền', key: 'totalAmount', width: 15 },
+            { header: 'Phương thức thanh toán', key: 'paymentMethod', width: 25 },
+            { header: 'Trạng thái thanh toán', key: 'paymentStatus', width: 20 },
+            { header: 'Trạng thái đơn hàng', key: 'orderStatus', width: 20 }
+        ];
+
+        // Thêm dữ liệu vào worksheet
+        worksheet.addRows(orders.map(order => ({
+            create: order.createdAt.toLocaleString('vi-VN'),
+            complete: order.completeAt ? order.completeAt.toLocaleString('vi-VN') : 'Không có',
+            orderCode: order.orderCode,
+            totalAmount: order.totalAmount,
+            paymentMethod: order.paymentMethod,
+            paymentStatus: order.paymentStatus,
+            orderStatus: order.orderStatus,
+        })));
+
+        // Tính tổng doanh thu
+        const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+        const orderCount = orders.reduce((sum, order) => sum + 1, 0);
+        worksheet.addRow({}); // Thêm dòng trống
+        worksheet.addRow({ totalAmount: `Tổng số tiền: ${totalRevenue.toLocaleString('vi-VN')} VNĐ` });
+        worksheet.addRow({ totalAmount: `Tổng đơn hàng: ${orderCount} đơn.` });
+
+        // Format tiền tệ cho cột totalAmount
+        worksheet.getColumn('totalAmount').numFmt = '#,##0';
+
+        // Thiết lập style cho header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+        // Thiết lập header response
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="OrderStatus-Statistics.xlsx"');
+        await workbook.xlsx.write(res); //ghi nội dung file Excel vào res dạng binary
+        res.end(); // phản hồi kết thúc
+
+    } catch (error) {
+        console.error("Lỗi khi xuất Excel thống kê doanh thu:", error);
+        res.status(500).json({ message: "Lỗi khi xuất Excel thống kê doanh thu", error: error.message });
+    }
+});
 
 module.exports = router;
