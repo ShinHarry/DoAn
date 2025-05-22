@@ -76,8 +76,6 @@ router.get("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   }
 });
 
-// Update new Promise((resolve, reject) => {
-
 router.put(
   "/:id",
   verifyToken,

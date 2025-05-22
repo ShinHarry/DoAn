@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Origin = require("../models/Origin");
+const verifyToken = require("../middlewares/Auth/verifyToken");
+const authPage = require("../middlewares/Auth/authoziration");
+
 router.get("/", async (req, res) => {
   try {
     const categories = await Origin.find();
@@ -11,13 +14,15 @@ router.get("/", async (req, res) => {
 });
 
 // Thêm mới origin
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const { nameOrigin, description, phone, address, email } = req.body;
 
     // Validate dữ liệu
     if (!nameOrigin || !description || !phone || !address || !email) {
-      return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin." });
     }
 
     const existingOrigin = await Origin.findOne({ nameOrigin });
@@ -36,7 +41,9 @@ router.post("/", async (req, res) => {
 
     await newOrigin.save();
 
-    res.status(201).json({ message: "Thêm nơi xuất xứ thành công!", origin: newOrigin });
+    res
+      .status(201)
+      .json({ message: "Thêm nơi xuất xứ thành công!", origin: newOrigin });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi khi thêm nơi xuất xứ", error });
@@ -44,42 +51,46 @@ router.post("/", async (req, res) => {
 });
 
 // Update origin
-  
-  router.put("/:id", async (req, res) => {
-    try {
-      console.log("cx vao day r", req.body)
-     const { nameOrigin, description, phone, address, email } = req.body;
+
+router.put("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
+  try {
+    const { nameOrigin, description, phone, address, email } = req.body;
 
     // Validate dữ liệu
     if (!nameOrigin || !description || !phone || !address || !email) {
-      return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin." });
     }
-  
-      const updateData = {
-        nameOrigin,
-        description,
-        phone,
-        address,
-        email,
-      };
-  
-      const updatedOrigin = await Origin.findByIdAndUpdate(req.params.id, updateData, { new: true });
-  
-      if (!updatedOrigin) {
-        return res.status(404).json({ message: "Origin not found" });
-      }
-  
-      res.json(updatedOrigin);
-    } catch (err) {
-      console.error(err);
-      res.status(400).json({ message: err.message });
+
+    const updateData = {
+      nameOrigin,
+      description,
+      phone,
+      address,
+      email,
+    };
+
+    const updatedOrigin = await Origin.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedOrigin) {
+      return res.status(404).json({ message: "Origin not found" });
     }
-  });
+
+    res.json(updatedOrigin);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: err.message });
+  }
+});
 
 // Delete origin
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
-    console.log("cx vao day r", req.params.id)
     const deleted = await Origin.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Origins not found" });
     res.json({ message: "Origins deleted" });
@@ -87,6 +98,5 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 module.exports = router;

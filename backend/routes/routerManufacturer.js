@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Manufacturer = require("../models/Manufacturer");
-
+const verifyToken = require("../middlewares/Auth/verifyToken");
+const authPage = require("../middlewares/Auth/authoziration");
 router.get("/", async (req, res) => {
   try {
     const response = await Manufacturer.find();
@@ -11,7 +12,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const { nameManufacturer, description } = req.body;
 
@@ -46,7 +47,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const { nameManufacturer, description } = req.body;
 
@@ -80,7 +81,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete manufacturer
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const deleted = await Manufacturer.findByIdAndDelete(req.params.id);
     if (!deleted)

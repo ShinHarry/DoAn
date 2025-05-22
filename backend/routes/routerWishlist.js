@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Wishlist = require("../models/WishList");
-const verifyToken = require("../middlewares/Auth/verifyToken");
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const { userId } = req.query;
     const wishlist = await Wishlist.find({ userId });
@@ -16,7 +15,7 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 // POST /api/wishlist - Thêm sản phẩm vào wishlist
-router.post("/", verifyToken, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { productId, name, price, image } = req.body;
     const userId = req.user._id;
@@ -47,7 +46,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 // DELETE /api/wishlist/:id - Xoá 1 sản phẩm khỏi wishlist
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Wishlist.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -64,7 +63,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
 });
 
 // DELETE /api/wishlist/clear - Xoá toàn bộ wishlist của user
-router.delete("/clear", verifyToken, async (req, res) => {
+router.delete("/clear", async (req, res) => {
   try {
     const userId = req.user.id;
     await Wishlist.deleteMany({ userId });

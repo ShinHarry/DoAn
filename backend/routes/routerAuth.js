@@ -42,52 +42,6 @@ router.post("/register", async (req, res) => {
 });
 
 // Đăng nhập
-// router.post("/login", async (req, res) => {
-//   try {
-//     const { userNameAccount, userPassword } = req.body;
-
-//     const user = await User.findOne({ userNameAccount });
-//     if (!user) {
-//       return res.status(400).json({ message: "Tên đăng nhập không tồn tại." });
-//     }
-
-//     const isPasswordValid = await bcrypt.compare(
-//       userPassword,
-//       user.userPassword
-//     );
-//     if (!isPasswordValid) {
-//       console.log(userPassword, user.userPassword);
-//       return res.status(400).json({ message: "Mật khẩu không đúng." });
-//     }
-
-//     // Tạo token
-//     const token = jwt.sign(
-//       {
-//         userId: user._id,
-//         role: user.userRole,
-//       },
-//       process.env.secret_token,
-//       { expiresIn: "1d" }
-//     );
-//     console.log("avatar", user.userAvatar || "");
-//     res.status(200).json({
-//       message: "Đăng nhập thành công.",
-//       token,
-//       user: {
-//         id: user._id,
-//         userName: user.userName,
-//         userEmail: user.userEmail,
-//         userNameAccount: user.userNameAccount,
-//         role: user.userRole,
-//         avatar: user.userAvatar || "",
-//       },
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Đã xảy ra lỗi máy chủ." });
-//   }
-// });
-// Đăng nhập
 router.post("/login", async (req, res) => {
   try {
     const { userNameAccount, userPassword, rememberMe } = req.body;

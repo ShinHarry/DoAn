@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Unit = require("../models/Unit");
-
+const verifyToken = require("../middlewares/Auth/verifyToken");
+const authPage = require("../middlewares/Auth/authoziration");
 router.get("/", async (req, res) => {
   try {
     const response = await Unit.find();
@@ -11,7 +12,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const { nameUnit, description } = req.body;
 
@@ -46,7 +47,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const { nameUnit, description } = req.body;
     // Validate dữ liệu
@@ -79,7 +80,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete manufacturer
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
     const deleted = await Unit.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Unit not found" });

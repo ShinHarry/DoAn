@@ -57,11 +57,21 @@ app.use("/api/admindashboard", verifyToken, authPage(["admin"]), routerAdmin);
 
 app.use("/api/category", verifyToken, authPage(["mod"]), routerCategoryManager);
 
-app.use("/api/users", RouterUser);
-app.use("/api/carts", verifyToken, RouterCart);
-app.use("/api/sales", verifyToken, RouterSale);
+app.use(
+  "/api/users",
+  verifyToken,
+  authPage(["admin", "mod", "cus"]),
+  RouterUser
+);
+app.use("/api/carts", verifyToken, authPage(["mod", "cus"]), RouterCart);
+app.use("/api/sales", verifyToken, authPage(["mod"]), RouterSale);
 
-app.use("/api/orderM", orderManagerRouter);
+app.use(
+  "/api/orderM",
+  verifyToken,
+  authPage(["mod", "cus"]),
+  orderManagerRouter
+);
 app.use("/api/products", RouterProduct);
 app.use("/api/categories", RouterCategory);
 app.use("/api/manufacturers", RouterManufacturer);
@@ -69,10 +79,10 @@ app.use("/api/origins", RouterOrigin);
 app.use("/api/units", RouterUnit);
 app.use("/api/auth", routerAuth);
 app.use("/api/news", RouterNew);
-app.use("/api/orders", verifyToken, orderRouter);
+app.use("/api/orders", verifyToken, authPage(["mod", "cus"]), orderRouter);
 app.use("/api/payments", paymentRouter);
-app.use("/api/statistics", statisticsRouter);
-app.use("/api/wishlist", routerWishlist);
+app.use("/api/statistics", verifyToken, authPage(["mod"]), statisticsRouter);
+app.use("/api/wishlist", verifyToken, authPage(["cus"]), routerWishlist);
 app.use("/api/feedback", routerFeedback);
 app.use("/api/", paymentMethodRouter);
 app.use("/public", express.static(path.join(__dirname, "public")));
