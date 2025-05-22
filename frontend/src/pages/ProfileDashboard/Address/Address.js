@@ -32,8 +32,6 @@ function AddressUI() {
 
     const [showModal, setShowModal] = useState(false);
 
-    console.log('userId', userId);
-
     const fetchAddresses = useCallback(async () => {
         if (!userId) return;
         setIsLoading(true);
@@ -51,6 +49,7 @@ function AddressUI() {
         } finally {
             setIsLoading(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate]);
 
     // có người dùng thì gọi fetchAddress

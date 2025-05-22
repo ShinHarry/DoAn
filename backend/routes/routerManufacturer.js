@@ -4,8 +4,8 @@ const Manufacturer = require("../models/Manufacturer");
 
 router.get("/", async (req, res) => {
   try {
-    const categories = await Manufacturer.find();
-    res.json(categories);
+    const response = await Manufacturer.find();
+    res.json(response);
   } catch (err) {
     res.status(500).send("Lỗi khi lấy hãng sản xuất.");
   }
@@ -82,7 +82,6 @@ router.put("/:id", async (req, res) => {
 // Delete manufacturer
 router.delete("/:id", async (req, res) => {
   try {
-    console.log("cx vao day r", req.params.id);
     const deleted = await Manufacturer.findByIdAndDelete(req.params.id);
     if (!deleted)
       return res.status(404).json({ message: "Manufacturer not found" });

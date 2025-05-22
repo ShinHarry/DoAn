@@ -4,7 +4,6 @@ import * as authService from '~/services/authService';
 export const login = (formData) => async (dispatch) => {
     try {
         const res = await authService.login(formData);
-        console.log('Login successful:', res);
         dispatch(loginSuccess(res));
         return res;
     } catch (err) {
@@ -15,7 +14,6 @@ export const login = (formData) => async (dispatch) => {
 export const fetchUser = () => async (dispatch) => {
     try {
         const user = await authService.fetchUser();
-        console.log('Fetch user successful:', user);
         dispatch(loginSuccess(user));
         return user;
     } catch (err) {

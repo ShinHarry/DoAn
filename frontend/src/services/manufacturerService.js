@@ -9,11 +9,9 @@ export const getManufacturer = async () => {
     }
 };
 
-
-export const addManufacturer= async (manufacturers) => {
+export const addManufacturer = async (manufacturers) => {
     try {
-        return await httpRequest.post('/manufacturers', manufacturers, 
-    );
+        return await httpRequest.post('/manufacturers', manufacturers);
     } catch (err) {
         console.log(err);
         throw err;
@@ -29,11 +27,9 @@ export const updateManufacturerById = async (manufacturers) => {
     }
 };
 
-
-// Xóa origin
 export const deleteManufacturerById = async (id) => {
     try {
-        console.log("vao day r", id)
+        console.log('vao day r', id);
         return await httpRequest.del(`/manufacturers/${id}`);
     } catch (err) {
         console.log(err);
