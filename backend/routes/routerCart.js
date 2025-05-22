@@ -17,8 +17,12 @@ router.get("/", async (req, res) => {
       const cartItems = await CartProduct.find({ userId: userId }) // tim theo userId
           .populate({
               path: 'product',
-              select: 'productName productImgs productUnitPrice productQuantity productStatus productSupPrice', // truy vấn qua các bảng
-              match: { productStatus: 'available' } // chỉ lấy các sp còn hàng
+              select: 'productName productImgs productUnitPrice productQuantity productStatus productSupPrice productCategory', // truy vấn qua các bảng
+              match: { productStatus: 'available' }, // chỉ lấy các sp còn hàng
+              populate: {
+                path: 'productCategory',
+                select: 'nameCategory', // chỉ lấy tên danh mục
+            }
           })
           .lean();
 
@@ -33,6 +37,7 @@ router.get("/", async (req, res) => {
           quantity: item.quantity,
           unitPrice: item.product.productUnitPrice  * (1 - (item.product.productSupPrice || 0) / 100),
           availableQuantity: item.product.productQuantity, // thêm số lượng còn hàng
+          nameCategory: item.product.productCategory?.nameCategory || 'N/A',
           selected: true,
       }));
 
