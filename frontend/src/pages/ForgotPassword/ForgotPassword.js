@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import * as authService from '~/services/authService';
 import classNames from 'classnames/bind';
 import styles from './ForgotPassword.module.scss';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(styles);
 
@@ -26,12 +28,17 @@ function ForgotPassword() {
             const res = await authService.forgotPassword({ email });
 
             if (res) {
-                alert('Vui lòng kiểm tra email của bạn để đặt lại mật khẩu.');
-                alert(`Mật khẩu mới của bạn à: ${res.newPassword}`);
-                navigate('/login');
+                toast.success('Quên mật khẩu thành công. Bạn hãy kiểm tra email để lấy mật khẩu mới!!', {
+                    position: 'top-center',
+                    autoClose: 2000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    draggable: true,
+                });
+                setTimeout(() => navigate('/login'), 2500);
             }
         } catch (err) {
-            if (err.response && err.response.data && err.response.data.message) {
+            if (err.response?.data?.message) {
                 setError(err.response.data.message);
             } else {
                 setError('Có lỗi xảy ra, vui lòng thử lại.');
@@ -41,6 +48,7 @@ function ForgotPassword() {
 
     return (
         <div className={cx('wrapper')}>
+            <ToastContainer />
             <form className={cx('forgot-password-form')} onSubmit={handleSubmit}>
                 <h2 className={cx('title')}>Forgot Password</h2>
                 {error && <p className={cx('error-message')}>{error}</p>}
@@ -65,4 +73,5 @@ function ForgotPassword() {
         </div>
     );
 }
+
 export default ForgotPassword;

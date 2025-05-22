@@ -12,7 +12,6 @@ function RequireAuth({ children, allowedRoles }) {
             try {
                 const response = await authService.fetchUser();
                 setUser(response);
-                console.log('fetchUser', response);
             } catch (err) {
                 setUser(null);
             } finally {

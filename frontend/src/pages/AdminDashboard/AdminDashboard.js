@@ -31,7 +31,6 @@ function AdminDashboard() {
                 if (response.length === 0) {
                     setError('Không có người dùng nào trong hệ thống');
                 }
-                console.log('response:', response);
                 setUsers(response);
             } catch (err) {
                 setError('Lỗi khi lấy danh sách người dùng');

@@ -317,11 +317,11 @@ function ProductDetail() {
                             return (
                                 <li key={fb._id} className={cx('feedback-item')}>
                                     <div className={cx('feedback-header')}>
-                                        <img
+                                        <Image
                                             src={
                                                 fb.user?.userAvatar && fb.user.userAvatar.length > 0
                                                     ? fb.user.userAvatar[0].link
-                                                    : '/users/no-avatar.png'
+                                                    : ''
                                             }
                                             alt={fb.user?.userName || 'Avatar'}
                                             className={cx('feedback-avatar')}
