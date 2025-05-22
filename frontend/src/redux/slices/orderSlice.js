@@ -3,14 +3,17 @@ import { createSlice } from '@reduxjs/toolkit';
 const orderSlice = createSlice({
     name: 'order',
     initialState: {
-        orders: [],
+        tempOrderInfo: null,
     },
     reducers: {
-        addOrder: (state, action) => {
-            state.orders.push(action.payload);
+        setOrder: (state, action) => {
+            state.tempOrderInfo =action.payload;
+        },
+         clearOrder: (state) => {
+            state.tempOrderInfo  = null;
         },
     },
 });
 
-export const { addOrder } = orderSlice.actions;
+export const { setOrder, clearOrder } = orderSlice.actions;
 export default orderSlice.reducer;

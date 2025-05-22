@@ -109,6 +109,7 @@ function ProductDetail() {
         try {
             const response = await cartService.addToCart(productId, 1);
             if (response.success) {
+                window.dispatchEvent(new Event('cartUpdated'));
                 Swal.fire('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng', 'success');
             } else {
                 Swal.fire('Thêm thất bại', response.message || 'Không thể thêm sản phẩm vào giỏ hàng.', 'error');
@@ -316,11 +317,11 @@ function ProductDetail() {
                             return (
                                 <li key={fb._id} className={cx('feedback-item')}>
                                     <div className={cx('feedback-header')}>
-                                        <img
+                                        <Image
                                             src={
                                                 fb.user?.userAvatar && fb.user.userAvatar.length > 0
                                                     ? fb.user.userAvatar[0].link
-                                                    : '/users/no-avatar.png'
+                                                    : ''
                                             }
                                             alt={fb.user?.userName || 'Avatar'}
                                             className={cx('feedback-avatar')}
