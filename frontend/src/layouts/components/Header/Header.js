@@ -83,7 +83,7 @@ function Header() {
 
     const userId = currentUser?.user?._id || '';
     const userRole = currentUser?.user?.userRole;
-    const avatar = currentUser?.user?.userAvatar[0]?.link || '';
+    const avatar = currentUser?.user?.userAvatar?.[0]?.link || '';
 
     const handleLogout = () => {
         try {
@@ -456,7 +456,6 @@ function Header() {
                                         'Giỏ hàng của bạn đang trống'
                                     )}
                                 </p>
-
                             </div>
                         ) : (
                             cartItems.map((item) => (

@@ -11,25 +11,6 @@ const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
 const BASE_URL = process.env.BASE_URL;
 
-//API lấy danh sách sản phẩm
-// router.get("/", async (req, res) => {
-//   try {
-//     const { page, limit } = req.query;
-//     const products = await Product.find()
-//       .populate("productCategory", "nameCategory")
-//       .populate("productUnit", "nameUnit")
-//       .populate("productManufacturer", "nameManufacturer")
-//       .populate("productOrigin", "nameOrigin")
-//       .skip((page - 1) * limit)
-//       .limit(parseInt(limit))
-//       .lean();
-//     const total = await Product.countDocuments();
-//     res.json({ products, total, page: parseInt(page), limit: parseInt(limit) });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
-
 // router.get("/", async (req, res) => {
 //   try {
 //     const {

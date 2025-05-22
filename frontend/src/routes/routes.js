@@ -34,6 +34,8 @@ import Manufacturer from '~/pages/ModDashboard/Manufacturer';
 import Sale from '~/pages/ModDashboard/Sale';
 import Origin from '~/pages/ModDashboard/Origin';
 import Statistics from '~/pages/ModDashboard/Statistics';
+import Unit from '~/pages/ModDashboard/Unit';
+
 import Wishlist from '~/pages/Wishlist';
 import OrderManage from '~/pages/OrderManage';
 import CategoryManager from '~/pages/CategoryManager';
@@ -44,7 +46,6 @@ import ChangePassWord from '~/pages/ProfileDashboard/ChangePassWord';
 import Profile from '~/pages/ProfileDashboard/Profile';
 import Address from '~/pages/ProfileDashboard/Address';
 
-import NotFound from '~/pages/NotFound/NotFound';
 import UnAuthorized from '~/pages/UnAuthorized';
 
 import { LayoutNoFooter } from '~/layouts';
@@ -98,6 +99,12 @@ const privateRoutes = [
             {
                 path: 'origins',
                 component: Origin,
+                roles: ['mod'],
+                layout: null,
+            },
+            {
+                path: 'unit',
+                component: Unit,
                 roles: ['mod'],
                 layout: null,
             },
