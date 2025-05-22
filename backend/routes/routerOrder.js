@@ -35,8 +35,7 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-
-// Đánh giá
+//Đánh giá
 router.post('/:orderId/rating', async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -62,6 +61,7 @@ router.post('/:orderId/rating', async (req, res) => {
       if (!product.productRatings) product.productRatings = [];
 
       product.productRatings.push({ userId: order.user, rating });
+
       const total = product.productRatings.reduce((acc, cur) => acc + cur.rating, 0);
       const avg = total / product.productRatings.length;
       product.productAvgRating = parseFloat(avg.toFixed(1));
