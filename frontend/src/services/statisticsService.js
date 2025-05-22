@@ -96,3 +96,22 @@ export const exportCustomersToExcel = (params) => {
 export const getOrderStatusStatistics = () => {
     return httpRequest.get('statistics/orders/status');
 };
+
+// 9. Lấy value theo OrderStatus
+export const getValueOrderStatus = (value) => {
+    // params: { sortBy, sortOrder }
+    return httpRequest.get(`statistics/order/value/${value}`);
+};
+
+//10.Xuất exel cho orderStatus
+export const exportOrderToExcel = (orderStatus) => {
+    try {
+        return httpRequest.default.get('statistics/order/export', { 
+            params : {value : orderStatus},
+            responseType: 'blob',
+        });    
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};

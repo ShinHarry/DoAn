@@ -17,7 +17,7 @@ const cx = classNames.bind(styles);
 
 function Checkout() {
     const navigate = useNavigate();
-    // const cartItemsFromRedux = useSelector((state) => state.cart.selectedCartItems);
+    // const cartItemsFromRedux = useSelector((state) => state.cart.items);
     const [cartItems, setCartItems] = useState([]);
     const [discount, setDiscount] = useState([]);
     const [shippingMethod, setShippingMethod] = useState('standard');
@@ -224,10 +224,10 @@ function Checkout() {
             totalAmount: finalTotal,
             discount: discountAmount || 0,
             paymentMethod,
-            user: currentUser?.user?.id,
+            user: currentUser?.user?._id,
         };
 
-        console.log('Placing Order:', orderDetails);
+        // console.log('Placing Order:', orderDetails);
         setIsLoading(true);
 
         if (paymentMethod === 'cod') {
