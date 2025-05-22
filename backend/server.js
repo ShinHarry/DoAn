@@ -37,7 +37,14 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: [
+      "http://smarket.io.vn",
+      "https://smarket.io.vn",
+      "http://localhost:3000",
+      "http://localhost:3001",
+      process.env.CLIENT_UR,
+    ],
+
     credentials: true,
   })
 );
