@@ -20,7 +20,6 @@ import styles from './Statistics.module.scss';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TextField } from '@mui/material';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 //npm install @emotion/react @emotion/styled
@@ -61,7 +60,7 @@ function Statistics() {
     }); // export revennue
 
     //sản phẩm
-    const [productStats, setProductStats] = useState(null);
+    const [productStats, setProductStats] = useState([]);
     const [productParams, setProductParams] = useState({
         groupBy: 'product',
         sortBy: 'soldQuantity',
@@ -69,9 +68,13 @@ function Statistics() {
         categoryId: '',
     });
     const [categories, setCategories] = useState([]);
+    const [searchProduct, setSearchProduct] = useState('');
+    const [filteredProduct, setFilteredProduct] = useState([]);
     // kh
-    const [customerStats, setCustomerStats] = useState(null);
+    const [customerStats, setCustomerStats] = useState([]);
     const [customerParams, setCustomerParams] = useState({ sortBy: 'totalSpent', sortOrder: 'desc' });
+    const [searchCus, setSearchCus] = useState('');
+    const [filteredCus, setFilteredCus] = useState([]);
     //order
     const [orderStatusStats, setOrderStatusStats] = useState(null);
     const [orderStatus, setOrderStatus] = useState('completed');
@@ -155,6 +158,7 @@ function Statistics() {
                 }
 
                 const response = await statisticsService.getProductStatistics(paramsToSend);
+                console.log(response.data)
                 setProductStats(response.data); // []
                 setError('');
             } catch (err) {
@@ -168,12 +172,26 @@ function Statistics() {
         fetchProducts();
     }, [productParams]);
 
+    //UseEffect theo tìm tên sản phẩm
+    useEffect(() => {
+            let filteredProduct = [...productStats];
+            if (searchProduct.trim() !== '') {
+                let lowerSearch = searchProduct.toLowerCase();
+                filteredProduct = filteredProduct.filter(
+                    (product) =>
+                        product.name?.toLowerCase().includes(lowerSearch),
+                );
+            }
+            setFilteredProduct(filteredProduct);
+    }, [productStats, searchProduct]);
+
     // Fetch lấy thôngs kê khách hàng
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
                 const response = await statisticsService.getCustomerStatistics(customerParams);
-                setCustomerStats(response);
+                console.log(response.data)
+                setCustomerStats(response.data);
                 setError('');
             } catch (err) {
                 console.error('Lỗi lấy thống kê khách hàng:', err);
@@ -185,6 +203,19 @@ function Statistics() {
         };
         fetchCustomers();
     }, [customerParams]);
+
+    //UseEffect theo tìm tên khách hàng
+       useEffect(() => {
+            let filteredCus = [...customerStats];
+            if (searchCus.trim() !== '') {
+                let lowerSearch = searchCus.toLowerCase();
+                filteredCus = filteredCus.filter(
+                    (cus) =>
+                        cus.userName?.toLowerCase().includes(lowerSearch) ||  cus.userEmail?.toLowerCase().includes(lowerSearch),
+                );
+            }
+            setFilteredCus(filteredCus);
+        }, [customerStats, searchCus]);
 
     // Fetch lấy thống kê Order Status
     useEffect(() => {
@@ -276,19 +307,14 @@ function Statistics() {
         labels: revenueData?.data?.map((d) => d.label) || [],
         datasets: [
             {
-                label: `Doanh thu theo ${
-                    revenuePeriod === 'daily' ? 'ngày'
-                        : revenuePeriod === 'weekly' ? 'tuần'
-                        : revenuePeriod === 'monthly' ? 'tháng'
-                        : 'năm'
-                }`,
+                label: 'DOANH THU',
                 data: revenueData?.data?.map((d) => d.value) || [],
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
                 tension: 0.4, // Bo cong đường
             },
             {
-                label: 'Số đơn hàng',
+                label: 'SỐ ĐƠN HÀNG',
                 data: revenueData?.data?.map((d) => d.orderCount) || [],
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
@@ -402,7 +428,12 @@ function Statistics() {
                                 value={statisticRange.fromDate ? dayjs(statisticRange.fromDate) : null}
                                 onChange={(date) => handleDateChange('fromDate', date)}
                                 format="DD/MM/YYYY"
-                                renderInput={(params) => <TextField {...params} size="small" className={cx('dateInput')} />}
+                                slotProps={{
+                                    textField: {
+                                    size: 'medium',
+                                    className: cx('dateInput'),
+                                    },
+                                }}
                             />
 
                             <span>Đến:</span>
@@ -410,7 +441,12 @@ function Statistics() {
                                 value={statisticRange.toDate ? dayjs(statisticRange.toDate) : null}
                                 onChange={(date) => handleDateChange('toDate', date)}
                                 format="DD/MM/YYYY"
-                                renderInput={(params) => <TextField {...params} size="small" className={cx('dateInput')} />}
+                                slotProps={{
+                                    textField: {
+                                    size: 'medium',
+                                    className: cx('dateInput'),
+                                    },
+                                }}
                             />
                             <button className={cx('exportButton')} onClick={handleRangeStatisticsRevenue}>
                                 Thống kê
@@ -525,11 +561,10 @@ function Statistics() {
                     </div>
                     <div className={cx('filtersContainer')}>
                         <div className={cx('filterGroup')}>
-                            <label htmlFor="groupBy" className={cx('filterLabel')}>
+                            <label className={cx('filterLabel')}>
                                 Nhóm theo:
                             </label>
                             <select
-                                id="groupBy"
                                 value={productParams.groupBy}
                                 onChange={(e) =>
                                     setProductParams({ ...productParams, groupBy: e.target.value, categoryId: '' })
@@ -543,11 +578,10 @@ function Statistics() {
                         </div>
                         {productParams.groupBy === 'product' && (
                             <div className={cx('filterGroup')}>
-                                <label htmlFor="categoryFilter" className={cx('filterLabel')}>
+                                <label className={cx('filterLabel')}>
                                     Danh mục:
                                 </label>
                                 <select
-                                    id="categoryFilter"
                                     value={productParams.categoryId}
                                     onChange={(e) => setProductParams({ ...productParams, categoryId: e.target.value })}
                                     className={cx('select')}
@@ -563,11 +597,10 @@ function Statistics() {
                             </div>
                         )}
                         <div className={cx('filterGroup')}>
-                            <label htmlFor="sortBy" className={cx('filterLabel')}>
+                            <label className={cx('filterLabel')}>
                                 Sắp xếp theo:
                             </label>
                             <select
-                                id="sortBy"
                                 value={productParams.sortBy}
                                 onChange={(e) => setProductParams({ ...productParams, sortBy: e.target.value })}
                                 className={cx('select')}
@@ -579,11 +612,10 @@ function Statistics() {
                             </select>
                         </div>
                         <div className={cx('filterGroup')}>
-                            <label htmlFor="sortOrder" className={cx('filterLabel')}>
+                            <label className={cx('filterLabel')}>
                                 Thứ tự:
                             </label>
                             <select
-                                id="sortOrder"
                                 value={productParams.sortOrder}
                                 onChange={(e) => setProductParams({ ...productParams, sortOrder: e.target.value })}
                                 className={cx('select')}
@@ -591,6 +623,18 @@ function Statistics() {
                                 <option value="desc">Giảm dần</option>
                                 <option value="asc">Tăng dần</option>
                             </select>
+                        </div>
+                        <div className={cx('filterGroup')}>
+                            <label htmlFor="sortOrder" className={cx('filterLabel')}>
+                                Tìm kiếm theo tên:
+                            </label>
+                            <input
+                                type="text"
+                                value={searchProduct}
+                                onChange={(e) =>setSearchProduct(e.target.value)}
+                                placeholder="Nhập tên sản phẩm..."
+                                className={cx('searchInput')}
+                                />
                         </div>
                     </div>
                     <div className={cx('tableContainer')}>
@@ -615,7 +659,7 @@ function Statistics() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {productStats.map((item, index) => (
+                                    {filteredProduct.map((item, index) => (
                                         <tr key={item.id || index}>
                                             <td>{item.name}</td>
                                             {productParams.groupBy !== 'product' && <td>{item.productCount}</td>}
@@ -653,11 +697,10 @@ function Statistics() {
                     </div>
                     <div className={cx('filtersContainer')}>
                         <div className={cx('filterGroup')}>
-                            <label htmlFor="sortBy" className={cx('filterLabel')}>
+                            <label className={cx('filterLabel')}>
                                 Sắp xếp theo:
                             </label>
                             <select
-                                id="sortBy"
                                 value={customerParams.sortBy}
                                 onChange={(e) => setCustomerParams({ ...customerParams, sortBy: e.target.value })}
                                 className={cx('select')}
@@ -668,11 +711,10 @@ function Statistics() {
                             </select>
                         </div>
                         <div className={cx('filterGroup')}>
-                            <label htmlFor="sortOrder" className={cx('filterLabel')}>
+                            <label className={cx('filterLabel')}>
                                 Thứ tự:
                             </label>
                             <select
-                                id="sortOrder"
                                 value={customerParams.sortOrder}
                                 onChange={(e) => setCustomerParams({ ...customerParams, sortOrder: e.target.value })}
                                 className={cx('select')}
@@ -681,9 +723,21 @@ function Statistics() {
                                 <option value="asc">Tăng dần</option>
                             </select>
                         </div>
+                        <div className={cx('filterGroup')}>
+                            <label className={cx('filterLabel')}>
+                                Tìm kiếm theo tên hoặc email:
+                            </label>
+                            <input
+                                type="text"
+                                value={searchCus}
+                                onChange={(e) =>setSearchCus(e.target.value)}
+                                placeholder="Nhập thông tin..."
+                                className={cx('searchInput')}
+                                />
+                        </div>
                     </div>
                     <div className={cx('tableContainer')}>
-                        {customerStats?.data ? (
+                        {customerStats ? (
                             <table className={cx('table')}>
                                 <thead>
                                     <tr>
@@ -694,7 +748,7 @@ function Statistics() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {customerStats.data.map((customer, index) => (
+                                    {filteredCus.map((customer, index) => (
                                         <tr key={customer.userId || index}>
                                             <td>{customer.userName}</td>
                                             <td>{customer.userEmail}</td>
