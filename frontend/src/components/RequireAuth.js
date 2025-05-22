@@ -1,24 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchUser } from '~/redux/actions/authActions';
+import * as authService from '~/services/authService';
 
 function RequireAuth({ children, allowedRoles }) {
     const location = useLocation();
-    const dispatch = useDispatch();
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const currentUser = useSelector((state) => state.auth.login.currentUser);
     useEffect(() => {
-        if (!currentUser) {
-            dispatch(fetchUser());
-        }
-    }, [currentUser, dispatch]);
+        const fetchUser = async () => {
+            try {
+                const response = await authService.fetchUser();
+                setUser(response);
+            } catch (err) {
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUser();
+    }, []);
 
-    if (!currentUser) {
+    if (loading) return <div>Đang kiểm tra quyền truy cập...</div>;
+
+    if (!user) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (!allowedRoles.includes(currentUser.user.userRole)) {
+    if (!allowedRoles.includes(user.user.userRole)) {
         return <Navigate to="/unauthorized" replace />;
     }
 
