@@ -1,13 +1,11 @@
-const fs = require("fs");
 const { google } = require("googleapis");
-const path = require("path");
 
-const KEYFILEPATH = path.join(__dirname, "../config/credentials.json");
-const SCOPES = ["https://www.googleapis.com/auth/drive.file"];
+// Lấy JSON credentials từ biến môi trường
+const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS);
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: KEYFILEPATH,
-  scopes: SCOPES,
+  credentials, // Dùng credentials trực tiếp
+  scopes: ["https://www.googleapis.com/auth/drive.file"],
 });
 
 const uploadFileToDrive = async (file, folderId) => {
@@ -37,8 +35,7 @@ const uploadFileToDrive = async (file, folderId) => {
     },
   });
 
-  const fileUrl = `https://drive.google.com/uc?id=${response.data.id}`;
-  return fileUrl;
+  return `https://drive.google.com/uc?id=${response.data.id}`;
 };
 
 module.exports = { uploadFileToDrive };
