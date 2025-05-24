@@ -1,80 +1,317 @@
+// require("dotenv").config();
+// const mongoose = require("mongoose");
+// const express = require("express");
+// const router = express.Router();
+// const Product = require("../models/Product");
+// const Category = require("../models/Category");
+// const Origin = require("../models/Origin");
+// const Manufacturer = require("../models/Manufacturer");
+// const { uploadProduct } = require("../middlewares/uploadImage/uploads");
+// const verifyToken = require("../middlewares/Auth/verifyToken");
+// const authPage = require("../middlewares/Auth/authoziration");
+// const BASE_URL = process.env.BASE_URL;
+
+// router.get("/", async (req, res) => {
+//   const {
+//     page,
+//     limit,
+//     category,
+//     origin,
+//     manufacturer,
+//     sortBy = "productName",
+//     sortOrder = "asc",
+//     minPrice,
+//     maxPrice,
+//   } = req.query;
+
+//   const query = {};
+
+//   // Lọc danh mục
+//   if (category && mongoose.Types.ObjectId.isValid(category)) {
+//     query.productCategory = category;
+//   }
+
+//   // Lọc xuất xứ
+//   if (origin && mongoose.Types.ObjectId.isValid(origin)) {
+//     query.productOrigin = origin;
+//   }
+
+//   // Lọc nhà sản xuất
+//   if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
+//     query.productManufacturer = manufacturer;
+//   }
+
+//   // 👉 Lọc theo khoảng giá
+//   if (minPrice || maxPrice) {
+//     query.productUnitPrice = {};
+//     if (minPrice) {
+//       query.productUnitPrice.$gte = parseFloat(minPrice);
+//     }
+//     if (maxPrice) {
+//       query.productUnitPrice.$lte = parseFloat(maxPrice);
+//     }
+//   }
+
+//   // Sắp xếp
+//   const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+//   // Lấy dữ liệu
+//   const total = await Product.countDocuments(query);
+//   const products = await Product.find(query)
+//     .populate("productCategory productManufacturer productOrigin productUnit")
+//     .sort(sort)
+//     .skip((page - 1) * limit)
+//     .limit(parseInt(limit));
+
+//   res.json({
+//     products,
+//     total,
+//     page: parseInt(page),
+//     limit: parseInt(limit),
+//   });
+// });
+// // API tìm kiếm
+// router.get("/search", async (req, res) => {
+//   try {
+//     const { page, limit, q } = req.query;
+//     const query = q ? { productName: new RegExp(q, "i") } : {};
+//     const products = await Product.find(query)
+//       .populate("productCategory", "nameCategory")
+//       .populate("productUnit", "nameUnit")
+//       .populate("productManufacturer", "nameManufacturer")
+//       .populate("productOrigin", "nameOrigin")
+//       .skip((page - 1) * limit)
+//       .limit(parseInt(limit))
+//       .lean();
+//     const total = await Product.countDocuments(query);
+
+//     res.json({ products, total, page: parseInt(page), limit: parseInt(limit) });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+// //Lấy data đánh giá sản phẩm
+// router.get("/rating/:productId", async (req, res) => {
+//   try {
+//     const product = await Product.findById(req.params.productId).select(
+//       "productAvgRating productRatings"
+//     );
+//     if (!product) return res.status(404).json({ message: "Product not found" });
+
+//     res.json({
+//       productAvgRating: product.productAvgRating,
+//       productRatings: product.productRatings,
+//     });
+//   } catch (error) {
+//     console.error("Lỗi lấy rating sản phẩm:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+// // API lấy chi tiết sản phẩm theo ID
+// router.get("/:id", async (req, res) => {
+//   try {
+//     const product = await Product.findById(req.params.id)
+//       .populate("productCategory", "nameCategory")
+//       .populate("productUnit", "nameUnit")
+//       .populate("productManufacturer", "nameManufacturer")
+//       .populate("productOrigin", "nameOrigin")
+//       .lean();
+
+//     if (!product) return res.status(404).json({ message: "Product not found" });
+
+//     res.json(product);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+// // API thêm sản phẩm mới
+// router.post(
+//   "/",
+//   verifyToken,
+//   authPage(["mod"]),
+//   uploadProduct.array("productImgs", 10),
+//   async (req, res) => {
+//     try {
+//       const {
+//         productName,
+//         productUnitPrice,
+//         productSupPrice,
+//         productQuantity,
+//         productWarranty,
+//         productStatus,
+//         productCategory,
+//         productUnit,
+//         productOrigin,
+//         productManufacturer,
+//         productDescription,
+//         productSoldQuantity = 0,
+//         productAvgRating = 0,
+//       } = req.body;
+
+//       let productImgs = [];
+//       if (req.files && req.files.length > 0) {
+//         productImgs = req.files.map((file) => ({
+//           link: `${BASE_URL}public/products/${file.filename}`,
+//           alt: productName,
+//         }));
+//       }
+
+//       const newProduct = new Product({
+//         productName,
+//         productUnitPrice,
+//         productSupPrice,
+//         productQuantity,
+//         productWarranty,
+//         productStatus,
+//         productCategory,
+//         productDescription,
+//         productManufacturer,
+//         productOrigin,
+//         productUnit,
+//         productSoldQuantity,
+//         productAvgRating,
+//         productImgs: productImgs,
+//       });
+//       await newProduct.save();
+//       res
+//         .status(201)
+//         .json({ message: "Thêm sản phẩm thành công!", product: newProduct });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: "Lỗi khi thêm sản phẩm", error });
+//     }
+//   }
+// );
+
+// // API cập nhật sản phẩm
+// router.put(
+//   "/:id",
+//   verifyToken,
+//   authPage(["mod"]),
+//   uploadProduct.array("productImgs", 10),
+//   async (req, res) => {
+//     try {
+//       const updatedData = req.body;
+
+//       const existingProduct = await Product.findById(req.params.id);
+//       if (!existingProduct) {
+//         return res.status(404).json({ message: "Product not found" });
+//       }
+
+//       let newImgs = [];
+//       if (req.files && req.files.length > 0) {
+//         newImgs = req.files.map((file) => ({
+//           link: `${BASE_URL}public/products/${file.filename}`,
+//           alt: req.body.productName,
+//         }));
+//       }
+
+//       updatedData.productImgs =
+//         newImgs.length > 0 ? newImgs : existingProduct.productImgs;
+
+//       const updatedProduct = await Product.findByIdAndUpdate(
+//         req.params.id,
+//         updatedData,
+//         { new: true, runValidators: true }
+//       );
+
+//       res.json(updatedProduct);
+//     } catch (error) {
+//       res.status(500).json({ message: error.message });
+//     }
+//   }
+// );
+
+// // API xóa sản phẩm
+// router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
+//   try {
+//     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+//     if (!deletedProduct)
+//       return res.status(404).json({ message: "Product not found" });
+//     res.json({ message: "Xóa sản phẩm thành công", deletedProduct });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+// module.exports = router;
 require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
-const Category = require("../models/Category");
-const Origin = require("../models/Origin");
-const Manufacturer = require("../models/Manufacturer");
+
 const { uploadProduct } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
+
+const {
+  uploadProduct,
+  uploadMultipleToCloudinary,
+} = require("../middlewares/uploadImage/uploads");
+
 const BASE_URL = process.env.BASE_URL;
 
+// API lấy danh sách sản phẩm với filter, phân trang, sắp xếp
 router.get("/", async (req, res) => {
-  const {
-    page,
-    limit,
-    category,
-    origin,
-    manufacturer,
-    sortBy = "productName",
-    sortOrder = "asc",
-    minPrice,
-    maxPrice,
-  } = req.query;
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      category,
+      origin,
+      manufacturer,
+      sortBy = "productName",
+      sortOrder = "asc",
+      minPrice,
+      maxPrice,
+    } = req.query;
 
-  const query = {};
+    const query = {};
 
-  // Lọc danh mục
-  if (category && mongoose.Types.ObjectId.isValid(category)) {
-    query.productCategory = category;
-  }
-
-  // Lọc xuất xứ
-  if (origin && mongoose.Types.ObjectId.isValid(origin)) {
-    query.productOrigin = origin;
-  }
-
-  // Lọc nhà sản xuất
-  if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
-    query.productManufacturer = manufacturer;
-  }
-
-  // 👉 Lọc theo khoảng giá
-  if (minPrice || maxPrice) {
-    query.productUnitPrice = {};
-    if (minPrice) {
-      query.productUnitPrice.$gte = parseFloat(minPrice);
+    if (category && mongoose.Types.ObjectId.isValid(category)) {
+      query.productCategory = category;
     }
-    if (maxPrice) {
-      query.productUnitPrice.$lte = parseFloat(maxPrice);
+    if (origin && mongoose.Types.ObjectId.isValid(origin)) {
+      query.productOrigin = origin;
     }
+    if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
+      query.productManufacturer = manufacturer;
+    }
+    if (minPrice || maxPrice) {
+      query.productUnitPrice = {};
+      if (minPrice) query.productUnitPrice.$gte = parseFloat(minPrice);
+      if (maxPrice) query.productUnitPrice.$lte = parseFloat(maxPrice);
+    }
+
+    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+    const total = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .populate("productCategory productManufacturer productOrigin productUnit")
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    res.json({
+      products,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-
-  // Sắp xếp
-  const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
-
-  // Lấy dữ liệu
-  const total = await Product.countDocuments(query);
-  const products = await Product.find(query)
-    .populate("productCategory productManufacturer productOrigin productUnit")
-    .sort(sort)
-    .skip((page - 1) * limit)
-    .limit(parseInt(limit));
-
-  res.json({
-    products,
-    total,
-    page: parseInt(page),
-    limit: parseInt(limit),
-  });
 });
-// API tìm kiếm
+
+// API tìm kiếm sản phẩm
 router.get("/search", async (req, res) => {
   try {
-    const { page, limit, q } = req.query;
+    const { page = 1, limit = 10, q } = req.query;
     const query = q ? { productName: new RegExp(q, "i") } : {};
+
     const products = await Product.find(query)
       .populate("productCategory", "nameCategory")
       .populate("productUnit", "nameUnit")
@@ -83,6 +320,7 @@ router.get("/search", async (req, res) => {
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .lean();
+
     const total = await Product.countDocuments(query);
 
     res.json({ products, total, page: parseInt(page), limit: parseInt(limit) });
@@ -91,7 +329,7 @@ router.get("/search", async (req, res) => {
   }
 });
 
-//Lấy data đánh giá sản phẩm
+// API lấy đánh giá sản phẩm theo productId
 router.get("/rating/:productId", async (req, res) => {
   try {
     const product = await Product.findById(req.params.productId).select(
@@ -126,7 +364,8 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-// API thêm sản phẩm mới
+
+// API thêm sản phẩm mới (upload nhiều ảnh lên Cloudinary)
 router.post(
   "/",
   verifyToken,
@@ -152,9 +391,14 @@ router.post(
 
       let productImgs = [];
       if (req.files && req.files.length > 0) {
-        productImgs = req.files.map((file) => ({
-          link: `${BASE_URL}public/products/${file.filename}`,
-          alt: productName,
+        const urls = await uploadMultipleToCloudinary(
+          req.files,
+          "products",
+          "product"
+        );
+        productImgs = urls.map((url, i) => ({
+          link: url,
+          alt: productName || `image-${i}`,
         }));
       }
 
@@ -172,8 +416,9 @@ router.post(
         productUnit,
         productSoldQuantity,
         productAvgRating,
-        productImgs: productImgs,
+        productImgs,
       });
+
       await newProduct.save();
       res
         .status(201)
@@ -185,7 +430,7 @@ router.post(
   }
 );
 
-// API cập nhật sản phẩm
+// API cập nhật sản phẩm (upload nhiều ảnh mới lên Cloudinary, hoặc giữ ảnh cũ nếu không upload)
 router.put(
   "/:id",
   verifyToken,
@@ -194,22 +439,26 @@ router.put(
   async (req, res) => {
     try {
       const updatedData = req.body;
-
       const existingProduct = await Product.findById(req.params.id);
       if (!existingProduct) {
         return res.status(404).json({ message: "Product not found" });
       }
 
-      let newImgs = [];
       if (req.files && req.files.length > 0) {
-        newImgs = req.files.map((file) => ({
-          link: `${BASE_URL}public/products/${file.filename}`,
-          alt: req.body.productName,
+        // Upload ảnh mới lên Cloudinary
+        const newUrls = await uploadMultipleToCloudinary(
+          req.files,
+          "products",
+          "product"
+        );
+        updatedData.productImgs = newUrls.map((url, i) => ({
+          link: url,
+          alt: req.body.productName || `image-${i}`,
         }));
+      } else {
+        // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
+        updatedData.productImgs = existingProduct.productImgs;
       }
-
-      updatedData.productImgs =
-        newImgs.length > 0 ? newImgs : existingProduct.productImgs;
 
       const updatedProduct = await Product.findByIdAndUpdate(
         req.params.id,

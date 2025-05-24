@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 const Category = require("../models/Category");
-// const { uploadCategory } = require("../middlewares/uploadImage/uploads");
 const {
   uploadCategory,
   uploadToCloudinary,
@@ -41,33 +40,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// API thêm danh mục mới (upload 1 ảnh)
-// router.post("/", uploadCategory.single("image"), async (req, res) => {
-//   try {
-//     const { nameCategory, description = "" } = req.body;
-
-//     let categoryImg = { link: "", alt: nameCategory };
-//     if (req.file) {
-//       categoryImg.link = `${BASE_URL}public/category/${req.file.filename}`;
-//       categoryImg.alt = nameCategory;
-//     }
-
-//     const newCategory = new Category({
-//       nameCategory,
-//       description,
-//       CategoryImg: categoryImg,
-//     });
-
-//     await newCategory.save();
-//     res
-//       .status(201)
-//       .json({ message: "Thêm danh mục thành công!", category: newCategory });
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ message: "Lỗi khi thêm danh mục", error: error.message });
-//   }
-// });
 router.post("/", uploadCategory.single("image"), async (req, res) => {
   try {
     const { nameCategory, description = "" } = req.body;
@@ -102,91 +74,6 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
   }
 });
 
-// API cập nhật danh mục (upload 1 ảnh)
-// router.put("/:id", uploadCategory.single("image"), async (req, res) => {
-//   try {
-//     const updatedData = req.body;
-
-//     const existingCategory = await Category.findById(req.params.id);
-//     if (!existingCategory) {
-//       return res.status(404).json({ message: "Category not found" });
-//     }
-//     if (req.file) {
-//       const cloudinaryUrl = await uploadToCloudinary(
-//         req.file,
-//         "categories",
-//         "category"
-//       );
-//       categoryImg.link = cloudinaryUrl;
-//       categoryImg.alt = nameCategory;
-//     }
-//     else {
-//       // giữ nguyên ảnh cũ nếu không upload mới
-//       updatedData.CategoryImg = existingCategory.CategoryImg;
-//     }
-//     // if (req.file) {
-//     //   updatedData.CategoryImg = {
-//     //     link: `${BASE_URL}public/category/${req.file.filename}`,
-//     //     alt: updatedData.nameCategory || existingCategory.nameCategory,
-//     //   };
-//     // } else {
-//     //   // giữ nguyên ảnh cũ nếu không upload mới
-//     //   updatedData.CategoryImg = existingCategory.CategoryImg;
-//     // }
-
-//     const updatedCategory = await Category.findByIdAndUpdate(
-//       req.params.id,
-//       updatedData,
-//       { new: true, runValidators: true }
-//     );
-
-//     res.json(updatedCategory);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
-
-// router.put("/:id", uploadCategory.single("image"), async (req, res) => {
-//   try {
-//     const updatedData = req.body;
-//     console.log("req.body", req.body);
-//     console.log("req.params.id", req.params.id);
-
-//     const existingCategory = await Category.findById(req.params.id);
-//     if (!existingCategory) {
-//       return res.status(404).json({ message: "Category not found" });
-//     }
-
-//     if (req.file) {
-//       const cloudinaryUrl = await uploadToCloudinary(
-//         req.file,
-//         "categories", // folder trên Cloudinary
-//         "category" // prefix cho tên file
-//       );
-
-//       updatedData.CategoryImg = {
-//         link: cloudinaryUrl,
-//         alt: updatedData.nameCategory || existingCategory.nameCategory,
-//       };
-//     } else {
-//       // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
-//       updatedData.CategoryImg = existingCategory.CategoryImg;
-//     }
-
-//     const updatedCategory = await Category.findByIdAndUpdate(
-//       req.params.id,
-//       updatedData,
-//       { new: true, runValidators: true }
-//     );
-
-//     res.json({
-//       message: "Cập nhật danh mục thành công",
-//       category: updatedCategory,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Lỗi cập nhật", error: error.message });
-//   }
-// });
 router.put("/:id", uploadCategory.single("image"), async (req, res) => {
   try {
     const { nameCategory, description = "" } = req.body;
