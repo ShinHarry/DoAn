@@ -36,7 +36,7 @@ const uploadFileToDrive = async (file, folderId) => {
     },
   });
 
-  return `https://drive.google.com/uc?export=view&id=${response.data.id}`;
+  return `https://drive.usercontent.google.com/download?id${response.data.id}`;
 };
 
 module.exports = { uploadFileToDrive };
