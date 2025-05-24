@@ -103,6 +103,50 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
 });
 
 // API cập nhật danh mục (upload 1 ảnh)
+// router.put("/:id", uploadCategory.single("image"), async (req, res) => {
+//   try {
+//     const updatedData = req.body;
+
+//     const existingCategory = await Category.findById(req.params.id);
+//     if (!existingCategory) {
+//       return res.status(404).json({ message: "Category not found" });
+//     }
+//     if (req.file) {
+//       const cloudinaryUrl = await uploadToCloudinary(
+//         req.file,
+//         "categories",
+//         "category"
+//       );
+//       categoryImg.link = cloudinaryUrl;
+//       categoryImg.alt = nameCategory;
+//     }
+//     else {
+//       // giữ nguyên ảnh cũ nếu không upload mới
+//       updatedData.CategoryImg = existingCategory.CategoryImg;
+//     }
+//     // if (req.file) {
+//     //   updatedData.CategoryImg = {
+//     //     link: `${BASE_URL}public/category/${req.file.filename}`,
+//     //     alt: updatedData.nameCategory || existingCategory.nameCategory,
+//     //   };
+//     // } else {
+//     //   // giữ nguyên ảnh cũ nếu không upload mới
+//     //   updatedData.CategoryImg = existingCategory.CategoryImg;
+//     // }
+
+//     const updatedCategory = await Category.findByIdAndUpdate(
+//       req.params.id,
+//       updatedData,
+//       { new: true, runValidators: true }
+//     );
+
+//     res.json(updatedCategory);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+const { uploadToCloudinary } = require("../../middlewares/uploadMiddleware");
+
 router.put("/:id", uploadCategory.single("image"), async (req, res) => {
   try {
     const updatedData = req.body;
@@ -113,12 +157,18 @@ router.put("/:id", uploadCategory.single("image"), async (req, res) => {
     }
 
     if (req.file) {
+      const cloudinaryUrl = await uploadToCloudinary(
+        req.file,
+        "categories", // folder trên Cloudinary
+        "category" // prefix cho tên file
+      );
+
       updatedData.CategoryImg = {
-        link: `${BASE_URL}public/category/${req.file.filename}`,
+        link: cloudinaryUrl,
         alt: updatedData.nameCategory || existingCategory.nameCategory,
       };
     } else {
-      // giữ nguyên ảnh cũ nếu không upload mới
+      // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
       updatedData.CategoryImg = existingCategory.CategoryImg;
     }
 
@@ -128,9 +178,12 @@ router.put("/:id", uploadCategory.single("image"), async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    res.json(updatedCategory);
+    res.json({
+      message: "Cập nhật danh mục thành công",
+      category: updatedCategory,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Lỗi cập nhật", error: error.message });
   }
 });
 

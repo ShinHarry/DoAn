@@ -72,13 +72,11 @@ const path = require("path");
 const fs = require("fs");
 const cloudinary = require("../../utils/cloudinary");
 
-// Kiểm tra file là ảnh
 const isImage = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) cb(null, true);
   else cb(new Error("Chỉ hình ảnh được chấp nhận"), false);
 };
 
-// Multer: lưu ảnh tạm vào temp_uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "temp_uploads";
@@ -90,13 +88,11 @@ const storage = multer.diskStorage({
   },
 });
 
-// Tạo các middleware upload (vẫn có thể dùng array / single)
 const uploadProduct = multer({ storage, fileFilter: isImage });
 const uploadUser = multer({ storage, fileFilter: isImage });
 const uploadBanner = multer({ storage, fileFilter: isImage });
 const uploadCategory = multer({ storage, fileFilter: isImage });
 
-// Hàm upload 1 ảnh lên Cloudinary
 const uploadToCloudinary = async (file, folder, namePrefix) => {
   const result = await cloudinary.uploader.upload(file.path, {
     folder,
@@ -106,7 +102,6 @@ const uploadToCloudinary = async (file, folder, namePrefix) => {
   return result.secure_url;
 };
 
-// Hàm upload nhiều ảnh lên Cloudinary
 const uploadMultipleToCloudinary = async (files, folder, namePrefix) => {
   const uploads = files.map((file) =>
     uploadToCloudinary(file, folder, namePrefix)
