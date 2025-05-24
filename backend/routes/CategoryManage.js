@@ -146,45 +146,81 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
 //   }
 // });
 
+// router.put("/:id", uploadCategory.single("image"), async (req, res) => {
+//   try {
+//     const updatedData = req.body;
+//     console.log("req.body", req.body);
+//     console.log("req.params.id", req.params.id);
+
+//     const existingCategory = await Category.findById(req.params.id);
+//     if (!existingCategory) {
+//       return res.status(404).json({ message: "Category not found" });
+//     }
+
+//     if (req.file) {
+//       const cloudinaryUrl = await uploadToCloudinary(
+//         req.file,
+//         "categories", // folder trên Cloudinary
+//         "category" // prefix cho tên file
+//       );
+
+//       updatedData.CategoryImg = {
+//         link: cloudinaryUrl,
+//         alt: updatedData.nameCategory || existingCategory.nameCategory,
+//       };
+//     } else {
+//       // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
+//       updatedData.CategoryImg = existingCategory.CategoryImg;
+//     }
+
+//     const updatedCategory = await Category.findByIdAndUpdate(
+//       req.params.id,
+//       updatedData,
+//       { new: true, runValidators: true }
+//     );
+
+//     res.json({
+//       message: "Cập nhật danh mục thành công",
+//       category: updatedCategory,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Lỗi cập nhật", error: error.message });
+//   }
+// });
 router.put("/:id", uploadCategory.single("image"), async (req, res) => {
   try {
-    const updatedData = req.body;
-    console.log("req.body", req.body);
-    console.log("req.params.id", req.params.id);
+    const { nameCategory, description = "" } = req.body;
+    const category = await Category.findById(req.params.id);
 
-    const existingCategory = await Category.findById(req.params.id);
-    if (!existingCategory) {
+    if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
+
+    let categoryImg = category.CategoryImg;
 
     if (req.file) {
       const cloudinaryUrl = await uploadToCloudinary(
         req.file,
-        "categories", // folder trên Cloudinary
-        "category" // prefix cho tên file
+        "categories",
+        "category"
       );
-
-      updatedData.CategoryImg = {
+      categoryImg = {
         link: cloudinaryUrl,
-        alt: updatedData.nameCategory || existingCategory.nameCategory,
+        alt: nameCategory,
       };
-    } else {
-      // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
-      updatedData.CategoryImg = existingCategory.CategoryImg;
     }
 
-    const updatedCategory = await Category.findByIdAndUpdate(
-      req.params.id,
-      updatedData,
-      { new: true, runValidators: true }
-    );
+    category.nameCategory = nameCategory;
+    category.description = description;
+    category.CategoryImg = categoryImg;
 
-    res.json({
-      message: "Cập nhật danh mục thành công",
-      category: updatedCategory,
-    });
+    await category.save();
+
+    res.status(200).json(category);
   } catch (error) {
-    res.status(500).json({ message: "Lỗi cập nhật", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Lỗi khi cập nhật danh mục", error: error.message });
   }
 });
 
