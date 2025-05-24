@@ -145,7 +145,6 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
 //     res.status(500).json({ message: error.message });
 //   }
 // });
-const { uploadToCloudinary } = require("../../middlewares/uploadMiddleware");
 
 router.put("/:id", uploadCategory.single("image"), async (req, res) => {
   try {
