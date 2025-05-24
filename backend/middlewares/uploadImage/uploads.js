@@ -70,6 +70,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const cloudinary = require("../../utils/cloudinary");
 
 // Kiểm tra file là ảnh
 const isImage = (req, file, cb) => {
@@ -77,28 +78,47 @@ const isImage = (req, file, cb) => {
   else cb(new Error("Chỉ hình ảnh được chấp nhận"), false);
 };
 
-// Cấu hình lưu ảnh tạm thời để upload lên Drive
-const tempStorage = multer.diskStorage({
+// Multer: lưu ảnh tạm vào temp_uploads
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "temp_uploads";
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 
-// Upload các loại
-const uploadProduct = multer({ storage: tempStorage, fileFilter: isImage });
-const uploadUser = multer({ storage: tempStorage, fileFilter: isImage });
-const uploadBanner = multer({ storage: tempStorage, fileFilter: isImage });
-const uploadCategory = multer({ storage: tempStorage, fileFilter: isImage });
+// Tạo các middleware upload (vẫn có thể dùng array / single)
+const uploadProduct = multer({ storage, fileFilter: isImage });
+const uploadUser = multer({ storage, fileFilter: isImage });
+const uploadBanner = multer({ storage, fileFilter: isImage });
+const uploadCategory = multer({ storage, fileFilter: isImage });
+
+// Hàm upload 1 ảnh lên Cloudinary
+const uploadToCloudinary = async (file, folder, namePrefix) => {
+  const result = await cloudinary.uploader.upload(file.path, {
+    folder,
+    public_id: `${namePrefix}-${Date.now()}`,
+  });
+  fs.unlinkSync(file.path); // Xoá file tạm
+  return result.secure_url;
+};
+
+// Hàm upload nhiều ảnh lên Cloudinary
+const uploadMultipleToCloudinary = async (files, folder, namePrefix) => {
+  const uploads = files.map((file) =>
+    uploadToCloudinary(file, folder, namePrefix)
+  );
+  return Promise.all(uploads);
+};
 
 module.exports = {
   uploadProduct,
   uploadUser,
   uploadBanner,
   uploadCategory,
+  uploadToCloudinary,
+  uploadMultipleToCloudinary,
 };
