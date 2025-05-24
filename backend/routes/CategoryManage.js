@@ -72,16 +72,19 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
   try {
     const { nameCategory, description = "" } = req.body;
 
-    let categoryImg = { link: "", alt: nameCategory };
+    let categoryImg = { link: "", alt: nameCategory, public_id: "" };
 
     if (req.file) {
-      const cloudinaryUrl = await uploadToCloudinary(
+      const { link, public_id } = await uploadToCloudinary(
         req.file,
         "categories",
         "category"
       );
-      categoryImg.link = cloudinaryUrl;
-      categoryImg.alt = nameCategory;
+      categoryImg = {
+        link,
+        public_id,
+        alt: nameCategory,
+      };
     }
 
     const newCategory = new Category({
@@ -199,13 +202,14 @@ router.put("/:id", uploadCategory.single("image"), async (req, res) => {
     let categoryImg = category.CategoryImg;
 
     if (req.file) {
-      const cloudinaryUrl = await uploadToCloudinary(
+      const { link, public_id } = await uploadToCloudinary(
         req.file,
         "categories",
         "category"
       );
       categoryImg = {
-        link: cloudinaryUrl,
+        link,
+        public_id,
         alt: nameCategory,
       };
     }
@@ -225,15 +229,31 @@ router.put("/:id", uploadCategory.single("image"), async (req, res) => {
 });
 
 // API xóa danh mục
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedCategory = await Category.findByIdAndDelete(req.params.id);
-    if (!deletedCategory)
-      return res.status(404).json({ message: "Category not found" });
-    res.json({ message: "Xóa danh mục thành công", deletedCategory });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+// router.delete("/:id", async (req, res) => {
+//   try {
+//     const deletedCategory = await Category.findByIdAndDelete(req.params.id);
+//     if (!deletedCategory)
+//       return res.status(404).json({ message: "Category not found" });
+//     res.json({ message: "Xóa danh mục thành công", deletedCategory });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+if (req.file) {
+  // Xoá ảnh cũ nếu có
+  if (category.CategoryImg?.public_id) {
+    await cloudinary.uploader.destroy(category.CategoryImg.public_id);
   }
-});
 
+  const { link, public_id } = await uploadToCloudinary(
+    req.file,
+    "categories",
+    "category"
+  );
+  categoryImg = {
+    link,
+    public_id,
+    alt: nameCategory,
+  };
+}
 module.exports = router;
