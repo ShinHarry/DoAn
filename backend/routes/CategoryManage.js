@@ -5,6 +5,8 @@ const Category = require("../models/Category");
 const { uploadCategory } = require("../middlewares/uploadImage/uploads");
 const BASE_URL = process.env.BASE_URL;
 const { uploadFileToDrive } = require("../utils/uploadToDrive");
+const fs = require("fs");
+
 const CATEGORY_FOLDER_ID = process.env.GOOGLE_DRIVE_CATEGORY_FOLDER_ID;
 
 // API lấy tất cả danh mục
