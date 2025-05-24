@@ -42,13 +42,45 @@ router.get("/:id", async (req, res) => {
 });
 
 // API thêm danh mục mới (upload 1 ảnh)
+// router.post("/", uploadCategory.single("image"), async (req, res) => {
+//   try {
+//     const { nameCategory, description = "" } = req.body;
+
+//     let categoryImg = { link: "", alt: nameCategory };
+//     if (req.file) {
+//       categoryImg.link = `${BASE_URL}public/category/${req.file.filename}`;
+//       categoryImg.alt = nameCategory;
+//     }
+
+//     const newCategory = new Category({
+//       nameCategory,
+//       description,
+//       CategoryImg: categoryImg,
+//     });
+
+//     await newCategory.save();
+//     res
+//       .status(201)
+//       .json({ message: "Thêm danh mục thành công!", category: newCategory });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Lỗi khi thêm danh mục", error: error.message });
+//   }
+// });
 router.post("/", uploadCategory.single("image"), async (req, res) => {
   try {
     const { nameCategory, description = "" } = req.body;
 
     let categoryImg = { link: "", alt: nameCategory };
+
     if (req.file) {
-      categoryImg.link = `${BASE_URL}public/category/${req.file.filename}`;
+      const cloudinaryUrl = await uploadToCloudinary(
+        req.file,
+        "categories",
+        "category"
+      );
+      categoryImg.link = cloudinaryUrl;
       categoryImg.alt = nameCategory;
     }
 
@@ -63,47 +95,13 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
       .status(201)
       .json({ message: "Thêm danh mục thành công!", category: newCategory });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Lỗi khi thêm danh mục", error: error.message });
-  }
-});
-router.post("/", uploadCategory.single("image"), async (req, res) => {
-  try {
-    const { nameCategory, description = "" } = req.body;
-
-    let categoryImg = { link: "", alt: nameCategory };
-
-    // Nếu có ảnh thì upload lên Cloudinary
-    if (req.file) {
-      const imageUrl = await uploadToCloudinary(
-        req.file,
-        "categories",
-        "category"
-      );
-      categoryImg.link = imageUrl;
-      categoryImg.alt = nameCategory;
-    }
-
-    const newCategory = new Category({
-      nameCategory,
-      description,
-      CategoryImg: categoryImg,
-    });
-
-    await newCategory.save();
-
-    res.status(201).json({
-      message: "Thêm danh mục thành công!",
-      category: newCategory,
-    });
-  } catch (error) {
     res.status(500).json({
       message: "Lỗi khi thêm danh mục",
       error: error.message,
     });
   }
 });
+
 // API cập nhật danh mục (upload 1 ảnh)
 router.put("/:id", uploadCategory.single("image"), async (req, res) => {
   try {
