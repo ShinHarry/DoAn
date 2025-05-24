@@ -5,7 +5,6 @@ const CategorySchema = new mongoose.Schema({
   CategoryImg: {
     link: { type: String, required: true },
     alt: { type: String, required: true },
-    public_id: { type: String },
   },
   description: { type: String, required: true },
 });

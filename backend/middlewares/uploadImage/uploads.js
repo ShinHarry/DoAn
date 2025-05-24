@@ -99,10 +99,7 @@ const uploadToCloudinary = async (file, folder, namePrefix) => {
     public_id: `${namePrefix}-${Date.now()}`,
   });
   fs.unlinkSync(file.path); // Xoá file tạm
-  return {
-    link: result.secure_url,
-    public_id: result.public_id,
-  };
+  return result.secure_url;
 };
 
 const uploadMultipleToCloudinary = async (files, folder, namePrefix) => {
