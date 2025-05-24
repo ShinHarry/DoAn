@@ -149,6 +149,8 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
 router.put("/:id", uploadCategory.single("image"), async (req, res) => {
   try {
     const updatedData = req.body;
+    console.log("req.body", req.body);
+    console.log("req.params.id", req.params.id);
 
     const existingCategory = await Category.findById(req.params.id);
     if (!existingCategory) {
