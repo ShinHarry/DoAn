@@ -243,7 +243,6 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
 
-const { uploadProduct } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
 
