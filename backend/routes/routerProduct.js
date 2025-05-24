@@ -238,38 +238,19 @@
 
 // module.exports = router;
 require("dotenv").config();
-const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Product = require("../models/Product");
 
 const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
-
 const {
   uploadProduct,
   uploadMultipleToCloudinary,
 } = require("../middlewares/uploadImage/uploads");
 
-const BASE_URL = process.env.BASE_URL;
-
-// ✅ Hàm flatten mảng files có thể bị lồng nhiều cấp
-const flattenFiles = (files) => {
-  const flat = [];
-  const flatten = (arr) => {
-    arr.forEach((item) => {
-      if (Array.isArray(item)) {
-        flatten(item);
-      } else {
-        flat.push(item);
-      }
-    });
-  };
-  flatten(files);
-  return flat;
-};
-
-// API lấy danh sách sản phẩm với filter, phân trang, sắp xếp
+// GET: Danh sách sản phẩm (lọc, phân trang, sắp xếp)
 router.get("/", async (req, res) => {
   try {
     const {
@@ -285,16 +266,12 @@ router.get("/", async (req, res) => {
     } = req.query;
 
     const query = {};
-
-    if (category && mongoose.Types.ObjectId.isValid(category)) {
+    if (category && mongoose.Types.ObjectId.isValid(category))
       query.productCategory = category;
-    }
-    if (origin && mongoose.Types.ObjectId.isValid(origin)) {
+    if (origin && mongoose.Types.ObjectId.isValid(origin))
       query.productOrigin = origin;
-    }
-    if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer)) {
+    if (manufacturer && mongoose.Types.ObjectId.isValid(manufacturer))
       query.productManufacturer = manufacturer;
-    }
     if (minPrice || maxPrice) {
       query.productUnitPrice = {};
       if (minPrice) query.productUnitPrice.$gte = parseFloat(minPrice);
@@ -310,18 +287,13 @@ router.get("/", async (req, res) => {
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
-    res.json({
-      products,
-      total,
-      page: parseInt(page),
-      limit: parseInt(limit),
-    });
+    res.json({ products, total, page: +page, limit: +limit });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// API tìm kiếm sản phẩm
+// GET: Tìm kiếm sản phẩm
 router.get("/search", async (req, res) => {
   try {
     const { page = 1, limit = 10, q } = req.query;
@@ -333,18 +305,17 @@ router.get("/search", async (req, res) => {
       .populate("productManufacturer", "nameManufacturer")
       .populate("productOrigin", "nameOrigin")
       .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .lean();
+      .limit(parseInt(limit));
 
     const total = await Product.countDocuments(query);
 
-    res.json({ products, total, page: parseInt(page), limit: parseInt(limit) });
+    res.json({ products, total, page: +page, limit: +limit });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// API lấy đánh giá sản phẩm theo productId
+// GET: Đánh giá sản phẩm
 router.get("/rating/:productId", async (req, res) => {
   try {
     const product = await Product.findById(req.params.productId).select(
@@ -357,20 +328,18 @@ router.get("/rating/:productId", async (req, res) => {
       productRatings: product.productRatings,
     });
   } catch (error) {
-    console.error("Lỗi lấy rating sản phẩm:", error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// API lấy chi tiết sản phẩm theo ID
+// GET: Chi tiết sản phẩm
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate("productCategory", "nameCategory")
       .populate("productUnit", "nameUnit")
       .populate("productManufacturer", "nameManufacturer")
-      .populate("productOrigin", "nameOrigin")
-      .lean();
+      .populate("productOrigin", "nameOrigin");
 
     if (!product) return res.status(404).json({ message: "Product not found" });
 
@@ -380,7 +349,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// API thêm sản phẩm mới (upload nhiều ảnh lên Cloudinary)
+// POST: Thêm sản phẩm mới
 router.post(
   "/",
   verifyToken,
@@ -405,10 +374,9 @@ router.post(
       } = req.body;
 
       let productImgs = [];
-      if (req.files && req.files.length > 0) {
-        const flatFiles = flattenFiles(req.files);
+      if (req.files?.length > 0) {
         const urls = await uploadMultipleToCloudinary(
-          flatFiles,
+          req.files,
           "products",
           "product"
         );
@@ -436,17 +404,18 @@ router.post(
       });
 
       await newProduct.save();
-      res
-        .status(201)
-        .json({ message: "Thêm sản phẩm thành công!", product: newProduct });
+      res.status(201).json({
+        message: "Thêm sản phẩm thành công!",
+        product: newProduct,
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Lỗi khi thêm sản phẩm", error });
+      console.error("Lỗi thêm sản phẩm:", error);
+      res.status(500).json({ message: error.message });
     }
   }
 );
 
-// API cập nhật sản phẩm (upload nhiều ảnh mới lên Cloudinary, hoặc giữ ảnh cũ nếu không upload)
+// PUT: Cập nhật sản phẩm
 router.put(
   "/:id",
   verifyToken,
@@ -455,24 +424,22 @@ router.put(
   async (req, res) => {
     try {
       const updatedData = req.body;
-      const existingProduct = await Product.findById(req.params.id);
-      if (!existingProduct) {
+      const product = await Product.findById(req.params.id);
+      if (!product)
         return res.status(404).json({ message: "Product not found" });
-      }
 
-      if (req.files && req.files.length > 0) {
-        const flatFiles = flattenFiles(req.files);
-        const newUrls = await uploadMultipleToCloudinary(
-          flatFiles,
+      if (req.files?.length > 0) {
+        const urls = await uploadMultipleToCloudinary(
+          req.files,
           "products",
           "product"
         );
-        updatedData.productImgs = newUrls.map((url, i) => ({
+        updatedData.productImgs = urls.map((url, i) => ({
           link: url,
-          alt: req.body.productName || `image-${i}`,
+          alt: updatedData.productName || `image-${i}`,
         }));
       } else {
-        updatedData.productImgs = existingProduct.productImgs;
+        updatedData.productImgs = product.productImgs;
       }
 
       const updatedProduct = await Product.findByIdAndUpdate(
@@ -488,13 +455,13 @@ router.put(
   }
 );
 
-// API xóa sản phẩm
+// DELETE: Xóa sản phẩm
 router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-    if (!deletedProduct)
-      return res.status(404).json({ message: "Product not found" });
-    res.json({ message: "Xóa sản phẩm thành công", deletedProduct });
+    const deleted = await Product.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: "Product not found" });
+
+    res.json({ message: "Xóa sản phẩm thành công", deletedProduct: deleted });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
