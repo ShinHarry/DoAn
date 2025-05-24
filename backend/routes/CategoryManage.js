@@ -69,6 +69,9 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", uploadCategory.single("image"), async (req, res) => {
   try {
+    console.log("req.body:", req.body);
+    console.log("req.file:", req.file);
+
     const { nameCategory, description = "" } = req.body;
 
     let categoryImg = { link: "", alt: nameCategory };
@@ -93,6 +96,7 @@ router.post("/", uploadCategory.single("image"), async (req, res) => {
       .status(201)
       .json({ message: "Thêm danh mục thành công!", category: newCategory });
   } catch (error) {
+    console.error("Error in POST /api/category:", error);
     res
       .status(500)
       .json({ message: "Lỗi khi thêm danh mục", error: error.message });
