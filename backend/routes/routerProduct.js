@@ -253,6 +253,22 @@ const {
 
 const BASE_URL = process.env.BASE_URL;
 
+// ✅ Hàm flatten mảng files có thể bị lồng nhiều cấp
+const flattenFiles = (files) => {
+  const flat = [];
+  const flatten = (arr) => {
+    arr.forEach((item) => {
+      if (Array.isArray(item)) {
+        flatten(item);
+      } else {
+        flat.push(item);
+      }
+    });
+  };
+  flatten(files);
+  return flat;
+};
+
 // API lấy danh sách sản phẩm với filter, phân trang, sắp xếp
 router.get("/", async (req, res) => {
   try {
@@ -390,8 +406,9 @@ router.post(
 
       let productImgs = [];
       if (req.files && req.files.length > 0) {
+        const flatFiles = flattenFiles(req.files);
         const urls = await uploadMultipleToCloudinary(
-          req.files,
+          flatFiles,
           "products",
           "product"
         );
@@ -444,9 +461,9 @@ router.put(
       }
 
       if (req.files && req.files.length > 0) {
-        // Upload ảnh mới lên Cloudinary
+        const flatFiles = flattenFiles(req.files);
         const newUrls = await uploadMultipleToCloudinary(
-          req.files,
+          flatFiles,
           "products",
           "product"
         );
@@ -455,7 +472,6 @@ router.put(
           alt: req.body.productName || `image-${i}`,
         }));
       } else {
-        // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
         updatedData.productImgs = existingProduct.productImgs;
       }
 
