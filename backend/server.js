@@ -64,7 +64,7 @@ app.use(
   RouterUser
 );
 app.use("/api/carts", verifyToken, authPage(["mod", "cus"]), RouterCart);
-app.use("/api/sales", verifyToken, authPage(["mod"]), RouterSale);
+app.use("/api/sales", verifyToken, authPage(["mod", "cus"]), RouterSale);
 
 app.use(
   "/api/orderM",

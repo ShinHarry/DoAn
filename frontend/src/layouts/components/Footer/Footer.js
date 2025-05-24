@@ -15,9 +15,9 @@ const Footer = () => {
                     <div className={cx('footer-item')}>
                         <div className={cx('footer-item-description')}>
                             <img src={images.logo} alt="Logo" />
-                            <a href="google.com">
+                            <Link to="/">
                                 <h3>SMarket - Thiên đường công nghệ</h3>
-                            </a>
+                            </Link>
                             {/* <FontAwesomeIcon icon="fa-solid fa-headset" /> */}
                             <span class="call-us-title">Liên hệ với chúng tôi</span>
                             <span class="call-us-text">0362025195</span>

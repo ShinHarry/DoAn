@@ -119,6 +119,7 @@ function UpdateProduct() {
             formData.append('productUnitPrice', product.productUnitPrice);
             formData.append('productSupPrice', product.productSupPrice);
             formData.append('productQuantity', product.productQuantity);
+            formData.append('productStatus', product.productStatus);
             formData.append('productCategory', product.productCategory);
             formData.append('productUnit', product.productUnit);
             formData.append('productManufacturer', product.productManufacturer);
@@ -131,20 +132,19 @@ function UpdateProduct() {
                 });
             }
             await productService.updateProduct(productId, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-});
-Swal.fire({
-    toast: true,
-    position: 'top-end',
-    icon: 'success',
-    title: 'Sửa sản phẩm thành công!',
-    showConfirmButton: false,
-    timer: 2500,
-    timerProgressBar: true,
-});
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Sửa sản phẩm thành công!',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+            });
 
-setTimeout(() => navigate('/moddashboard/productlist'), 3000);
-
+            setTimeout(() => navigate('/moddashboard/productlist'), 2000);
         } catch (error) {
             setError('Có lỗi xảy ra khi sửa sản phẩm. Vui lòng thử lại.1');
             console.log(error);

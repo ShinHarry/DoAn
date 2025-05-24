@@ -244,13 +244,13 @@ function ProductDetail() {
 
                     <div className={cx('product-quantity')}>
                         <p className={cx('description-product')}>
-                            <span>Số lượng còn lại:</span> {productQuantity}
+                            <span>Số lượng:</span> {productQuantity}
                         </p>
                         <p className={cx('description-product')}>
                             <span>Số lượng đã bán:</span> {productSoldQuantity}
                         </p>
                         <p className={cx('description-product')}>
-                            <span>Đánh giá trung bình:</span> {productAvgRating}
+                            <span>Đánh giá:</span> {productAvgRating} ⭐
                         </p>
                     </div>
 
@@ -337,7 +337,7 @@ function ProductDetail() {
                                                     className={cx('star', i < (fb.rating || 0) ? 'filled' : '')}
                                                     aria-label={i < (fb.rating || 0) ? 'Đã đánh giá' : 'Chưa đánh giá'}
                                                 >
-                                                    ★
+                                                    ⭐
                                                 </span>
                                             ))}
                                         </div>
