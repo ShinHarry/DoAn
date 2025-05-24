@@ -398,7 +398,7 @@ const ProductList = () => {
         try {
             await productServices.deleteProductById(productId);
             await Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa thành công.', 'success');
-
+            window.location.reload();
             // Nếu chỉ còn 1 sản phẩm trong trang hiện tại, lùi về trang trước nếu có
             if (products.length === 1 && page > 1) {
                 setPage((prev) => prev - 1);

@@ -263,8 +263,11 @@ router.get("/", async (req, res) => {
       sortOrder = "asc",
       minPrice,
       maxPrice,
+      search = "",
     } = req.query;
-
+    if (search) {
+      query.productName = { $regex: search, $options: "i" }; // tìm không phân biệt hoa thường
+    }
     const query = {};
     if (category && mongoose.Types.ObjectId.isValid(category))
       query.productCategory = category;

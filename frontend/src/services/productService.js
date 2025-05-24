@@ -51,6 +51,7 @@ export const getProducts = async ({
     sortOrder = 'asc',
     minPrice = '',
     maxPrice = '',
+    search = '',
 }) => {
     try {
         return await httpRequest.get('/products', {
@@ -64,6 +65,7 @@ export const getProducts = async ({
                 sortOrder,
                 minPrice,
                 maxPrice,
+                search,
             },
         });
     } catch (err) {
