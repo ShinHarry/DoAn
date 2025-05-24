@@ -372,6 +372,8 @@ router.post(
         productSoldQuantity = 0,
         productAvgRating = 0,
       } = req.body;
+      console.log("req.files:", req.files);
+      console.log("req.body.productImgs:", req.body.productImgs);
 
       let productImgs = [];
       if (req.files?.length > 0) {
@@ -424,6 +426,9 @@ router.put(
   async (req, res) => {
     try {
       const updatedData = req.body;
+      console.log("req.files:", req.files);
+      console.log("req.body.productImgs:", req.body.productImgs);
+
       const product = await Product.findById(req.params.id);
       if (!product)
         return res.status(404).json({ message: "Product not found" });
