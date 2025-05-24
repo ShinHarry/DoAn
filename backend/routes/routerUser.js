@@ -2,10 +2,12 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const Product = require("../models/Product");
-const { uploadUser } = require("../middlewares/uploadImage/uploads");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
-
+const {
+  uploadUser,
+  uploadToCloudinary,
+} = require("../middlewares/uploadImage/uploads");
 const mongoose = require("mongoose");
 
 dotenv.config();
@@ -24,6 +26,56 @@ router.get("/me", async (req, res) => {
   }
 });
 
+// router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
+//     const { userName, userEmail, userPhone, userGender, userBirthday } =
+//       req.body;
+
+//     const currentUser = await User.findById(userId);
+//     if (!currentUser) {
+//       return res.status(404).json({ message: "Người dùng không tồn tại" });
+//     }
+
+//     const duplicatedUser = await User.findOne({
+//       $or: [{ userEmail: userEmail }, { userPhone: userPhone }],
+//       _id: { $ne: userId },
+//     });
+//     if (duplicatedUser) {
+//       return res
+//         .status(400)
+//         .json({ message: "Email hoặc số điện thoại đã tồn tại!" });
+//     }
+
+//     const updatedData = {
+//       userName,
+//       userEmail: userEmail,
+//       userPhone: userPhone,
+//       userGender: userGender,
+//       userBirthday: userBirthday,
+//     };
+
+//     if (req.file) {
+//       updatedData.userAvatar = [
+//         {
+//           name: userName,
+//           link: `${BASE_URL}public/users/${req.file.filename}`,
+//         },
+//       ];
+//     }
+
+//     const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
+//       new: true,
+//     });
+
+//     return res.status(200).json(updatedUser);
+//   } catch (error) {
+//     console.error("Lỗi cập nhật người dùng:", error);
+//     return res
+//       .status(500)
+//       .json({ message: "Đã xảy ra lỗi khi cập nhật người dùng" });
+//   }
+// });
 router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -47,17 +99,25 @@ router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
 
     const updatedData = {
       userName,
-      userEmail: userEmail,
-      userPhone: userPhone,
-      userGender: userGender,
-      userBirthday: userBirthday,
+      userEmail,
+      userPhone,
+      userGender,
+      userBirthday,
     };
 
     if (req.file) {
+      // Upload ảnh lên Cloudinary
+      const cloudinaryUrl = await uploadToCloudinary(
+        req.file,
+        "users",
+        "userAvatar"
+      );
+
+      // Lưu link Cloudinary vào userAvatar
       updatedData.userAvatar = [
         {
           name: userName,
-          link: `${BASE_URL}public/users/${req.file.filename}`,
+          link: cloudinaryUrl,
         },
       ];
     }
@@ -74,6 +134,7 @@ router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
       .json({ message: "Đã xảy ra lỗi khi cập nhật người dùng" });
   }
 });
+
 // Delete user
 // router.delete("/:userId", verifyToken, async (req, res) => {
 //   try {

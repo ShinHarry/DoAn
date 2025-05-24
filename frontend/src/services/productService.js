@@ -87,7 +87,11 @@ export const addProduct = async (product) => {
 
 export const updateProduct = async (id, product) => {
     try {
-        return await httpRequest.put(`/products/${id}`, product);
+        return await httpRequest.put(`/products/${id}`, product, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
     } catch (err) {
         console.log(err);
         throw err;

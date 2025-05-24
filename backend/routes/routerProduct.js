@@ -255,7 +255,7 @@ router.get("/", async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit,
       category,
       origin,
       manufacturer,
