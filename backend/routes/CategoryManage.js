@@ -4,6 +4,8 @@ const router = express.Router();
 const Category = require("../models/Category");
 const { uploadCategory } = require("../middlewares/uploadImage/uploads");
 const BASE_URL = process.env.BASE_URL;
+const { uploadFileToDrive } = require("../utils/uploadToDrive");
+const CATEGORY_FOLDER_ID = process.env.GOOGLE_DRIVE_CATEGORY_FOLDER_ID;
 
 // API lấy tất cả danh mục
 router.get("/", async (req, res) => {
@@ -38,14 +40,46 @@ router.get("/:id", async (req, res) => {
 });
 
 // API thêm danh mục mới (upload 1 ảnh)
+// router.post("/", uploadCategory.single("image"), async (req, res) => {
+//   try {
+//     const { nameCategory, description = "" } = req.body;
+
+//     let categoryImg = { link: "", alt: nameCategory };
+//     if (req.file) {
+//       categoryImg.link = `${BASE_URL}public/category/${req.file.filename}`;
+//       categoryImg.alt = nameCategory;
+//     }
+
+//     const newCategory = new Category({
+//       nameCategory,
+//       description,
+//       CategoryImg: categoryImg,
+//     });
+
+//     await newCategory.save();
+//     res
+//       .status(201)
+//       .json({ message: "Thêm danh mục thành công!", category: newCategory });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Lỗi khi thêm danh mục", error: error.message });
+//   }
+// });
+
 router.post("/", uploadCategory.single("image"), async (req, res) => {
   try {
     const { nameCategory, description = "" } = req.body;
 
     let categoryImg = { link: "", alt: nameCategory };
+
     if (req.file) {
-      categoryImg.link = `${BASE_URL}public/category/${req.file.filename}`;
+      const driveLink = await uploadFileToDrive(req.file, CATEGORY_FOLDER_ID);
+      categoryImg.link = driveLink;
       categoryImg.alt = nameCategory;
+
+      // Xóa file tạm
+      fs.unlinkSync(req.file.path);
     }
 
     const newCategory = new Category({
