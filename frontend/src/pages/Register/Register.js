@@ -132,7 +132,6 @@ function Register() {
                 </div>
             </form>
 
-            {/* Toast container hiển thị thông báo */}
             <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
         </div>
     );

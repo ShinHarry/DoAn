@@ -1,8 +1,10 @@
 import * as httpRequest from '~/utils/httpRequest';
 
-export const getUser = async () => {
+export const getUser = async ({ page = 1, limit = 12 }) => {
     try {
-        return await httpRequest.get('/admindashboard');
+        return await httpRequest.get('/admindashboard', {
+            params: { page, limit },
+        });
     } catch (err) {
         console.error('Error fetching admindashboard:', err);
         throw err;

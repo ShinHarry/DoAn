@@ -250,7 +250,6 @@ const {
   uploadMultipleToCloudinary,
 } = require("../middlewares/uploadImage/uploads");
 
-// GET: Danh sách sản phẩm (lọc, phân trang, sắp xếp)
 router.get("/", async (req, res) => {
   try {
     const {
@@ -268,7 +267,7 @@ router.get("/", async (req, res) => {
 
     const query = {};
     if (search) {
-      query.productName = { $regex: search, $options: "i" }; // tìm không phân biệt hoa thường
+      query.productName = { $regex: search, $options: "i" };
     }
     if (category && mongoose.Types.ObjectId.isValid(category))
       query.productCategory = category;

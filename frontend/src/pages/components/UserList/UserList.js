@@ -1,5 +1,5 @@
 import classNames from 'classnames/bind';
-import styles from './AdminDashboard.module.scss';
+import styles from './UserList.module.scss';
 import { useState, useEffect } from 'react';
 import * as adminService from '~/services/adminService';
 import Image from '~/components/Image';
@@ -22,16 +22,21 @@ function UserList() {
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
+    const [page, setPage] = useState(1);
+    // const [limit, setLimit] = useState(12); // số sản phẩm mỗi trang
+    const limit = 12;
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
             try {
-                const response = await adminService.getUser();
+                const response = await adminService.getUser({ page, limit });
                 if (response.length === 0) {
                     setError('Không có người dùng nào trong hệ thống');
                 }
                 setUsers(response);
+                setTotal(response.total);
             } catch (err) {
                 setError('Lỗi khi lấy danh sách người dùng');
             } finally {
@@ -39,7 +44,7 @@ function UserList() {
             }
         };
         fetchUsers();
-    }, []);
+    }, [page]);
 
     const handleUserClick = (user) => {
         setSelectedUser(user);
@@ -128,7 +133,8 @@ function UserList() {
         const isRoleMatch = roleFilter ? user.userRole === roleFilter : true;
         const isSearchMatch =
             user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user._id.toLowerCase().includes(searchQuery.toLowerCase());
+            user._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase());
         return isRoleMatch && isSearchMatch;
     });
 
@@ -143,7 +149,7 @@ function UserList() {
             <div className={cx('filters')}>
                 <input
                     type="text"
-                    placeholder="Tìm kiếm theo tên hoặc ID"
+                    placeholder="Tìm kiếm theo tên, ID hoặc email"
                     value={searchQuery}
                     onChange={handleSearchChange}
                     className={cx('search-input')}
@@ -289,6 +295,19 @@ function UserList() {
                             </form>
                         )}
                     </div>
+                </div>
+            )}
+            {total > limit && (
+                <div className={cx('pagination')}>
+                    <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                        Trước
+                    </button>
+                    <span>
+                        Trang {page} / {Math.ceil(total / limit)}
+                    </span>
+                    <button disabled={page * limit >= total} onClick={() => setPage(page + 1)}>
+                        Tiếp
+                    </button>
                 </div>
             )}
         </div>

@@ -69,7 +69,7 @@ const privateRoutes = [
         layout: LayoutNoFooter,
         children: [
             {
-                path: 'productlist',
+                path: 'userlist',
                 component: UserList,
                 roles: ['admin'],
                 layout: null,

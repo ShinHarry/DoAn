@@ -7,8 +7,16 @@ const mongoose = require("mongoose");
 
 router.get("/", async (req, res) => {
   try {
-    const users = await User.find();
-    res.json(users);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      User.find().skip(skip).limit(limit),
+      User.countDocuments(),
+    ]);
+
+    res.json({ users, total });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

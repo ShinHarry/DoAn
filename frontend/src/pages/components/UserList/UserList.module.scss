@@ -46,7 +46,7 @@
         border: 1px solid #ccc;
         border-radius: 6px;
         font-size: 14px;
-        min-width: 200px;
+        min-width: 250px;
     }
 }
 
@@ -253,5 +253,37 @@
     svg {
         font-size: 16px;
         color: #e74c3c;
+    }
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    align-items: center;
+    margin-top: 20px;
+
+    button {
+        padding: 8px 16px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        &:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+    }
+
+    span {
+        font-size: 16px;
+        color: #333;
     }
 }
