@@ -32,7 +32,8 @@ router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
     // if (duplicatedUser) {
     //   return res
     //     .status(400)
-    //     .json({ message: "Email hoặc số điện thoại đã tồn tại!" });
+    //     .json({ message: "Email hoặc số điện thoại
+    //  đã tồn tại!" });
     // }
 
     // Chuẩn bị dữ liệu cập nhật
