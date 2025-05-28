@@ -20,6 +20,8 @@ router.put("/:userId", async (req, res) => {
     //   req.body;
     const { userId, userName, userRole, userStatus } = req.body;
     const currentUser = await User.findById(userId);
+    console.log("req.body:", req.body);
+
     console.log("currentUser:", currentUser);
     if (!currentUser) {
       return res.status(404).json({ message: "Người dùng không tồn tại" });
