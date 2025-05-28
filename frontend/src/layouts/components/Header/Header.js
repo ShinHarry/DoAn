@@ -29,7 +29,7 @@ import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
 import { useEffect, useState, useCallback } from 'react';
 import { fetchUser } from '~/redux/actions/authActions';
-    
+
 // cart
 import Drawer from '@mui/material/Drawer';
 import { IoCloseSharp } from 'react-icons/io5';
@@ -103,7 +103,7 @@ function Header() {
         setCartError(null);
         try {
             const data = await cartService.getCart();
-            console.log(data.cart)
+            console.log(data.cart);
             setCartItems(data.cart || []);
         } catch (error) {
             console.error('Lỗi lấy cart:', error);
@@ -353,7 +353,7 @@ function Header() {
                 <div className={cx('loading')}>Loading...</div>
             ) : (
                 <div className={cx('inner')}>
-                    {userRole !== 'mod' && userRole !== 'admin' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                         <Link to={config.routes.home} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
@@ -363,12 +363,17 @@ function Header() {
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
+                    {userRole === 'accountant' && (
+                        <Link to={`${config.routes.moddashboard}/statistics`} className={cx('logo-link')}>
+                            <img src={images.logo} alt="Logo" />
+                        </Link>
+                    )}
                     {userRole === 'admin' && (
                         <Link to={`${config.routes.admindashboard}/`} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {userRole !== 'mod' && userRole !== 'admin' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                         <>
                             <Menu items={MENU_ITEMS}>
                                 <button className={cx('action-btn')}>
@@ -380,7 +385,7 @@ function Header() {
                     )}
 
                     <div className={cx('actions')}>
-                        {userRole !== 'mod' && userRole !== 'admin' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                             <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
                                 <button className={cx('action-btn')} onClick={() => navigate('/wishlist')}>
                                     <FiHeart />
@@ -402,13 +407,18 @@ function Header() {
                                 {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
+                        {userRole === 'accountant' && (
+                            <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
+                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
+                            </Menu>
+                        )}
                         {userRole === 'admin' && (
                             <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
                                 {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
 
-                        {userRole !== 'mod' && userRole !== 'admin' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                             <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
                                 <button className={cx('action-btn')} onClick={handleOpenCart}>
                                     <CartIcons />

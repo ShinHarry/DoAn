@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
 });
 
 // Thêm mới origin
-router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
+router.post("/", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
   try {
     const { nameOrigin, description, phone, address, email } = req.body;
 
@@ -52,51 +52,62 @@ router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
 
 // Update origin
 
-router.put("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const { nameOrigin, description, phone, address, email } = req.body;
+router.put(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const { nameOrigin, description, phone, address, email } = req.body;
 
-    // Validate dữ liệu
-    if (!nameOrigin || !description || !phone || !address || !email) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng nhập đầy đủ thông tin." });
+      // Validate dữ liệu
+      if (!nameOrigin || !description || !phone || !address || !email) {
+        return res
+          .status(400)
+          .json({ message: "Vui lòng nhập đầy đủ thông tin." });
+      }
+
+      const updateData = {
+        nameOrigin,
+        description,
+        phone,
+        address,
+        email,
+      };
+
+      const updatedOrigin = await Origin.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+
+      if (!updatedOrigin) {
+        return res.status(404).json({ message: "Origin not found" });
+      }
+
+      res.json(updatedOrigin);
+    } catch (err) {
+      console.error(err);
+      res.status(400).json({ message: err.message });
     }
-
-    const updateData = {
-      nameOrigin,
-      description,
-      phone,
-      address,
-      email,
-    };
-
-    const updatedOrigin = await Origin.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    );
-
-    if (!updatedOrigin) {
-      return res.status(404).json({ message: "Origin not found" });
-    }
-
-    res.json(updatedOrigin);
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({ message: err.message });
   }
-});
+);
 
 // Delete origin
-router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const deleted = await Origin.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Origins not found" });
-    res.json({ message: "Origins deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+router.delete(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const deleted = await Origin.findByIdAndDelete(req.params.id);
+      if (!deleted)
+        return res.status(404).json({ message: "Origins not found" });
+      res.json({ message: "Origins deleted" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
-});
+);
 
 module.exports = router;

@@ -20,8 +20,14 @@ function Sidebar() {
     return (
         <aside className={cx('wrapper')}>
             <Menu>
-                {userRole === 'mod' && (
+                {(userRole === 'mod' || userRole === 'admin') && (
                     <>
+                        <MenuItem
+                            title="Danh sách sản phẩm"
+                            to={'productlist'}
+                            icon={<UserGroupIcon />}
+                            activeIcon={<UserGroupIcon />}
+                        />
                         <MenuItem
                             title="Danh sách sản phẩm"
                             to={'productlist'}
@@ -69,7 +75,7 @@ function Sidebar() {
                     </>
                 )}
 
-                {userRole === 'accountant' && (
+                {(userRole === 'accountant' || userRole === 'admin') && (
                     <MenuItem title="Thống kê" to={'statistics'} icon={<FileIcon />} activeIcon={<FileIcon />} />
                 )}
             </Menu>

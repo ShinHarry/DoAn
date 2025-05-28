@@ -55,7 +55,12 @@ db.connect();
 // Use routes
 app.use("/api/admindashboard", verifyToken, authPage(["admin"]), routerAdmin);
 
-app.use("/api/category", verifyToken, authPage(["mod"]), routerCategoryManager);
+app.use(
+  "/api/category",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  routerCategoryManager
+);
 
 app.use(
   "/api/users",
@@ -63,13 +68,23 @@ app.use(
   authPage(["admin", "mod", "cus", "accountant"]),
   RouterUser
 );
-app.use("/api/carts", verifyToken, authPage(["mod", "cus"]), RouterCart);
-app.use("/api/sales", verifyToken, authPage(["mod", "cus"]), RouterSale);
+app.use(
+  "/api/carts",
+  verifyToken,
+  authPage(["admin", "mod", "cus"]),
+  RouterCart
+);
+app.use(
+  "/api/sales",
+  verifyToken,
+  authPage(["admin", "mod", "cus"]),
+  RouterSale
+);
 
 app.use(
   "/api/orderM",
   verifyToken,
-  authPage(["mod", "cus"]),
+  authPage(["admin", "mod", "cus"]),
   orderManagerRouter
 );
 app.use("/api/products", RouterProduct);
@@ -79,7 +94,12 @@ app.use("/api/origins", RouterOrigin);
 app.use("/api/units", RouterUnit);
 app.use("/api/auth", routerAuth);
 app.use("/api/news", RouterNew);
-app.use("/api/orders", verifyToken, authPage(["mod", "cus"]), orderRouter);
+app.use(
+  "/api/orders",
+  verifyToken,
+  authPage(["admin", "mod", "cus"]),
+  orderRouter
+);
 app.use("/api/payments", paymentRouter);
 app.use(
   "/api/statistics",

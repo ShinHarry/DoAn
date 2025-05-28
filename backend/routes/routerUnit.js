@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
+router.post("/", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
   try {
     const { nameUnit, description } = req.body;
 
@@ -47,47 +47,57 @@ router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
   }
 });
 
-router.put("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const { nameUnit, description } = req.body;
-    // Validate dữ liệu
-    if (!nameUnit || !description) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng nhập đầy đủ thông tin." });
+router.put(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const { nameUnit, description } = req.body;
+      // Validate dữ liệu
+      if (!nameUnit || !description) {
+        return res
+          .status(400)
+          .json({ message: "Vui lòng nhập đầy đủ thông tin." });
+      }
+
+      const updateData = {
+        nameUnit,
+        description,
+      };
+
+      const updatedUnit = await Unit.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+
+      if (!updatedUnit) {
+        return res.status(404).json({ message: "Unit not found" });
+      }
+
+      res.json(updatedUnit);
+    } catch (err) {
+      console.error(err);
+      res.status(400).json({ message: err.message });
     }
-
-    const updateData = {
-      nameUnit,
-      description,
-    };
-
-    const updatedUnit = await Unit.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    );
-
-    if (!updatedUnit) {
-      return res.status(404).json({ message: "Unit not found" });
-    }
-
-    res.json(updatedUnit);
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({ message: err.message });
   }
-});
+);
 
 // Delete manufacturer
-router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const deleted = await Unit.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Unit not found" });
-    res.json({ message: "Unit deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+router.delete(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const deleted = await Unit.findByIdAndDelete(req.params.id);
+      if (!deleted) return res.status(404).json({ message: "Unit not found" });
+      res.json({ message: "Unit deleted" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
-});
+);
 
 module.exports = router;

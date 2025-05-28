@@ -28,13 +28,13 @@ import OrderDetail from '~/pages/OrderDetail';
 import AdminDashboard from '~/pages/AdminDashboard';
 
 import ModDashboard from '~/pages/ModDashboard';
-import ProductList from '~/pages/ModDashboard/ProductList/ProductList';
-import Banner from '~/pages/ModDashboard/Banner';
-import Manufacturer from '~/pages/ModDashboard/Manufacturer';
-import Sale from '~/pages/ModDashboard/Sale';
-import Origin from '~/pages/ModDashboard/Origin';
-import Statistics from '~/pages/ModDashboard/Statistics';
-import Unit from '~/pages/ModDashboard/Unit';
+import ProductList from '~/pages/components/ProductList';
+import Banner from '~/pages/components/Banner';
+import Manufacturer from '~/pages/components/Manufacturer';
+import Sale from '~/pages/components/Sale';
+import Origin from '~/pages/components/Origin';
+import Statistics from '~/pages/components/Statistics';
+import Unit from '~/pages/components/Unit';
 
 import Wishlist from '~/pages/Wishlist';
 import OrderManage from '~/pages/OrderManage';
@@ -62,110 +62,161 @@ const publicRoutes = [
 ];
 
 const privateRoutes = [
-    { path: config.routes.admindashboard, component: AdminDashboard, roles: ['admin'], layout: LayoutNoFooter },
-
     {
-        path: config.routes.moddashboard,
-        component: ModDashboard,
-        roles: ['mod', 'accountant'],
+        path: config.routes.admindashboard,
+        component: AdminDashboard,
+        roles: ['admin'],
         layout: LayoutNoFooter,
         children: [
             {
                 path: 'productlist',
                 component: ProductList,
-                roles: ['mod'],
+                roles: ['admin', 'mod'],
                 layout: null,
             },
-            { path: 'orderManage', component: OrderManage, roles: ['mod'] },
-            { path: 'categoryManager', component: CategoryManager, roles: ['mod'] },
+            { path: 'orderManage', component: OrderManage, roles: ['admin', 'mod'] },
+            { path: 'categoryManager', component: CategoryManager, roles: ['admin', 'mod'] },
             {
                 path: 'news',
                 component: Banner,
-                roles: ['mod'],
+                roles: ['admin', 'mod'],
                 layout: null,
             },
             {
                 path: 'sales',
                 component: Sale,
-                roles: ['mod'],
+                roles: ['admin', 'mod'],
                 layout: null,
             },
             {
                 path: 'manufacturers',
                 component: Manufacturer,
-                roles: ['mod'],
+                roles: ['admin', 'mod'],
                 layout: null,
             },
             {
                 path: 'origins',
                 component: Origin,
-                roles: ['mod'],
+                roles: ['admin', 'mod'],
                 layout: null,
             },
             {
                 path: 'unit',
                 component: Unit,
-                roles: ['mod'],
+                roles: ['admin', 'mod'],
                 layout: null,
             },
             {
                 path: 'statistics',
                 component: Statistics,
-                roles: ['accountant'],
+                roles: ['admin', 'accountant'],
                 layout: null,
             },
         ],
     },
 
-    { path: config.routes.addProduct, component: AddProduct, roles: ['mod'], layout: LayoutNoFooter },
-    { path: config.routes.updateProduct, component: UpdateProduct, roles: ['mod'], layout: LayoutNoFooter },
+    {
+        path: config.routes.moddashboard,
+        component: ModDashboard,
+        roles: ['admin', 'mod', 'accountant'],
+        layout: LayoutNoFooter,
+        children: [
+            {
+                path: 'productlist',
+                component: ProductList,
+                roles: ['admin', 'mod'],
+                layout: null,
+            },
+            { path: 'orderManage', component: OrderManage, roles: ['admin', 'mod'] },
+            { path: 'categoryManager', component: CategoryManager, roles: ['admin', 'mod'] },
+            {
+                path: 'news',
+                component: Banner,
+                roles: ['admin', 'mod'],
+                layout: null,
+            },
+            {
+                path: 'sales',
+                component: Sale,
+                roles: ['admin', 'mod'],
+                layout: null,
+            },
+            {
+                path: 'manufacturers',
+                component: Manufacturer,
+                roles: ['admin', 'mod'],
+                layout: null,
+            },
+            {
+                path: 'origins',
+                component: Origin,
+                roles: ['admin', 'mod'],
+                layout: null,
+            },
+            {
+                path: 'unit',
+                component: Unit,
+                roles: ['admin', 'mod'],
+                layout: null,
+            },
+            {
+                path: 'statistics',
+                component: Statistics,
+                roles: ['admin', 'accountant'],
+                layout: null,
+            },
+        ],
+    },
 
-    { path: config.routes.news, component: Banner, roles: ['mod'], layout: LayoutNoFooter },
-    { path: config.routes.addNew, component: AddBanner, roles: ['mod'], layout: LayoutNoFooter },
-    { path: config.routes.updateNew, component: UpdateBanner, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.addProduct, component: AddProduct, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: config.routes.updateProduct, component: UpdateProduct, roles: ['admin', 'mod'], layout: LayoutNoFooter },
 
-    { path: config.routes.sales, component: Sale, roles: ['mod'], layout: LayoutNoFooter },
-    { path: config.routes.addSale, component: AddSale, roles: ['mod'], layout: LayoutNoFooter },
-    { path: config.routes.updateSale, component: UpdateSale, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.news, component: Banner, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: config.routes.addNew, component: AddBanner, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: config.routes.updateNew, component: UpdateBanner, roles: ['admin', 'mod'], layout: LayoutNoFooter },
 
-    { path: '/origins', component: Origin, roles: ['mod'], layout: LayoutNoFooter },
-    { path: '/manufacturers', component: Manufacturer, roles: ['mod'], layout: LayoutNoFooter },
+    { path: config.routes.sales, component: Sale, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: config.routes.addSale, component: AddSale, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: config.routes.updateSale, component: UpdateSale, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+
+    { path: '/origins', component: Origin, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: '/manufacturers', component: Manufacturer, roles: ['admin', 'mod'], layout: LayoutNoFooter },
 
     {
         path: config.routes.profiledashboard,
         component: ProfileDashboard,
-        roles: ['admin', 'cus', 'mod'],
+        roles: ['admin', 'cus', 'mod', 'accountant'],
         children: [
             {
                 path: config.routes.profile,
                 component: Profile,
-                roles: ['admin', 'cus', 'mod'],
+                roles: ['admin', 'cus', 'mod', 'accountant'],
                 layout: null,
             },
             {
                 path: config.routes.address,
                 component: Address,
-                roles: ['admin', 'cus', 'mod'],
+                roles: ['admin', 'cus', 'mod', 'accountant'],
                 layout: null,
             },
             {
                 path: config.routes.changepassWord,
                 component: ChangePassWord,
-                roles: ['admin', 'cus', 'mod'],
+                roles: ['admin', 'cus', 'mod', 'accountant'],
                 layout: null,
             },
         ],
     },
-    { path: config.routes.order, component: Order, roles: ['cus', 'mod'], layout: LayoutNoFooter },
-    { path: config.routes.address, component: Address, roles: ['cus', 'mod'] },
-    { path: config.routes.checkout, component: Checkout, roles: ['cus', 'mod'] },
-    { path: '/cart-detail', component: CartDetail, roles: ['cus', 'mod'] },
-    { path: '/order-success/:orderId?', component: OrderSuccess, roles: ['cus', 'mod'] },
-    { path: '/payment-return', component: PaymentReturn, roles: ['cus', 'mod'] },
-    { path: '/orders/:orderId', component: OrderDetail, roles: ['cus', 'mod'] },
-    { path: config.routes.wishlist, component: Wishlist, roles: ['cus', 'mod'] },
+    { path: config.routes.order, component: Order, roles: ['admin', 'cus', 'mod'], layout: LayoutNoFooter },
+    { path: config.routes.address, component: Address, roles: ['admin', 'cus', 'mod'] },
+    { path: config.routes.checkout, component: Checkout, roles: ['admin', 'cus', 'mod'] },
+    { path: '/cart-detail', component: CartDetail, roles: ['admin', 'cus', 'mod'] },
+    { path: '/order-success/:orderId?', component: OrderSuccess, roles: ['admin', 'cus', 'mod'] },
+    { path: '/payment-return', component: PaymentReturn, roles: ['admin', 'cus', 'mod'] },
+    { path: '/orders/:orderId', component: OrderDetail, roles: ['admin', 'cus', 'mod'] },
+    { path: config.routes.wishlist, component: Wishlist, roles: ['admin', 'cus', 'mod'] },
 
-    { path: '/orderDetailM/:orderId', component: OrderDetailM, roles: ['mod'] },
+    { path: '/orderDetailM/:orderId', component: OrderDetailM, roles: ['admin', 'mod'] },
 ];
 
 export { publicRoutes, privateRoutes };

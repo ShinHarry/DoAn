@@ -20,7 +20,6 @@ const initialFormData = {
 };
 
 function Origin() {
-    const [showForm, setShowForm] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 

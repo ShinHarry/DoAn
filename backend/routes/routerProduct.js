@@ -357,7 +357,7 @@ router.get("/:id", async (req, res) => {
 router.post(
   "/",
   verifyToken,
-  authPage(["mod"]),
+  authPage(["admin", "mod"]),
   uploadProduct.array("productImgs", 10),
   async (req, res) => {
     try {
@@ -425,7 +425,7 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
-  authPage(["mod"]),
+  authPage(["admin", "mod"]),
   uploadProduct.array("productImgs", 10),
   async (req, res) => {
     try {
@@ -465,15 +465,21 @@ router.put(
 );
 
 // DELETE: Xóa sản phẩm
-router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const deleted = await Product.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Product not found" });
+router.delete(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const deleted = await Product.findByIdAndDelete(req.params.id);
+      if (!deleted)
+        return res.status(404).json({ message: "Product not found" });
 
-    res.json({ message: "Xóa sản phẩm thành công", deletedProduct: deleted });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.json({ message: "Xóa sản phẩm thành công", deletedProduct: deleted });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
 module.exports = router;

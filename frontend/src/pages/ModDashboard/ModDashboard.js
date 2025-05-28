@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './ModDashboard.module.scss';
-import Sidebar from './Sidebar';
+import Sidebar from '../components/Sidebar';
 
 const cx = classNames.bind(styles);
 

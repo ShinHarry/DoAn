@@ -157,7 +157,7 @@ router.get("/", async (req, res) => {
 router.post(
   "/",
   verifyToken,
-  authPage(["mod"]),
+  authPage(["admin", "mod"]),
   uploadBanner.single("newImage"),
   async (req, res) => {
     try {
@@ -203,23 +203,28 @@ router.post(
 );
 
 // Get news detail
-router.get("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const news = await News.findById(req.params.id);
+router.get(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const news = await News.findById(req.params.id);
 
-    if (!news) return res.status(404).json({ message: "Banner not found" });
+      if (!news) return res.status(404).json({ message: "Banner not found" });
 
-    res.json(news);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.json(news);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
 // Update news
 router.put(
   "/:id",
   verifyToken,
-  authPage(["mod"]),
+  authPage(["admin", "mod"]),
   uploadBanner.single("newImage"),
   async (req, res) => {
     try {
@@ -265,14 +270,19 @@ router.put(
 );
 
 // Delete news
-router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const deleted = await News.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "News not found" });
-    res.json({ message: "News deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+router.delete(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const deleted = await News.findByIdAndDelete(req.params.id);
+      if (!deleted) return res.status(404).json({ message: "News not found" });
+      res.json({ message: "News deleted" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
-});
+);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const router = express.Router();
 const Manufacturer = require("../models/Manufacturer");
 const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
+
 router.get("/", async (req, res) => {
   try {
     const response = await Manufacturer.find();
@@ -12,7 +13,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", verifyToken, authPage(["mod"]), async (req, res) => {
+router.post("/", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
   try {
     const { nameManufacturer, description } = req.body;
 
@@ -81,15 +82,20 @@ router.put("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
 });
 
 // Delete manufacturer
-router.delete("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
-  try {
-    const deleted = await Manufacturer.findByIdAndDelete(req.params.id);
-    if (!deleted)
-      return res.status(404).json({ message: "Manufacturer not found" });
-    res.json({ message: "Manufacturer deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+router.delete(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const deleted = await Manufacturer.findByIdAndDelete(req.params.id);
+      if (!deleted)
+        return res.status(404).json({ message: "Manufacturer not found" });
+      res.json({ message: "Manufacturer deleted" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
-});
+);
 
 module.exports = router;
