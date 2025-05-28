@@ -6,7 +6,7 @@
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-
+    width: 800px;
     .product-item {
         display: flex;
         gap: 20px;
@@ -15,15 +15,14 @@
             width: 100%;
             max-width: 300px;
             margin: 0 auto;
-        
+
             .slick-slide img {
                 width: 100%;
                 height: auto;
                 object-fit: contain;
             }
-            
         }
-        
+
         .product-images {
             flex: 1;
             max-width: 300px;
@@ -136,60 +135,58 @@
     }
 }
 .feedback-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .feedback-item {
-  border-bottom: 1px solid #eee;
-  padding: 12px 0;
-  margin-bottom: 12px;
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+    margin-bottom: 12px;
 }
 .star {
-  font-size: 1.2rem;
-  color: #ccc;
+    font-size: 1.2rem;
+    color: #ccc;
 }
 .feedback-rating {
-  margin-left: 8px;
-  display: flex;
-  gap: 2px;
+    margin-left: 8px;
+    display: flex;
+    gap: 2px;
 }
 .star.filled {
-  color: #ffb400;
+    color: #ffb400;
 }
 .feedback-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
 }
 
 .feedback-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #4a90e2;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4a90e2;
 }
 
 .feedback-user-name {
-  color: #007bff; 
-  font-weight: 600;
-  font-size: 1.5rem;
+    color: #007bff;
+    font-weight: 600;
+    font-size: 1.5rem;
 }
 
 .feedback-comment {
-  font-size: 1.3rem;
-  color: #333;
-  margin-left: 30px; 
-  margin-bottom: 6px;
+    font-size: 1.3rem;
+    color: #333;
+    margin-left: 30px;
+    margin-bottom: 6px;
 }
 
 .feedback-time {
-  font-size: 1rem;
-  color: #888;
-  margin-left: 15px; 
+    font-size: 1rem;
+    color: #888;
+    margin-left: 15px;
 }
-
-
