@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
+router.put("/:userId", async (req, res) => {
   try {
     // const { userId, userName, userEmail, userPhone, userGender, userRole } =
     //   req.body;
@@ -44,15 +44,6 @@ router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
       userRole,
       userStatus,
     };
-
-    if (req.file) {
-      updatedData.userAvatar = [
-        {
-          name: req.file.filename,
-          link: `/public/users/${req.file.filename}`,
-        },
-      ];
-    }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
       new: true,

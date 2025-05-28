@@ -81,7 +81,12 @@ app.use("/api/auth", routerAuth);
 app.use("/api/news", RouterNew);
 app.use("/api/orders", verifyToken, authPage(["mod", "cus"]), orderRouter);
 app.use("/api/payments", paymentRouter);
-app.use("/api/statistics", verifyToken, authPage(["mod"]), statisticsRouter);
+app.use(
+  "/api/statistics",
+  verifyToken,
+  authPage(["statistics"]),
+  statisticsRouter
+);
 app.use("/api/wishlist", verifyToken, authPage(["cus"]), routerWishlist);
 app.use("/api/feedback", routerFeedback);
 app.use("/api/", paymentMethodRouter);

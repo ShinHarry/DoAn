@@ -152,7 +152,8 @@ function AdminDashboard() {
                     <option value="">Chọn vai trò</option>
                     <option value="admin">Admin</option>
                     <option value="cus">Customer</option>
-                    <option value="mod">Mod</option>
+                    <option value="mod">Quản lý kinh doanh</option>
+                    <option value="accountant">Kế toán</option>
                 </select>
             </div>
 
@@ -272,7 +273,8 @@ function AdminDashboard() {
                                     >
                                         <option value="admin">Admin</option>
                                         <option value="cus">Cus</option>
-                                        <option value="mod">Mod</option>
+                                        <option value="mod">Quản lý kinh doanh</option>
+                                        <option value="accountant">Kế toán</option>
                                     </select>
                                 </div>
 
