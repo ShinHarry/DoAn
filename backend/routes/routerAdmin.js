@@ -21,6 +21,7 @@ router.put("/:userId", async (req, res) => {
     const { userId, userName, userRole, userStatus } = req.body;
     const currentUser = await User.findById(userId);
     console.log("req.body:", req.body);
+    console.log("req.params:", req.params);
 
     console.log("currentUser:", currentUser);
     if (!currentUser) {

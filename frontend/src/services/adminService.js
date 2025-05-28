@@ -20,7 +20,9 @@ export const updateUserById = async (userId, userData) => {
         // formData.append('userGender', userData.userGender);
         formData.append('userRole', userData.userRole);
         formData.append('userStatus', userData.userStatus);
-
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value);
+        }
         const response = await httpRequest.put(`/admindashboard/${userId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
