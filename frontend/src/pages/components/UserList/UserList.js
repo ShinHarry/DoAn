@@ -23,7 +23,6 @@ function UserList() {
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
     const [page, setPage] = useState(1);
-    // const [limit, setLimit] = useState(12); // số sản phẩm mỗi trang
     const limit = 12;
     const [total, setTotal] = useState(0);
 
@@ -35,7 +34,7 @@ function UserList() {
                 if (response.length === 0) {
                     setError('Không có người dùng nào trong hệ thống');
                 }
-                setUsers(response);
+                setUsers(response.users);
                 setTotal(response.total);
             } catch (err) {
                 setError('Lỗi khi lấy danh sách người dùng');
@@ -166,23 +165,37 @@ function UserList() {
             {loading ? (
                 <p>Đang tải...</p>
             ) : (
-                <div className={cx('user-list')}>
-                    {filteredUsers.map((user) => (
-                        <div key={user._id} className={cx('user-item')} onClick={() => handleUserClick(user)}>
-                            <Image
-                                className={cx('user-avatar')}
-                                src={user.userAvatar?.[0]?.link}
-                                alt={user.userAvatar?.[0]?.alt || 'avatar'}
-                            />
-                            <div className={cx('user-info')}>
-                                {displayField('ID', user._id)}
-                                {displayField('Tên', user.userName)}
-                                {displayField('Vai trò', user.userRole)}
-                                {displayField('Trạng thái', user.userStatus)}
+                <>
+                    <div className={cx('user-list')}>
+                        {filteredUsers.map((user) => (
+                            <div key={user._id} className={cx('user-item')} onClick={() => handleUserClick(user)}>
+                                <Image
+                                    className={cx('user-avatar')}
+                                    src={user.userAvatar?.[0]?.link}
+                                    alt={user.userAvatar?.[0]?.alt || 'avatar'}
+                                />
+                                <div className={cx('user-info')}>
+                                    {displayField('ID', user._id)}
+                                    {displayField('Tên', user.userName)}
+                                    {displayField('Vai trò', user.userRole)}
+                                    {displayField('Trạng thái', user.userStatus)}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+
+                    <div className={cx('pagination')}>
+                        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                            Trước
+                        </button>
+                        <span>
+                            Trang {page} / {Math.ceil(total / limit)}
+                        </span>
+                        <button disabled={page * limit >= total} onClick={() => setPage(page + 1)}>
+                            Tiếp
+                        </button>
+                    </div>
+                </>
             )}
 
             {selectedUser && (
@@ -295,19 +308,6 @@ function UserList() {
                             </form>
                         )}
                     </div>
-                </div>
-            )}
-            {total > limit && (
-                <div className={cx('pagination')}>
-                    <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-                        Trước
-                    </button>
-                    <span>
-                        Trang {page} / {Math.ceil(total / limit)}
-                    </span>
-                    <button disabled={page * limit >= total} onClick={() => setPage(page + 1)}>
-                        Tiếp
-                    </button>
                 </div>
             )}
         </div>

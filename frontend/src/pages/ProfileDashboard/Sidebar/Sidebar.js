@@ -16,7 +16,6 @@ function Sidebar() {
             try {
                 const response = await authService.fetchUser();
                 setUser(response);
-                console.log('fetchUser', response);
             } catch (err) {
                 setUser(null);
             } finally {

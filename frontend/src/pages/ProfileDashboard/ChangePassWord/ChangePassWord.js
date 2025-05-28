@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from './ChangePassWord.module.scss';
 import Button from '~/components/Button';
 import * as userService from '~/services/userService';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Swal from 'sweetalert2';
 
 const cx = classNames.bind(styles);
 
 function ChangePassWord() {
-    const navigate = useNavigate();
     const { userId } = useParams();
     const [showPassword, setShowPassword] = useState(false);
-    console.log('userId', userId);
     const [formData, setFormData] = useState({
         oldPassword: '',
         newPassword: '',
@@ -39,13 +36,15 @@ function ChangePassWord() {
 
         if (!userId) return;
 
-        const { oldPassword, newPassword, confirmPassword } = formData;
+        const { newPassword, confirmPassword } = formData;
 
         if (newPassword !== confirmPassword) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Mật khẩu xác nhận không khớp!',
+            toast.error('Mật khẩu xác nhận không khớp!', {
+                position: 'top-center',
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                draggable: true,
             });
             return;
         }
@@ -53,7 +52,13 @@ function ChangePassWord() {
         try {
             setIsLoading(true);
             await userService.changePassword(userId, formData);
-            toast.success('Đổi mật khẩu thành công!');
+            toast.success('Đổi mật khẩu thành công!', {
+                position: 'top-center',
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                draggable: true,
+            });
             setFormData({
                 oldPassword: '',
                 newPassword: '',
@@ -119,6 +124,7 @@ function ChangePassWord() {
                     </Button>
                 </form>
             </div>
+            <ToastContainer />
         </div>
     );
 }

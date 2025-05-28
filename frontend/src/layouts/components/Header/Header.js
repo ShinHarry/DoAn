@@ -103,7 +103,6 @@ function Header() {
         setCartError(null);
         try {
             const data = await cartService.getCart();
-            console.log(data.cart);
             setCartItems(data.cart || []);
         } catch (error) {
             console.error('Lỗi lấy cart:', error);
