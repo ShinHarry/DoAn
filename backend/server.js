@@ -60,7 +60,7 @@ app.use("/api/category", verifyToken, authPage(["mod"]), routerCategoryManager);
 app.use(
   "/api/users",
   verifyToken,
-  authPage(["admin", "mod", "cus"]),
+  authPage(["admin", "mod", "cus", "accountant"]),
   RouterUser
 );
 app.use("/api/carts", verifyToken, authPage(["mod", "cus"]), RouterCart);
@@ -84,7 +84,7 @@ app.use("/api/payments", paymentRouter);
 app.use(
   "/api/statistics",
   verifyToken,
-  authPage(["statistics"]),
+  authPage(["accountant"]),
   statisticsRouter
 );
 app.use("/api/wishlist", verifyToken, authPage(["cus"]), routerWishlist);

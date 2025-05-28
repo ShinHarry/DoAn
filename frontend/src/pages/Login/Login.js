@@ -59,7 +59,9 @@ function Login() {
                 if (role === 'admin') {
                     navigate('/admindashboard');
                 } else if (role === 'mod') {
-                    navigate('/moddashboard');
+                    navigate('/moddashboard/productlist');
+                } else if (role === 'accountant') {
+                    navigate('/moddashboard/statistics');
                 } else if (role === 'cus') {
                     navigate('/');
                 }

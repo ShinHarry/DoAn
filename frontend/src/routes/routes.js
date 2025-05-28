@@ -67,7 +67,7 @@ const privateRoutes = [
     {
         path: config.routes.moddashboard,
         component: ModDashboard,
-        roles: ['mod'],
+        roles: ['mod', 'accountant'],
         layout: LayoutNoFooter,
         children: [
             {
@@ -111,7 +111,7 @@ const privateRoutes = [
             {
                 path: 'statistics',
                 component: Statistics,
-                roles: ['mod'],
+                roles: ['accountant'],
                 layout: null,
             },
         ],
