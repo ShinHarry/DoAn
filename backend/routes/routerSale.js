@@ -8,7 +8,7 @@ const BASE_URL = process.env.BASE_URL;
 router.get("/", async (req, res) => {
   try {
     const salesList = await Sales.find().sort({ createdAt: -1 });
-    console.log(salesList)
+    // console.log(salesList)
     res.json(salesList);
   } catch (err) {
     res.status(500).json({ message: err.message });

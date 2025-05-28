@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as newService from '~/services/newService';
 import classNames from 'classnames/bind';
@@ -10,6 +10,7 @@ const cx = classNames.bind(styles);
 
 function AddBanner() {
     const navigate = useNavigate();
+    const [nameUser, setNameUser] = useState([]);
     const [banner, setBanner] = useState({
         title: '',
         summary: '',
@@ -21,6 +22,19 @@ function AddBanner() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchName = async () => {
+            try {
+                const result = await newService.getName();
+                setNameUser(result);
+            } catch (error) {
+                console.error('Error fetching get Name:', error);
+            }
+            setLoading(false);
+        };
+        fetchName();
+    })
 
     const handleChange = (e) => {
         const { name, value, type, checked, files } = e.target;
@@ -130,14 +144,20 @@ function AddBanner() {
 
                 <div className={cx('form-group')}>
                     <label className={cx('label')}>Tác giả:</label>
-                    <input
-                        type="text"
+                     <select
                         name="author"
                         value={banner.author}
                         onChange={handleChange}
                         className={cx('input')}
                         required
-                    />
+                    >
+                        <option value="">-- Chọn tác giả --</option>
+                        {nameUser.map((user) => (
+                        <option key={user._id} value={user._id}>
+                            {user.userName}
+                        </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className={cx('form-group')}>

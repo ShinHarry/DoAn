@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const News = require("../models/New");
+const User = require("../models/User");
 require("dotenv").config();
 const { uploadBanner } = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
@@ -8,10 +9,30 @@ const authPage = require("../middlewares/Auth/authoziration");
 
 const BASE_URL = process.env.BASE_URL;
 
-// Get all news
-router.get("/", async (req, res) => {
+//Get all mod admin
+router.get("/name", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
   try {
-    const newsList = await News.find().sort({ createdAt: -1 });
+    const users = await User.find({
+      userRole: { $in: ["mod", "admin"] },
+    })
+      .select("_id userName")
+      .sort({ createdAt: -1 });
+
+    // console.log(users)
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get all news
+router.get("/", verifyToken, authPage(["mod"]), async (req, res) => {
+  try {
+    const newsList = await News.find()
+      .populate({ path: 'author', select: 'userName' })
+      .sort({ createdAt: -1 })
+      .lean();
+
     res.json(newsList);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -40,7 +61,7 @@ router.post(
         alt: title, // alt lấy từ title
       };
 
-      console.log(newImage);
+      // console.log(newImage);
 
       const newNews = new News({
         title,
@@ -66,7 +87,9 @@ router.post(
 // lấy chi tiết
 router.get("/:id", verifyToken, authPage(["mod"]), async (req, res) => {
   try {
-    const news = await News.findById(req.params.id);
+    const news = await News.findById(req.params.id)
+      .populate({ path: 'author', select: 'userName' })
+      .lean();
 
     if (!news) return res.status(404).json({ message: "Banner not found" });
 

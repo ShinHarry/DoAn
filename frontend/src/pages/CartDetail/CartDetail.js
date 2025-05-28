@@ -8,6 +8,7 @@ import Button from '~/components/Button';
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import images from '~/assets/images'; 
 import Swal from 'sweetalert2'; // thư viện hiện alert 
+import { toast, ToastContainer } from 'react-toastify';
 
 const cx = classNames.bind(styles);
 
@@ -38,70 +39,90 @@ function CartDetail() {
     }, [fetchCart]);
 
    // hàm xóa sản phẩm khỏi giỏ
-       const handleDeleteItem = async (id) => {
+    const handleDeleteItem = async (id) => {
 
-           const result = await Swal.fire({
-               title: 'Bạn có chắc muốn xóa sản phẩm này?',
-               text: 'Thao tác này không thể hoàn tác.',
-               icon: 'warning',
-               showCancelButton: true,
-               confirmButtonText: 'Xóa',
-               cancelButtonText: 'Hủy',
-             });
-           
-           if (!result.isConfirmed) return; // Nếu không xác nhận thì không làm gì
-   
-           try {
-               const response = await cartService.removeCartItem(id);
-               if (response.success) {
-                   setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
-                   Swal.fire('Thành công', 'Đã xóa sản phẩm khỏi giỏ hàng.', 'success');
-               } else {
-                Swal.fire('Lỗi', 'Lỗi khi xóa sản phẩm!', 'error');
+        const result = await Swal.fire({
+            title: 'Bạn có chắc muốn xóa sản phẩm này?',
+            text: 'Thao tác này không thể hoàn tác.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            });
+        
+        if (!result.isConfirmed) return; // Nếu không xác nhận thì không làm gì
+
+        try {
+            const response = await cartService.removeCartItem(id);
+            if (response.success) {
+                setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
+                Swal.fire('Thành công', 'Đã xóa sản phẩm khỏi giỏ hàng.', 'success');
+                window.dispatchEvent(new Event('cartUpdated'));
+            } else {
+            Swal.fire('Lỗi', 'Lỗi khi xóa sản phẩm!', 'error');
+        }
+        } catch (error) {
+            console.error('Lỗi xóa sản phẩm khỏi giỏ:', error);
+        }
+    };
+
+    // hàm xử lý cập nhật lại số lượng khi ấn + -
+        const handleUpdateQuantity = async (id, newQuantity) => {
+        if ( newQuantity < 1) return;
+
+        const itemToUpdate = cartItems.find(item => item._id === id);
+        if (!itemToUpdate) return;
+
+        // Ngăn vượt số lượng hàng còn sẵn
+        if (newQuantity > itemToUpdate.availableQuantity) {
+            Swal.fire(
+                'Thất bại',
+                `Số lượng tồn kho không đủ. Chỉ còn ${itemToUpdate.availableQuantity} sản phẩm.`,
+                'warning'
+                );
+            setCartItems([...cartItems]);
+            return;
+        }
+
+        try {
+            const response = await cartService.updateCartItemQuantity(id, newQuantity);
+            if (response.success && response.cartItem) {
+                // cập nhật lại
+                setCartItems((prevItems) =>
+                    prevItems.map((item) =>
+                        item._id === id
+                            ? { ...item, quantity: response.cartItem.quantity, selected: item.selected } 
+                            : item,
+                    ),
+                );
+                window.dispatchEvent(new Event('cartUpdated'));
+            } else {
+                Swal.fire('Thất bại', response.message || 'Lỗi khi cập nhật số lượng.','error');
+                fetchCart(); // gọi lại cart
             }
-           } catch (error) {
-               console.error('Lỗi xóa sản phẩm khỏi giỏ:', error);
-           }
-       };
-   
-     // hàm xử lý cập nhật lại số lượng khi ấn + -
-         const handleUpdateQuantity = async (id, newQuantity) => {
-            if ( newQuantity < 1) return;
-    
-            const itemToUpdate = cartItems.find(item => item._id === id);
-            if (!itemToUpdate) return;
-    
-            // Ngăn vượt số lượng hàng còn sẵn
-            if (newQuantity > itemToUpdate.availableQuantity) {
-                Swal.fire(
-                    'Thất bại',
-                    `Số lượng tồn kho không đủ. Chỉ còn ${itemToUpdate.availableQuantity} sản phẩm.`,
-                    'warning'
-                    );
-                setCartItems([...cartItems]);
-                return;
-            }
-    
-            try {
-                const response = await cartService.updateCartItemQuantity(id, newQuantity);
-                if (response.success && response.cartItem) {
-                    // cập nhật lại
-                    setCartItems((prevItems) =>
-                        prevItems.map((item) =>
-                            item._id === id
-                             ? { ...item, quantity: response.cartItem.quantity, selected: item.selected } 
-                             : item,
-                        ),
-                    );
-                } else {
-                    Swal.fire('Thất bại', response.message || 'Lỗi khi cập nhật số lượng.','error');
-                    fetchCart(); // gọi lại cart
-                }
-            } catch (error) {
-                 Swal.fire('Thất bại', 'Đã xảy ra lỗi khi cập nhật số lượng.','error');
-                 fetchCart();
-            }
-        };
+        } catch (error) {
+                Swal.fire('Thất bại', 'Đã xảy ra lỗi khi cập nhật số lượng.','error');
+                fetchCart();
+        }
+    };
+
+    // hàm xử lý khi ấn checkbox
+    const handleToggleSelect = (id) => {
+        setCartItems((prevItems) =>
+            prevItems.map((item) => (item._id === id ? { ...item, selected: !item.selected } : item)),
+        );
+    };
+     //hàm xử lý khi nhấn thanh toán
+    const handleCheckout = () => {
+        const selectedItems = cartItems.filter((item) => item.selected);
+        if (selectedItems.length === 0) {
+            toast.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
+            return;
+        }
+        // dispatch(saveSelectedCartItems(selectedItems));  // Gửi vào Redux
+        sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
+        navigate('/checkout');
+    };
     
     const calculateSubtotal = (item) => {
         return item.unitPrice * item.quantity;
@@ -136,7 +157,14 @@ function CartDetail() {
     return (
         <div className={cx('wrapper')}>
             <h1 className={cx('title')}>Chi Tiết Giỏ Hàng</h1>
-            
+            <ToastContainer
+                        position="top-center"
+                        autoClose={3000} // Tự động tắt
+                        hideProgressBar={true} //  thanh tiến trình
+                        newestOnTop={false} //Toast mới sẽ hiện dưới các toast cũ.
+                        closeOnClick //Cho phép đóng toast
+                        draggable // kéo
+                    />
             <div className={cx('cart-content')}>
                 {/* Danh sách */}
                 <div className={cx('cart-items-list')}>
@@ -152,6 +180,11 @@ function CartDetail() {
                     {cartItems.map((item) => (
                         <div key={item._id} className={cx('cart-item', { 'not-available': item.quantity > item.availableQuantity })}>
                             <div className={cx('item-product')}>
+                                <input
+                                        type="checkbox"
+                                        checked={!!item.selected}
+                                        onChange={() => handleToggleSelect(item._id)}
+                                />
                                 <Image
                                     src={item.image || images.noImage}
                                     alt={item.name}
@@ -173,11 +206,41 @@ function CartDetail() {
                                 <input
                                     type="number"
                                     value={item.quantity}
-                                    readOnly
-                                    onChange={(e) => handleUpdateQuantity(item._id, Math.max(1, parseInt(e.target.value) || 1))}
+                                    // đamr bảo ko nhâp < 1
+                                        onChange={(e) =>{
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setCartItems((prev) =>
+                                                    prev.map((cart) => cart._id === item._id ? { ...cart, quantity: '' } : cart)
+                                                );
+                                            } else {
+                                                const parsed = parseInt(val);
+                                                if (!isNaN(parsed)) {
+                                                    setCartItems((prev) =>
+                                                        prev.map((cart) => cart._id === item._id ? { ...cart, quantity: parsed } : cart)
+                                                    );
+                                                }
+                                            }
+                                        }}
+                                        //kiểm tra lại giá trị tránh bug do onChange không cập nhật đúng
+                                        onBlur={(e) => {
+                                            const parsed = parseInt(e.target.value);
+                                                if (!parsed || parsed < 1) {
+                                                    handleUpdateQuantity(item._id, 1);
+                                                } else if (parsed > item.availableQuantity) {
+                                                    Swal.fire(
+                                                        'Thất bại',
+                                                        `Số lượng tồn kho không đủ. Chỉ còn ${item.availableQuantity} sản phẩm.`,
+                                                        'warning'
+                                                    );
+                                                    handleUpdateQuantity(item._id, item.availableQuantity);
+                                                } else {
+                                                    handleUpdateQuantity(item._id, parsed);
+                                                }
+                                        }}
                                     className={cx('quantity-input')}
                                     min="1"
-                                     max={item.availableQuantity}
+                                    max={item.availableQuantity}
                                 />
                                 <button
                                     className={cx('quantity-btn')}
@@ -215,7 +278,7 @@ function CartDetail() {
                     <Button
                         primary
                         className={cx('checkout-button')}
-                        onClick={() => navigate('/checkout')}
+                        onClick={handleCheckout}
                         disabled={cartItems.some(item => item.quantity > item.availableQuantity)} //tắt button nếu có sản phẩm ko đủ số lượng
                     >
                         Tiến hành thanh toán
