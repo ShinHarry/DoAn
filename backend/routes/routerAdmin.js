@@ -14,16 +14,12 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.put("/:userId", async (req, res) => {
+router.put("/:userId", uploadUser.single("userAvatar"), async (req, res) => {
   try {
     // const { userId, userName, userEmail, userPhone, userGender, userRole } =
     //   req.body;
     const { userId, userName, userRole, userStatus } = req.body;
     const currentUser = await User.findById(userId);
-    console.log("req.body:", req.body);
-    console.log("req.params:", req.params);
-
-    console.log("currentUser:", currentUser);
     if (!currentUser) {
       return res.status(404).json({ message: "Người dùng không tồn tại" });
     }
@@ -48,6 +44,15 @@ router.put("/:userId", async (req, res) => {
       userRole,
       userStatus,
     };
+
+    if (req.file) {
+      updatedData.userAvatar = [
+        {
+          name: req.file.filename,
+          link: `/public/users/${req.file.filename}`,
+        },
+      ];
+    }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
       new: true,
