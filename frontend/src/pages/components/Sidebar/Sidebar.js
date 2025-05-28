@@ -23,8 +23,8 @@ function Sidebar() {
                 {(userRole === 'mod' || userRole === 'admin') && (
                     <>
                         <MenuItem
-                            title="Danh sách sản phẩm"
-                            to={'productlist'}
+                            title="Danh sách người dùng"
+                            to={'userlist'}
                             icon={<UserGroupIcon />}
                             activeIcon={<UserGroupIcon />}
                         />

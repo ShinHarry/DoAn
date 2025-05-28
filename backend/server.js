@@ -104,7 +104,7 @@ app.use("/api/payments", paymentRouter);
 app.use(
   "/api/statistics",
   verifyToken,
-  authPage(["accountant"]),
+  authPage(["admin", "accountant"]),
   statisticsRouter
 );
 app.use("/api/wishlist", verifyToken, authPage(["cus"]), routerWishlist);

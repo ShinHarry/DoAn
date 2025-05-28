@@ -26,7 +26,7 @@ import OrderSuccess from '~/pages/OrderSuccess/OrderSuccess';
 import PaymentReturn from '~/pages/PaymentReturn/PaymentReturn';
 import OrderDetail from '~/pages/OrderDetail';
 import AdminDashboard from '~/pages/AdminDashboard';
-
+import UserList from '~/pages/components/UserList';
 import ModDashboard from '~/pages/ModDashboard';
 import ProductList from '~/pages/components/ProductList';
 import Banner from '~/pages/components/Banner';
@@ -68,6 +68,12 @@ const privateRoutes = [
         roles: ['admin'],
         layout: LayoutNoFooter,
         children: [
+            {
+                path: 'productlist',
+                component: UserList,
+                roles: ['admin'],
+                layout: null,
+            },
             {
                 path: 'productlist',
                 component: ProductList,
