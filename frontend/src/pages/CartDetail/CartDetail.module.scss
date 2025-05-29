@@ -193,13 +193,12 @@
     padding: 5px 0; // Adjust padding
     margin: 0 5px;
     font-size: 1.4rem;
-    -moz-appearance: textfield; // Hide spinner for Firefox
-
-    &::-webkit-outer-spin-button,
-    &::-webkit-inner-spin-button {
-        -webkit-appearance: none; // Hide spinner for Chrome, Safari, Edge, Opera
-        margin: 0;
-    }
+    // -moz-appearance: textfield; // Hide spinner for Firefox
+    // &::-webkit-outer-spin-button,
+    // &::-webkit-inner-spin-button {
+    //     -webkit-appearance: none; // Hide spinner for Chrome, Safari, Edge, Opera
+    //     margin: 0;
+    // }
 }
 
 .item-total {

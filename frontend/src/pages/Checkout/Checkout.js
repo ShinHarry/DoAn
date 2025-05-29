@@ -78,7 +78,7 @@ function Checkout() {
         setError(null);
         try {
             const cartData = JSON.parse(sessionStorage.getItem('selectedCartItems'));
-            console.log(cartData)
+            // console.log(cartData)
             if (!cartData && cartData.length === 0) {
                 throw new Error('Không tìm thấy giỏ hàng hoặc giỏ hàng trống để tạo đơn hàng.');
             }

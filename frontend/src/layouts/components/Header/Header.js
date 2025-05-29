@@ -29,7 +29,7 @@ import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
 import { useEffect, useState, useCallback } from 'react';
 import { fetchUser } from '~/redux/actions/authActions';
-
+    
 // cart
 import Drawer from '@mui/material/Drawer';
 import { IoCloseSharp } from 'react-icons/io5';
@@ -98,11 +98,12 @@ function Header() {
 
     //cart // hàm lấy cart, thay đổi theo currentUser
     const fetchCart = useCallback(async () => {
-        if (!currentUser) return;
+        // if (!currentUser) return;
         setIsCartLoading(true);
         setCartError(null);
         try {
             const data = await cartService.getCart();
+            console.log(data.cart)
             setCartItems(data.cart || []);
         } catch (error) {
             console.error('Lỗi lấy cart:', error);
@@ -112,15 +113,6 @@ function Header() {
             setIsCartLoading(false);
         }
     }, [currentUser]);
-
-    // useEffect(() => {
-    //     const shouldRefresh = sessionStorage.getItem('shouldRefreshCart');
-    //     if (shouldRefresh === 'true') {
-    //         fetchCart();
-    //         sessionStorage.removeItem('shouldRefreshCart');
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, []);
 
     useEffect(() => {
         if (currentUser) {
@@ -206,7 +198,6 @@ function Header() {
                 `Số lượng tồn kho không đủ. Chỉ còn ${itemToUpdate.availableQuantity} sản phẩm.`,
                 'warning',
             );
-            setCartItems([...cartItems]);
             return;
         }
 
@@ -352,7 +343,7 @@ function Header() {
                 <div className={cx('loading')}>Loading...</div>
             ) : (
                 <div className={cx('inner')}>
-                    {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && (
                         <Link to={config.routes.home} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
@@ -362,17 +353,12 @@ function Header() {
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {userRole === 'accountant' && (
-                        <Link to={`${config.routes.moddashboard}/statistics`} className={cx('logo-link')}>
-                            <img src={images.logo} alt="Logo" />
-                        </Link>
-                    )}
                     {userRole === 'admin' && (
                         <Link to={`${config.routes.admindashboard}/`} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && (
                         <>
                             <Menu items={MENU_ITEMS}>
                                 <button className={cx('action-btn')}>
@@ -384,7 +370,7 @@ function Header() {
                     )}
 
                     <div className={cx('actions')}>
-                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && (
                             <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
                                 <button className={cx('action-btn')} onClick={() => navigate('/wishlist')}>
                                     <FiHeart />
@@ -406,18 +392,13 @@ function Header() {
                                 {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
-                        {userRole === 'accountant' && (
-                            <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
-                                {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
-                            </Menu>
-                        )}
                         {userRole === 'admin' && (
                             <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
                                 {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
 
-                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && (
                             <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
                                 <button className={cx('action-btn')} onClick={handleOpenCart}>
                                     <CartIcons />
@@ -499,30 +480,39 @@ function Header() {
                                                 <input
                                                     type="number"
                                                     value={item.quantity}
-                                                    readOnly
                                                     // đamr bảo ko nhâp < 1
-                                                    onChange={(e) =>
-                                                        handleUpdateQuantity(
-                                                            item._id,
-                                                            Math.max(1, parseInt(e.target.value) || 1),
-                                                        )
-                                                    }
-                                                    //kiểm tra lại giá trị tránh bug do onChange không cập nhật đúng
-                                                    onBlur={(e) => {
-                                                        const validatedQuantity = Math.max(
-                                                            1,
-                                                            parseInt(e.target.value) || 1,
-                                                        );
-                                                        //Chỉ gọi lại cập nhật nếu giá trị được xác thực khác
-                                                        if (
-                                                            validatedQuantity !== item.quantity &&
-                                                            validatedQuantity <= item.availableQuantity
-                                                        ) {
-                                                            handleUpdateQuantity(item._id, validatedQuantity);
+                                                    onChange={(e) =>{
+                                                        const val = e.target.value;
+                                                        if (val === '') {
+                                                            setCartItems((prev) =>
+                                                                prev.map((cart) => cart._id === item._id ? { ...cart, quantity: '' } : cart)
+                                                            );
+                                                        } else {
+                                                            const parsed = parseInt(val);
+                                                            if (!isNaN(parsed)) {
+                                                                setCartItems((prev) =>
+                                                                    prev.map((cart) => cart._id === item._id ? { ...cart, quantity: parsed } : cart)
+                                                                );
+                                                            }
                                                         }
                                                     }}
-                                                    className={cx('quantityInput')}
-                                                    min="1"
+                                                    //kiểm tra lại giá trị tránh bug do onChange không cập nhật đúng
+                                                    onBlur={(e) => {
+                                                        const parsed = parseInt(e.target.value);
+                                                            if (!parsed || parsed < 1) {
+                                                                handleUpdateQuantity(item._id, 1);
+                                                            } else if (parsed > item.availableQuantity) {
+                                                                Swal.fire(
+                                                                    'Thất bại',
+                                                                    `Số lượng tồn kho không đủ. Chỉ còn ${item.availableQuantity} sản phẩm.`,
+                                                                    'warning'
+                                                                );
+                                                                handleUpdateQuantity(item._id, item.availableQuantity);
+                                                            } else {
+                                                                handleUpdateQuantity(item._id, parsed);
+                                                            }
+                                                    }}
+                                                    min = "1"
                                                     max={item.availableQuantity} // để max = số lượng hàng còn
                                                 />
                                                 <button
