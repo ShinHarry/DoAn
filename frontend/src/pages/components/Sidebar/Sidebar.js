@@ -22,17 +22,20 @@ function Sidebar() {
             <Menu>
                 {(userRole === 'mod' || userRole === 'admin') && (
                     <>
-                        <MenuItem
-                            title="Danh sách người dùng"
-                            to={'userlist'}
-                            icon={<UserGroupIcon />}
-                            activeIcon={<UserGroupIcon />}
-                        />
+                        {userRole === 'admin' && (
+                            <MenuItem
+                                title="Danh sách người dùng"
+                                to={'userlist'}
+                                icon={<UserGroupIcon />}
+                                activeIcon={<UserGroupIcon />}
+                            />
+                        )}
+
                         <MenuItem
                             title="Danh sách sản phẩm"
                             to={'productlist'}
-                            icon={<UserGroupIcon />}
-                            activeIcon={<UserGroupIcon />}
+                            icon={<FileIcon />}
+                            activeIcon={<FileIcon />}
                         />
 
                         <MenuItem
@@ -71,7 +74,7 @@ function Sidebar() {
                             icon={<OriginIcon />}
                             activeIcon={<OriginIcon />}
                         />
-                        <MenuItem title="Đơn vị" to={'unit'} icon={<OriginIcon />} activeIcon={<OriginIcon />} />
+                        <MenuItem title="Đơn vị" to={'unit'} icon={<FileIcon />} activeIcon={<FileIcon />} />
                     </>
                 )}
 

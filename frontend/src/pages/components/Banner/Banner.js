@@ -19,12 +19,15 @@ function Banner() {
             try {
                 const response = await newService.getNew();
                 setBanners(response);
+                console.log('response:', response);
+                console.log('news:', news);
             } catch (error) {
                 console.error(error);
                 setError('Lỗi khi lấy danh sách banner');
             }
         };
         fetchBanners();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleDelete = async (id) => {

@@ -255,19 +255,20 @@ function ProductDetail() {
                     </div>
 
                     <div className={cx('product-actions')}>
-                        {currentUser?.user?.userRole !== 'mod' && (
-                            <>
-                                <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
-                                <button
-                                    onClick={handleLike}
-                                    style={{ backgroundColor: isLiked ? 'red' : 'gray', color: 'white' }}
-                                >
-                                    {isLiked ? 'Bỏ thích' : 'Thích'}
-                                </button>
-                            </>
-                        )}
-
-                        {currentUser?.user?.userRole === 'mod' && (
+                        {currentUser?.user?.userRole !== 'mod' &&
+                            currentUser?.user?.userRole !== 'admin' &&
+                            currentUser?.user?.userRole !== 'accountant' && (
+                                <>
+                                    <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
+                                    <button
+                                        onClick={handleLike}
+                                        style={{ backgroundColor: isLiked ? 'red' : 'gray', color: 'white' }}
+                                    >
+                                        {isLiked ? 'Bỏ thích' : 'Thích'}
+                                    </button>
+                                </>
+                            )}
+                        {(currentUser?.user?.userRole === 'mod' || currentUser?.user?.userRole === 'admin') && (
                             <>
                                 <Link to={config.routes.updateProduct.replace(':productId', product._id)}>
                                     <button>Sửa sản phẩm</button>

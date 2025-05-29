@@ -1,38 +1,45 @@
-
 const express = require("express");
 const router = express.Router();
 const News = require("../models/New");
 const User = require("../models/User");
 require("dotenv").config();
-const {uploadBanner,uploadToCloudinary} = require("../middlewares/uploadImage/uploads");
+const {
+  uploadBanner,
+  uploadToCloudinary,
+} = require("../middlewares/uploadImage/uploads");
 const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
 
 const BASE_URL = process.env.BASE_URL;
 
 //Get all mod admin
-router.get("/name", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
-  try {
-    const users = await User.find({
-      userRole: { $in: ["mod", "admin"] },
-    })
-      .select("_id userName")
-      .sort({ createdAt: -1 });
+router.get(
+  "/name",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
+    try {
+      const users = await User.find({
+        userRole: { $in: ["mod", "admin"] },
+      })
+        .select("_id userName")
+        .sort({ createdAt: -1 });
 
-    // console.log(users)
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+      // console.log(users)
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
-});
+);
 
 // Get all news
-router.get("/", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const newsList = await News.find()
-          .populate({ path: 'author', select: 'userName' })
-          .sort({ createdAt: -1 })
-          .lean();    
+      .populate({ path: "author", select: "userName" })
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(newsList);
   } catch (err) {
@@ -41,7 +48,12 @@ router.get("/", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
 });
 
 // Create news
-router.post("/", verifyToken, authPage(["admin", "mod"]),uploadBanner.single("newImage"),async (req, res) => {
+router.post(
+  "/",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  uploadBanner.single("newImage"),
+  async (req, res) => {
     try {
       const { title, summary, content, author, state } = req.body;
 
@@ -85,12 +97,16 @@ router.post("/", verifyToken, authPage(["admin", "mod"]),uploadBanner.single("ne
 );
 
 // Get news detail
-router.get("/:id", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
+router.get(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
     try {
       const news = await News.findById(req.params.id)
-            .populate({ path: 'author', select: 'userName' })
-            .lean();
-  
+        .populate({ path: "author", select: "userName" })
+        .lean();
+
       if (!news) return res.status(404).json({ message: "Banner not found" });
 
       res.json(news);
@@ -101,8 +117,12 @@ router.get("/:id", verifyToken, authPage(["admin", "mod"]), async (req, res) => 
 );
 
 // Update news
-router.put("/:id", verifyToken, authPage(["admin", "mod"]),uploadBanner.single("newImage"),async (req, res) => {
-
+router.put(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  uploadBanner.single("newImage"),
+  async (req, res) => {
     try {
       const { title, summary, content, author, state } = req.body;
 
@@ -146,7 +166,11 @@ router.put("/:id", verifyToken, authPage(["admin", "mod"]),uploadBanner.single("
 );
 
 // Delete news
-router.delete("/:id", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
+router.delete(
+  "/:id",
+  verifyToken,
+  authPage(["admin", "mod"]),
+  async (req, res) => {
     try {
       const deleted = await News.findByIdAndDelete(req.params.id);
       if (!deleted) return res.status(404).json({ message: "News not found" });

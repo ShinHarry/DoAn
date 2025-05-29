@@ -7,6 +7,8 @@
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 800px;
+    transform: translateX(50%);
+
     .product-item {
         display: flex;
         gap: 20px;

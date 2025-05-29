@@ -29,7 +29,7 @@ import Search from '../Search';
 import * as categoryService from '~/services/categoryService';
 import { useEffect, useState, useCallback } from 'react';
 import { fetchUser } from '~/redux/actions/authActions';
-    
+
 // cart
 import Drawer from '@mui/material/Drawer';
 import { IoCloseSharp } from 'react-icons/io5';
@@ -103,7 +103,7 @@ function Header() {
         setCartError(null);
         try {
             const data = await cartService.getCart();
-            console.log(data.cart)
+            console.log(data.cart);
             setCartItems(data.cart || []);
         } catch (error) {
             console.error('Lỗi lấy cart:', error);
@@ -343,7 +343,7 @@ function Header() {
                 <div className={cx('loading')}>Loading...</div>
             ) : (
                 <div className={cx('inner')}>
-                    {userRole !== 'mod' && userRole !== 'admin' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                         <Link to={config.routes.home} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
@@ -353,12 +353,17 @@ function Header() {
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
+                    {userRole === 'accountant' && (
+                        <Link to={`${config.routes.moddashboard}/statistics`} className={cx('logo-link')}>
+                            <img src={images.logo} alt="Logo" />
+                        </Link>
+                    )}
                     {userRole === 'admin' && (
                         <Link to={`${config.routes.admindashboard}/`} className={cx('logo-link')}>
                             <img src={images.logo} alt="Logo" />
                         </Link>
                     )}
-                    {userRole !== 'mod' && userRole !== 'admin' && (
+                    {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                         <>
                             <Menu items={MENU_ITEMS}>
                                 <button className={cx('action-btn')}>
@@ -370,7 +375,7 @@ function Header() {
                     )}
 
                     <div className={cx('actions')}>
-                        {userRole !== 'mod' && userRole !== 'admin' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                             <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
                                 <button className={cx('action-btn')} onClick={() => navigate('/wishlist')}>
                                     <FiHeart />
@@ -392,13 +397,13 @@ function Header() {
                                 {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
-                        {userRole === 'admin' && (
+                        {(userRole === 'admin' || userRole === 'accountant') && (
                             <Menu items={currentUser ? adminMenu : MENU_ITEMS}>
                                 {currentUser && <Image className={cx('user-avatar')} src={avatar} alt="Avatar User" />}
                             </Menu>
                         )}
 
-                        {userRole !== 'mod' && userRole !== 'admin' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                             <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
                                 <button className={cx('action-btn')} onClick={handleOpenCart}>
                                     <CartIcons />
@@ -481,17 +486,25 @@ function Header() {
                                                     type="number"
                                                     value={item.quantity}
                                                     // đamr bảo ko nhâp < 1
-                                                    onChange={(e) =>{
+                                                    onChange={(e) => {
                                                         const val = e.target.value;
                                                         if (val === '') {
                                                             setCartItems((prev) =>
-                                                                prev.map((cart) => cart._id === item._id ? { ...cart, quantity: '' } : cart)
+                                                                prev.map((cart) =>
+                                                                    cart._id === item._id
+                                                                        ? { ...cart, quantity: '' }
+                                                                        : cart,
+                                                                ),
                                                             );
                                                         } else {
                                                             const parsed = parseInt(val);
                                                             if (!isNaN(parsed)) {
                                                                 setCartItems((prev) =>
-                                                                    prev.map((cart) => cart._id === item._id ? { ...cart, quantity: parsed } : cart)
+                                                                    prev.map((cart) =>
+                                                                        cart._id === item._id
+                                                                            ? { ...cart, quantity: parsed }
+                                                                            : cart,
+                                                                    ),
                                                                 );
                                                             }
                                                         }
@@ -499,20 +512,20 @@ function Header() {
                                                     //kiểm tra lại giá trị tránh bug do onChange không cập nhật đúng
                                                     onBlur={(e) => {
                                                         const parsed = parseInt(e.target.value);
-                                                            if (!parsed || parsed < 1) {
-                                                                handleUpdateQuantity(item._id, 1);
-                                                            } else if (parsed > item.availableQuantity) {
-                                                                Swal.fire(
-                                                                    'Thất bại',
-                                                                    `Số lượng tồn kho không đủ. Chỉ còn ${item.availableQuantity} sản phẩm.`,
-                                                                    'warning'
-                                                                );
-                                                                handleUpdateQuantity(item._id, item.availableQuantity);
-                                                            } else {
-                                                                handleUpdateQuantity(item._id, parsed);
-                                                            }
+                                                        if (!parsed || parsed < 1) {
+                                                            handleUpdateQuantity(item._id, 1);
+                                                        } else if (parsed > item.availableQuantity) {
+                                                            Swal.fire(
+                                                                'Thất bại',
+                                                                `Số lượng tồn kho không đủ. Chỉ còn ${item.availableQuantity} sản phẩm.`,
+                                                                'warning',
+                                                            );
+                                                            handleUpdateQuantity(item._id, item.availableQuantity);
+                                                        } else {
+                                                            handleUpdateQuantity(item._id, parsed);
+                                                        }
                                                     }}
-                                                    min = "1"
+                                                    min="1"
                                                     max={item.availableQuantity} // để max = số lượng hàng còn
                                                 />
                                                 <button
