@@ -1,5 +1,14 @@
 import * as httpRequest from '~/utils/httpRequest';
 
+export const getName = async () => {
+    try {
+        return await httpRequest.get('/news/name');
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
+
 export const getNew = async () => {
     try {
         return await httpRequest.get('/news');
@@ -33,7 +42,7 @@ export const updateNews = async (id, news) => {
     }
 };
 
-// Lấy sản phẩm theo `_id`
+// Lấy banner theo `_id`
 export const getNewById = async (id) => {
     try {
         return await httpRequest.get(`/news/${id}`);
@@ -42,7 +51,7 @@ export const getNewById = async (id) => {
         throw err;
     }
 };
-// Xóa sản phẩm
+// Xóa banner
 export const deleteNewById = async (id) => {
     try {
         return await httpRequest.del(`/news/${id}`);

@@ -74,7 +74,7 @@ function Banner() {
                             <strong>Tóm tắt:</strong> {item.summary}
                         </p>
                         <p>
-                            <strong>Tác giả:</strong> {item.author}
+                            <strong>Tác giả:</strong> {item.author.userName}
                         </p>
                         <p>
                             <strong>Trạng thái:</strong> {item.state ? 'Hiển thị' : 'Ẩn'}

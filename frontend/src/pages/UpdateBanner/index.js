@@ -12,6 +12,7 @@ function UpdateBanner() {
     const navigate = useNavigate();
 
     const [banner, setBanner] = useState([]);
+    const [nameUser, setNameUser] = useState([]);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -29,7 +30,17 @@ function UpdateBanner() {
                 setLoading(false);
             }
         };
+        const fetchName = async () => {
+            try {
+                const result = await newService.getName();
+                setNameUser(result);
+            } catch (error) {
+                console.error('Error fetching get Name:', error);
+            }
+            setLoading(false);
+        };
 
+        fetchName();
         fetchBannerDetails();
     }, [bannerId]);
 
@@ -74,9 +85,9 @@ function UpdateBanner() {
             }
 
             // Log kiểm tra dữ liệu gửi đi
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ':', pair[1]);
-            }
+            // for (let pair of formData.entries()) {
+            //     console.log(pair[0] + ':', pair[1]);
+            // }
 
             await newService.updateNews(bannerId, formData);
 
@@ -142,14 +153,20 @@ function UpdateBanner() {
 
                 <div className={cx('form-group')}>
                     <label className={cx('label')}>Tác giả:</label>
-                    <input
-                        type="text"
+                    <select
                         name="author"
                         value={banner.author}
                         onChange={handleChange}
                         className={cx('input')}
                         required
-                    />
+                    >
+                        <option value="">-- Chọn tác giả --</option>
+                        {nameUser.map((user) => (
+                        <option key={user._id} value={user._id}>
+                            {user.userName}
+                        </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className={cx('form-group')}>
