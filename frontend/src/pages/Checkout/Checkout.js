@@ -258,7 +258,7 @@ function Checkout() {
                 const returnUrl = `${window.location.origin}/payment-return`;
                 sessionStorage.setItem('shippingFee', shippingFee);
                 sessionStorage.setItem('shippingAddress', address);
-                sessionStorage.setItem('discountValue', discountValue);
+                sessionStorage.setItem('discountValue', discountAmount);
                 sessionStorage.setItem('name', name);
                 sessionStorage.setItem('phone', phone);
 

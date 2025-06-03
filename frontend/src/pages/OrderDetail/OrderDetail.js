@@ -139,17 +139,16 @@ if (result.isConfirmed) {
             <h3>Sản phẩm:</h3>
             <ul>
                 {Array.isArray(order.items) && order.items.map((item, idx) => (
-                    
                     <li key={idx} className={cx('item-row')}>
                         <Link to={`/product/${item.productId}`}>
                             <img src={item.productImage} alt={item.productName} width={50} height={50} />
                         </Link>                  
                         <div className={cx('item-info')}>
                         <p>{item.productName} - SL: {item.quantity}</p>
+                        <br/>
                         <p>Giá: {item.unitPrice.toLocaleString()} VNĐ - Tổng: {(item.quantity * item.unitPrice).toLocaleString()} VNĐ</p>
                     </div>
                 </li>
-                
                 ))}
             </ul>
 {(order.orderStatus === 'shipped' || order.orderStatus === 'confirm') && (

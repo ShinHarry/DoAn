@@ -36,6 +36,7 @@ const Home = () => {
     const debouncedMaxPrice = useDebounce(maxPrice, 500);
 
     const [products, setProducts] = useState([]);
+    const [topProducts, setTopProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -126,6 +127,15 @@ const Home = () => {
     }, []);
 
     useEffect(() => {
+        if (products.length > 0) {
+            const sortedTop = [...products]
+                .sort((a, b) => b.productSoldQuantity - a.productSoldQuantity)
+                .slice(0, 6);
+            setTopProducts(sortedTop);
+        }
+    }, [products]);
+
+    useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
 
@@ -142,6 +152,13 @@ const Home = () => {
 
     return (
         <div className={cx('wrapper')}>
+            <nav className={cx('sidebar')}>
+                <ul>              
+                    <li><a href = "#">TRANG CHỦ</a></li>
+                    <li><Link to="">MÃ GIẢM GIÁ</Link></li>
+                    <li><Link to="/aboutMe">VỀ CHÚNG TÔI</Link></li>
+                </ul>
+            </nav>
             <div className={cx('slide')}>
                 <Banner />
             </div>
@@ -312,6 +329,52 @@ const Home = () => {
                     </div>
                 )}
             </div>
+
+            <div className={cx('promo-banner')}> MUA NGAY NHỮNG SẢN PHẨM VỚI GIÁ TỐT NHẤT! </div>
+            
+            <div className={cx('best-seller-section')}>
+                <h2 className={cx('section-title')}>TOP CÁC SẢN PHẨM BÁN CHẠY</h2>
+                <div className={cx('best-seller-grid')}>
+                    {topProducts.map((product) => {
+                        const hasDiscount = product.productSupPrice > 0;
+                        const productFinallyPrice =
+                            product.productUnitPrice * (1 - (product.productSupPrice || 0) / 100);
+                        return (
+                            <div className={cx('product-card')} key={product._id}>
+                                <Link to={`${config.routes.productDetail.replace(':productId', product._id)}`}>
+                                    <Image
+                                        className={cx('product-image')}
+                                        src={product.productImgs?.[0]?.link || ''}
+                                        alt={product.productName}
+                                    />
+                                    <div className={cx('product-info')}>
+                                        <h3>{product.productName}</h3>
+                                        <p>
+                                            {hasDiscount ? (
+                                                <>
+                                                    <span className={cx('original-price')}>
+                                                        {product.productUnitPrice.toLocaleString()} VND
+                                                    </span>
+                                                    <br />
+                                                    <span className={cx('discount-price')}>
+                                                        {productFinallyPrice.toLocaleString()} VND
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                `${product.productUnitPrice.toLocaleString()} VND`
+                                            )}
+                                        </p>
+                                        <p>Đã bán: {product.productSoldQuantity}</p>
+                                        {/* Nút hiện khi hover */}
+                                        <button className={cx('view-button')}>XEM NGAY</button>
+                                    </div>
+                                </Link>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+   
         </div>
     );
 };

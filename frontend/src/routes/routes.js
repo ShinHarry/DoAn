@@ -3,6 +3,7 @@ import config from '~/config';
 // Layouts
 // Pages
 import Home from '~/pages/Home/Home';
+import AboutMe from '~/pages/AboutMe';
 import Order from '~/pages/Order';
 
 import Search from '~/pages/Search';
@@ -55,6 +56,7 @@ const publicRoutes = [
     { path: config.routes.register, component: Register, layout: null },
     { path: config.routes.forgotpassword, component: ForgotPassword, layout: null },
     { path: config.routes.home, component: Home },
+    { path: '/aboutMe', component: AboutMe },
     { path: config.routes.search, component: Search },
     { path: config.routes.productDetail, component: ProductDetail },
     { path: config.routes.category, component: Category },

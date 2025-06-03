@@ -1,9 +1,9 @@
 import React from 'react';
 import classNames from 'classnames/bind';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeadset } from '@fortawesome/free-solid-svg-icons';
 import styles from './Footer.module.scss';
-
 import images from '~/assets/images';
-
 import { Link } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
@@ -18,9 +18,13 @@ const Footer = () => {
                             <Link to="/">
                                 <h3>SMarket - Thiên đường công nghệ</h3>
                             </Link>
-                            {/* <FontAwesomeIcon icon="fa-solid fa-headset" /> */}
-                            <span class="call-us-title">Liên hệ với chúng tôi</span>
-                            <span class="call-us-text">0362025195</span>
+                            <div className={cx('call-us-container')}>
+                                <FontAwesomeIcon icon={faHeadset} className={cx('call-us-icon')} />
+                                <div className={cx('call-us-info')}>
+                                    <span className={cx('call-us-title')}>Liên hệ với chúng tôi</span>
+                                    <span className={cx('call-us-text')}>0362025195</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className={cx('footer-item')}>

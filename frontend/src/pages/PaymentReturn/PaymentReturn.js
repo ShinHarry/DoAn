@@ -57,7 +57,7 @@ function PaymentReturn() {
                         // 3.chuẩn bị thông tin chi tiết đơn hàng
                         const shippingFee = parseInt(sessionStorage.getItem('shippingFee')) || 0;
                         const shippingAddress = sessionStorage.getItem('shippingAddress');
-                        const discountValue = parseInt(sessionStorage.getItem('discountValue')) || 0;
+                        const discount = parseInt(sessionStorage.getItem('discountValue')) || 0;
                         const name = sessionStorage.getItem('name');
                         const phone = sessionStorage.getItem('phone');
                         //giải thóng sessionStorage
@@ -70,7 +70,7 @@ function PaymentReturn() {
 
                         const currentSubtotal = cartData.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
                         const hardcodedShippingMethod = shippingFee === 20000 ? 'standard' : 'express';
-                        const discount = (currentSubtotal * discountValue) / 100;
+                        // const discount = (currentSubtotal * discountValue) / 100;
                         const finalAmountFromVnpay = parseInt(paramsObject.vnp_Amount) / 100 - discount;
                         const orderDetails = {
                             orderItems: cartData.map((item) => ({
