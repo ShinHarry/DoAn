@@ -5,7 +5,7 @@
 }
 
 .slide {
-  width: 100%;
+    width: 100%;
 }
 
 h2 {
@@ -27,16 +27,39 @@ h2 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     padding: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-
+    .view-button {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        background-color: transparent;
+        color: #007acc;
+        padding: 8px 16px;
+        border: 4px solid #00bfff;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 12px;
+        width: 100%;
+    }
     &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-5px);
+        .view-button {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 }
 
 .product-info {
     text-align: center;
-
+    h3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     p {
         margin: 0.5rem 0;
         color: #444;

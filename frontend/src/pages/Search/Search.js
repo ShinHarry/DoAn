@@ -84,6 +84,7 @@ function Search() {
                                                 <p>Đã bán: {product.productSoldQuantity}</p>
                                                 <p>Đánh giá: {product.productAvgRating} ⭐</p>
                                             </div>
+                                            <button className={cx('view-button')}>XEM NGAY</button>
                                         </Link>
                                     </div>
                                 </div>

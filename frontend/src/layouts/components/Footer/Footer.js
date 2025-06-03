@@ -30,22 +30,22 @@ const Footer = () => {
                     <div className={cx('footer-item')}>
                         <div className={cx('footer-item-description')}>
                             <h3>Các danh mục</h3>
-                            <Link to="/category/660000000000000000000001">
+                            <Link to="/category/682ebe2b9559c47cf91c0cd7">
                                 <span>Laptop</span>
                             </Link>
-                            <Link to="/category/660000000000000000000002">
+                            <Link to="/category/682ebe529559c47cf91c0cdb">
                                 <span>Điện thoại</span>
                             </Link>
-                            <Link to="/category/682986e0fea2b56fb6e5faef">
+                            <Link to="/category/682ebf239559c47cf91c0ce5">
                                 <span>PC</span>
                             </Link>
-                            <Link to="/category/682985cafea2b56fb6e5faaa">
+                            <Link to="/category/682ebf129559c47cf91c0ce1">
                                 <span>Thiết bị điện tử</span>
                             </Link>
-                            <Link to="/category/6829874bfea2b56fb6e5faf7">
+                            <Link to="/category/682ebf389559c47cf91c0ce9">
                                 <span>Bàn phím</span>
                             </Link>
-                            <Link to="/category/6829882bfea2b56fb6e62201">
+                            <Link to="/category/6831bb0865e0ec03ef98b86d">
                                 <span>Tai nghe</span>
                             </Link>
                         </div>

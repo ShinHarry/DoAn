@@ -78,6 +78,7 @@ function Category() {
                                 <p>Nhà sản xuất: {product.productManufacturer?.nameManufacturer || 'Không rõ'}</p>
                                 <p>Trạng thái: {product.productStatus === 'available' ? 'Còn hàng' : 'Hết hàng'}</p>
                                 <p>Đã bán: {product.productSoldQuantity}</p>
+                                <button className={cx('view-button')}>XEM NGAY</button>
                             </Link>
                         </div>
                     </div>
