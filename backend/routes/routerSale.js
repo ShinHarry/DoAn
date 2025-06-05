@@ -267,8 +267,6 @@ router.put(
           .json({ message: "Vui lòng nhập đầy đủ thông tin." });
       }
 
-      let image = { link: "", alt: name };
-
       if (req.file) {
         const cloudinaryUrl = await uploadToCloudinary(
           req.file,
