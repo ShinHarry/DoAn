@@ -41,7 +41,6 @@ const Home = () => {
     const [error, setError] = useState('');
 
     const [page, setPage] = useState(1);
-    // const [limit, setLimit] = useState(12); // số sản phẩm mỗi trang
     const limit = 12;
     const [total, setTotal] = useState(0);
 
@@ -150,16 +149,6 @@ const Home = () => {
 
     return (
         <div className={cx('wrapper')}>
-            <nav className={cx('sidebar')}>
-                <ul>
-                    <li>
-                        <a href="#">TRANG CHỦ</a>
-                    </li>
-                    <li>
-                        <Link to="/aboutMe">VỀ CHÚNG TÔI</Link>
-                    </li>
-                </ul>
-            </nav>
             <div className={cx('slide')}>
                 <Banner />
             </div>

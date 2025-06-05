@@ -14,8 +14,8 @@ const Footer = () => {
                 <div className={cx('container')}>
                     <div className={cx('footer-item')}>
                         <div className={cx('footer-item-description')}>
-                            <img src={images.logo} alt="Logo" />
-                            <Link to="/">
+                            <Link to="/aboutMe">
+                                <img src={images.logo} alt="Logo" />
                                 <h3>SMarket - Thiên đường công nghệ</h3>
                             </Link>
                             <div className={cx('call-us-container')}>
