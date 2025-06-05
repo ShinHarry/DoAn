@@ -1,9 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
+// const User = require("../models/User");
 const Product = require("../models/Product");
-const Order = require("../models/Order");
+// const Order = require("../models/Order");
 const CartProduct = require("../models/CartProduct");
 // const verifyToken = require('../middlewares/Auth/verifyToken'); // Import verifyToken
 

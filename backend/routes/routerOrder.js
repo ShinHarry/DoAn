@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
-const User = require("../models/User");
+// const User = require("../models/User");
 const Product = require("../models/Product");
 const CartProduct = require("../models/CartProduct");
+const DiscountUser = require('../models/DiscountUser');
 const verifyToken = require("../middlewares/Auth/verifyToken");
 
 // Get all order
@@ -46,6 +47,7 @@ router.post("/", verifyToken, async (req, res) => {
     shippingFee,
     totalPrice,
     totalAmount,
+    discountCode,
     discount,
     paymentMethod,
   } = req.body;
@@ -65,22 +67,28 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     let calculatedSubtotal = 0;
     const populatedOrderDetails = [];
-    const productUpdates = [];
-    const productIdsInOrder = orderItems.map((item) => item.product);
+    const productIdsInOrder = [];
 
     // 1. Kiểm tra kho và tạo orderDetails
     for (const item of orderItems) {
-      const product = await Product.findById(item.product);
+      // Cập nhật số lượng sản phẩm một cách atomic tránh tranh châps
+       const product = await Product.findOneAndUpdate(
+        {
+          _id: item.product,
+          productQuantity: { $gte: item.quantity },
+          productStatus: "available",
+        },
+        {
+          $inc: { productQuantity: -item.quantity },
+        },
+        { new: true }
+      );
       if (!product) {
         throw new Error(`Sản phẩm với ID ${item.product} không tìm thấy.`);
       }
-      if (product.productQuantity < item.quantity) {
-        throw new Error(
-          `Không đủ số lượng cho sản phẩm: ${product.productName}. Chỉ còn ${product.productQuantity}.`
-        );
-      }
-      if (product.productStatus !== "available") {
-        throw new Error(`Sản phẩm ${product.productName} hiện không có sẵn.`);
+        // Cập nhật trạng thái sản phẩm nếu hết hàng
+      if (product.productQuantity === 0) {
+        await Product.updateOne({ _id: product._id }, { productStatus: "out_of_stock" });
       }
 
       const itemSubTotal =
@@ -98,23 +106,7 @@ router.post("/", verifyToken, async (req, res) => {
           product.productUnitPrice * (1 - (product.productSupPrice || 0) / 100),
       });
 
-      // Tính số lượng còn lại và trạng thái sản phẩm mới
-      const newQuantity = product.productQuantity - item.quantity;
-      const newStatus = newQuantity === 0 ? "out_of_stock" : "available";
-
-      productUpdates.push({
-        updateOne: {
-          filter: { _id: product._id },
-          update: {
-            $inc: {
-              productQuantity: -item.quantity,
-            },
-            $set: {
-              productStatus: newStatus,
-            },
-          },
-        },
-      });
+       productIdsInOrder.push(product._id);
     }
 
     // 2. Tạo đơn hàng mới
@@ -136,16 +128,19 @@ router.post("/", verifyToken, async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // 3. Cập nhật lại kho
-    if (productUpdates.length > 0) {
-      await Product.bulkWrite(productUpdates);
-    }
-
-    // 4. Xóa sản phẩm trong giỏ hàng của user
+    // 3. Xóa sản phẩm trong giỏ hàng của user
     await CartProduct.deleteMany({
       userId: userId,
       product: { $in: productIdsInOrder },
     });
+
+    // 4. Xóa mã giảm giá đã dùng nếu có
+    if (discountCode && discountCode.trim() !== "") {
+      await DiscountUser.deleteOne({
+        user: userId,
+        discount: discountCode,
+      });
+    }
 
     res.status(201).json({
       success: true,

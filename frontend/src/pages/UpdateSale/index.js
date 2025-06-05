@@ -22,9 +22,6 @@ function UpdateSale() {
         product: '',
     });
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
     useEffect(() => {
         const fetchSaleDetails = async () => {
             try {
@@ -37,10 +34,7 @@ function UpdateSale() {
                     product: result.product || '',
                 });
             } catch (err) {
-                console.error('Error fetching sale details:', err);
-                setError('Không thể tải thông tin khuyến mãi. Vui lòng thử lại.');
-            } finally {
-                setLoading(false);
+                console.error('Không thể tải thông tin khuyến mãi. Vui lòng thử lại.', err);
             }
         };
 
@@ -49,7 +43,7 @@ function UpdateSale() {
                 const categoryData = await categoryService.getCategories();
                 setCategories(categoryData);
                 } catch (error) {
-                    setError('Không thể tải danh mục. Vui lòng thử lại.');
+                    console.error('Không thể tải danh mục. Vui lòng thử lại.', error);
                 }
         };
 
@@ -67,9 +61,6 @@ function UpdateSale() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setError('');
-
         try {
             await saleService.updateSaleById(saleId, sale); // API update 1 sale
             await Swal.fire({
@@ -82,15 +73,8 @@ function UpdateSale() {
             navigate('/moddashboard/sales');
         } catch (err) {
             console.error('Error updating sale:', err);
-            setError('Có lỗi xảy ra khi cập nhật khuyến mãi. Vui lòng thử lại.');
-        } finally {
-            setLoading(false);
         }
     };
-
-    if (loading) {
-        return <p>Đang tải dữ liệu...</p>;
-    }
 
     return (
         <>

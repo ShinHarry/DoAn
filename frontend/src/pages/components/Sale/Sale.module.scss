@@ -127,25 +127,11 @@ h2 {
     }
 }
 
-/* Responsive Table */
-@media (max-width: 768px) {
-    .promotion-table {
-        font-size: 13px;
-
-        th,
-        td {
-            padding: 10px;
-        }
-    }
-}
-
-@media (max-width: 480px) {
-    .promotion-table {
-        font-size: 12px;
-
-        th,
-        td {
-            padding: 8px;
-        }
-    }
+.discount-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }

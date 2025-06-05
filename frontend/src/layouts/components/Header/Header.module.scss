@@ -287,4 +287,137 @@
   .emptyCartText {
     font-size: 16px;
   }
-// 
+// discount
+.centerModalContent {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    width: 1400px;
+    height: 600px;
+    max-width: 90%;
+    overflow-y: auto;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(228, 4, 4, 0.2);
+
+    .discountHeader {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 8px;
+
+        .discountTitle {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .discountClose {
+            font-size: 26px;
+            cursor: pointer;
+        }
+    }
+
+    .myDiscounts h2,
+    .allDiscounts h2 {
+        font-size: 22px;
+        font-weight: bold;
+        margin: 8px 0;
+        padding: 12px 0;
+        border-top: 3px solid #f46b6b;
+    }
+
+    .discountList {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .noDiscount {
+        color: #f53d2d;
+        font-weight: 600;
+        font-size: 16px;
+        margin-top: 24px;
+    }
+
+    .discountCard {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: scroll;
+        padding: 16px;
+        gap: 16px;
+        width: 100%;
+        min-height: 100px;
+    }
+
+    .discountCardLeft {
+        background: #f53d2d;
+        color: white;
+        padding: 4px;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 80px;
+        font-size: 10px;
+
+        .discountLogo {
+            width: 60px;
+            height: 60px;
+            // border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 4px;
+        }
+    }
+
+    .discountCardMiddle {
+        flex: 1;
+        h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0 0 4px;
+        }
+        p {
+            font-size: 14px;
+            margin: 0 0 6px;
+            color: #444;
+        }
+        .discountDate {
+            font-size: 13px;
+            color: #888;
+            font-style: italic;
+        }
+    }
+
+    .discountCardRight {
+        .saveBtn {
+            background: #f53d2d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+
+            &:hover {
+                background: #dd2a1b;
+            }
+
+            &.disabled {
+                background: #ccc;
+                cursor: not-allowed;
+                color: #666;
+                pointer-events: none;
+            }
+        }
+    }
+}

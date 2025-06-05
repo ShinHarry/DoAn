@@ -1,11 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const Sales = require("../models/Sale");
+const Discounts = require("../models/Discount");
+const DiscountUser = require('../models/DiscountUser');
 require("dotenv").config();
+const { uploadDiscount, uploadToCloudinary} = require("../middlewares/uploadImage/uploads");
+const verifyToken = require("../middlewares/Auth/verifyToken");
+const authPage = require("../middlewares/Auth/authoziration");
 const BASE_URL = process.env.BASE_URL;
 
 // Get all sales
-router.get("/", async (req, res) => {
+router.get("/sale", async (req, res) => {
   try {
     const salesList = await Sales.find().sort({ createdAt: -1 });
     // console.log(salesList)
@@ -14,8 +19,34 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+// Get all discounts
+router.get('/discount', async (req, res) => {
+  try {
+    const discountsList = await Discounts.find().sort({ createdAt: -1 });
+    res.json(discountsList);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+// lấy all discount cả người dùng
+router.get('/myDiscount', async (req, res) => {
+  try {
+    const userId = req.user._id;
 
-// lấy chi tiết
+    const discountList = await DiscountUser.find({ user: userId })
+      .populate('discount') 
+      .sort({ createdAt: -1 }); 
+
+    res.json(discountList);
+  } catch (err) {
+    console.error('Lỗi khi lấy danh sách mã của người dùng:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+module.exports = router;
+
+// lấy chi tiết khuyêns mãi
 router.get("/:id", async (req, res) => {
   try {
     const sales = await Sales.findById(req.params.id)
@@ -23,6 +54,16 @@ router.get("/:id", async (req, res) => {
     if (!sales) return res.status(404).json({ message: "Sales not found" });
 
     res.json(sales);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+// lấy chi tiết discount
+router.get("/discount/:id", async (req, res) => {
+  try {
+    const discount = await Discounts.findById(req.params.id);
+    if (!discount) return res.status(404).json({ message: "Discount not found" });
+    res.json(discount);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -66,8 +107,64 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Thêm mới discount
+router.post("/discount",  uploadDiscount.single("image"), verifyToken, authPage(["admin", "mod"]), async (req, res) => {
+  try {
+    console.log("vao day r")
+    const { name, type, dateStart, dateEnd, minimumOrder, discount, minimizeOrder, count } = req.body;
+    // console.log(name, type, dateStart, dateEnd, minimumOrder,discount)
+    // Validate dữ liệu
+    if (!name || !type || !dateStart || !dateEnd || !minimumOrder||  !discount || !minimizeOrder || !count) {
+      return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
+    }
+
+     // Kiểm tra dateEnd phải sau dateStart
+     if (new Date(dateEnd) <= new Date(dateStart)) {
+      return res.status(402).json({ message: "Ngày kết thúc phải sau ngày bắt đầu." });
+    }
+
+    //  // Upload lên Cloudinary
+    //       const cloudinaryUrl = await uploadToCloudinary(
+    //         req.file,
+    //         "discounts",
+    //         "discount"
+    //       );
+
+    // const newImage = {
+    //     link: cloudinaryUrl, // Link Cloudinary
+    //     alt: name,
+    //   };
+
+     const image = {
+        link: `${BASE_URL}public/discounts/${req.file.filename}`, // Đường dẫn public ảnh
+        alt: name, // alt lấy từ name
+      };
+
+    // Tạo mới Sale
+    const newDiscount = new Discounts({
+      name,
+      type,
+      dateStart,
+      dateEnd,
+      minimumOrder,
+      discount,
+      minimizeOrder,
+      count,
+      image,
+    });
+
+    console.log(newDiscount);
+
+    await newDiscount.save();
+
+    res.status(201).json({ message: "Thêm mã giảm giá thành công!", discount: newDiscount });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi thêm mã giảm giá", error });
+  }
+});
+
 // Update sale Promise((resolve, reject) => {
-  
   router.put("/:id", async (req, res) => {
     try {
       const { name, dateStart, dateEnd, discount, product } = req.body;
@@ -98,7 +195,57 @@ router.post("/", async (req, res) => {
     }
   });
 
-// Delete sales
+router.put("/discount/:id", uploadDiscount.single("image"), verifyToken, authPage(["admin", "mod"]), async (req, res) => {
+  try {
+    const { name, type, dateStart, dateEnd, minimumOrder, discount, minimizeOrder, count } = req.body;
+
+    if (!name || !type || !dateStart || !dateEnd || !minimumOrder || !discount || !minimizeOrder || !count) {
+      return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
+    }
+
+    const updateData = {
+      name,
+      type,
+      dateStart,
+      dateEnd,
+      minimumOrder,
+      discount,
+      minimizeOrder,
+      count,
+    };
+
+     //  // Upload lên Cloudinary
+    //       const cloudinaryUrl = await uploadToCloudinary(
+    //         req.file,
+    //         "discounts",
+    //         "discount"
+    //       );
+
+    // const newImage = {
+    //     link: cloudinaryUrl, // Link Cloudinary
+    //     alt: name,
+    //   };
+
+    if (req.file) {
+      updateData.image = {
+        link: `${BASE_URL}public/discounts/${req.file.filename}`,
+        alt: name,
+      };
+    }
+
+    const updatedDiscount = await Discounts.findByIdAndUpdate(req.params.id, updateData, { new: true });
+
+    if (!updatedDiscount) {
+      return res.status(404).json({ message: "Discount not found" });
+    }
+
+    res.json({ message: "Cập nhật mã giảm giá thành công!", discount: updatedDiscount });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete sale
 router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Sales.findByIdAndDelete(req.params.id);
@@ -108,6 +255,58 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+  // Delete discount
+router.delete("/discount/:id", async (req, res) => {
+  try {
+    const deletedDiscount = await Discounts.findByIdAndDelete(req.params.id);
+    if (!deletedDiscount) return res.status(404).json({ message: "Discount not found" });
+    // Xóa tất cả các DiscountUser liên quan đến discount này
+    await DiscountUser.deleteMany({ discount: req.params.id });
+    res.json({ message: "Xóa mã giảm giá thành công!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+//Lưu discount cho người dùng
+router.post('/saveDiscount', async (req, res) => {
+  try {
+    const userId = req.user._id; 
+    const {discountId} = req.body; 
+
+    if (!discountId) {
+      return res.status(400).json({ success: false, message: 'Thiếu discountId' });
+    }
+
+    const existed = await DiscountUser.findOne({ user: userId, discount: discountId });
+    if (existed) {
+      return res.status(200).json({ success: false, message: 'Bạn đã lưu mã này rồi.' });
+    }
+
+    const discount = await Discounts.findOneAndUpdate(
+      { _id: discountId, count: { $gt: 0 } },
+      { $inc: { count: -1 } },
+      { new: true }
+    );
+
+    if (!discount) {
+      return res.status(400).json({ success: false, message: 'Mã giảm giá đã hết lượt sử dụng hoặc không tồn tại.' });
+    }
+
+    const saved = new DiscountUser({
+      user: userId,
+      discount: discountId,
+    });
+    await saved.save();
+
+    return res.status(200).json({ success: true, message: 'Lưu mã thành công!' });
+  } catch (err) {
+    console.error('Lỗi khi lưu mã:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi máy chủ.' });
+  }
+});
+
 
 
 module.exports = router;

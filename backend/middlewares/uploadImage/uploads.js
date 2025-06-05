@@ -108,12 +108,31 @@ const uploadMultipleToCloudinary = async (files, folder, namePrefix) => {
   );
   return Promise.all(uploads);
 };
+// thêm để test discount
+// Hàm kiểm tra file là ảnh
+const isImages = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) cb(null, true);
+  else cb(new Error("Chỉ hình ảnh mới được chấp nhận"), false);
+};
+// Cấu hình lưu ảnh discount
+const discountStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/discounts");
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, `discount-${Date.now()}${ext}`);
+  },
+});
+const uploadDiscount = multer({ storage: discountStorage, fileFilter: isImages });
+//hết test
 
 module.exports = {
   uploadProduct,
   uploadUser,
   uploadBanner,
   uploadCategory,
+  uploadDiscount,  //test
   uploadToCloudinary,
   uploadMultipleToCloudinary,
 };

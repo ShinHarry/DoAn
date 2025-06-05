@@ -57,6 +57,8 @@ function PaymentReturn() {
                         // 3.chuẩn bị thông tin chi tiết đơn hàng
                         const shippingFee = parseInt(sessionStorage.getItem('shippingFee')) || 0;
                         const shippingAddress = sessionStorage.getItem('shippingAddress');
+                        const discountCode = sessionStorage.getItem('discountCode') || '';
+                        console.log(discountCode)
                         const discount = parseInt(sessionStorage.getItem('discountValue')) || 0;
                         const name = sessionStorage.getItem('name');
                         const phone = sessionStorage.getItem('phone');
@@ -64,6 +66,7 @@ function PaymentReturn() {
                         sessionStorage.removeItem('selectedCartItems');
                         sessionStorage.removeItem('shippingFee');
                         sessionStorage.removeItem('shippingAddress');
+                        sessionStorage.removeItem('discountCode');
                         sessionStorage.removeItem('discountValue');
                         sessionStorage.removeItem('name');
                         sessionStorage.removeItem('phone');
@@ -85,6 +88,7 @@ function PaymentReturn() {
                             shippingFee: shippingFee,
                             totalPrice: currentSubtotal,
                             totalAmount: finalAmountFromVnpay,
+                            discountCode: discountCode,
                             discount: discount,
                             paymentMethod: 'vnpay',
                             paymentStatus: 'completed',
@@ -93,7 +97,7 @@ function PaymentReturn() {
                         };
 
                         // 4. tạo order
-                        console.log('Creating order with data:', orderDetails);
+                        // console.log('Creating order with data:', orderDetails);
                         const orderResponse = await orderService.createOrder(orderDetails);
 
                         if (orderResponse.success && orderResponse.order?._id) {

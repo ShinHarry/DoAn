@@ -14,6 +14,7 @@ import {
     faSignOutAlt,
     faMobilePhone,
     faCartPlus,
+    faTags,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
@@ -39,7 +40,9 @@ import Swal from 'sweetalert2'; // thư viện hiện alert
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 //cart
-
+import * as saleService from '~/services/saleService';
+import Modal from '@mui/material/Modal';
+//discount
 const cx = classNames.bind(styles);
 
 function Header() {
@@ -56,6 +59,11 @@ function Header() {
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [totalPrice, setTotalPrice] = useState(0);
     //cart
+    //discount
+    const [openDiscountModal, setOpenDiscountModal] = useState(false);
+    const [allDiscounts, setAllDiscounts] = useState([]);
+    const [myDiscounts, setMyDiscounts] = useState([]);
+    //discount
 
     const currentUser = useSelector((state) => state.auth.login.currentUser);
     useEffect(() => {
@@ -96,6 +104,66 @@ function Header() {
         }
     };
 
+    // hàm xử lý mở discount drawer
+    const handleOpenDiscount = (e) => {
+         e.preventDefault();
+        if (!currentUser) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Bạn chưa đăng nhập',
+                text: 'Vui lòng đăng nhập để xem mã giảm giá',
+                confirmButtonText: 'Xác nhận',
+            });
+            return;
+        }
+        fetchDiscount(); // làm mới lại discount khi mở
+        fetchDiscountUser();
+        setOpenDiscountModal(true);
+    };
+    //hàm lấy tất cả discount đang có 
+    const fetchDiscount = useCallback(async () => {
+        try {
+
+            const data = await saleService.getDiscount();
+            setAllDiscounts(data || []);
+        } catch (error) {
+            console.error('Lỗi lấy discount:', error);
+            setAllDiscounts([]);
+        }
+    }, []);
+    //xử lý lấy discount của người dùng
+    const fetchDiscountUser = useCallback(async () => {
+        try {
+            const data = await saleService.getDiscountUser();
+            setMyDiscounts(data || []);
+        } catch (error) {
+            console.error('Lỗi lấy discount:', error);
+            setMyDiscounts([]);
+        }
+    }, []);
+    // hàm xử lý date
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN');
+    };
+    // hàm xử lý lưu discount
+    const handleSaveDiscount = async (e, discountId) => {
+        e.preventDefault();
+        try {
+            const res = await saleService.saveDiscount(discountId);
+            if (res.success) {
+                fetchDiscount(); // làm mới lại discount khi mở
+                fetchDiscountUser();
+                toast.success('Lưu mã thành công!' ,{ containerId: 'modal' });
+            } else {
+                 toast.warning(res.message || 'Lưu không thành công.' ,{ containerId: 'modal' });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Có lỗi xảy ra.', { containerId: 'modal' });
+        }
+    };
+
     //cart // hàm lấy cart, thay đổi theo currentUser
     const fetchCart = useCallback(async () => {
         // if (!currentUser) return;
@@ -103,7 +171,7 @@ function Header() {
         setCartError(null);
         try {
             const data = await cartService.getCart();
-            console.log(data.cart);
+            // console.log(data.cart);
             setCartItems(data.cart || []);
         } catch (error) {
             console.error('Lỗi lấy cart:', error);
@@ -112,7 +180,7 @@ function Header() {
         } finally {
             setIsCartLoading(false);
         }
-    }, [currentUser]);
+    }, [currentUser]); 
 
     useEffect(() => {
         if (currentUser) {
@@ -174,13 +242,13 @@ function Header() {
             const response = await cartService.removeCartItem(id);
             if (response.success) {
                 setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
-                toast.success('Đã xóa sản phẩm khỏi giỏ hàng.');
+                toast.success('Đã xóa sản phẩm khỏi giỏ hàng.', { containerId: 'drawer' });
             } else {
-                toast.error('Lỗi khi xóa sản phẩm!');
+                toast.error('Lỗi khi xóa sản phẩm!', { containerId: 'drawer' });
             }
         } catch (error) {
             console.error('Lỗi xóa sản phẩm khỏi giỏ:', error);
-            toast.error('Đã xảy ra lỗi khi xóa sản phẩm.');
+            toast.error('Đã xảy ra lỗi khi xóa sản phẩm.', { containerId: 'drawer' });
         }
     };
 
@@ -243,7 +311,7 @@ function Header() {
     const handleCheckout = () => {
         const selectedItems = cartItems.filter((item) => item.selected);
         if (selectedItems.length === 0) {
-            toast.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
+            toast.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán.', { containerId: 'drawer' });
             return;
         }
 
@@ -375,7 +443,14 @@ function Header() {
                     )}
 
                     <div className={cx('actions')}>
-                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
+                         {userRole !== 'mod' && userRole !== 'admin' && (
+                            <Tippy delay={[0, 50]} content="Discount" placement="bottom">
+                                <button className={cx('action-btn')} onClick={(e) => handleOpenDiscount(e)}>
+                                    <FontAwesomeIcon icon={faTags} />
+                                </button>
+                            </Tippy>
+                        )}
+                        {userRole !== 'mod' && userRole !== 'admin' && (
                             <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
                                 <button className={cx('action-btn')} onClick={() => navigate('/wishlist')}>
                                     <FiHeart />
@@ -416,10 +491,99 @@ function Header() {
                     </div>
                 </div>
             )}
+            <ToastContainer
+                containerId="modal"
+                position="bottom-right"
+                autoClose={3000} // Tự động tắt
+                hideProgressBar={true} //  thanh tiến trình
+                newestOnTop={false} //Toast mới sẽ hiện dưới các toast cũ.
+                closeOnClick //Cho phép đóng toast
+                draggable // kéo
+            />
+            <Modal open={openDiscountModal} onClose={() => setOpenDiscountModal(false)} style={{ zIndex: 8}} >
+                <div className={cx('centerModalContent')}>
+                    <div className={cx('discountHeader')}>
+                        <h1 className={cx('discountTitle')}>MÃ GIẢM GIÁ</h1>
+                        <IoCloseSharp className={cx('discountClose')} onClick={() => setOpenDiscountModal(false)} />
+                    </div>
+                    <div className={cx('myDiscounts')}>
+                        <h2>Mã của tôi</h2>
+                        {myDiscounts.length === 0 ? (
+                             <div className={cx('noDiscount')}>
+                                BẠN CHƯA CÓ MÃ GIẢM GIÁ NÀO
+                            </div>
+                        ): (<div className={cx('discountList')}>
+                         {myDiscounts.map((item) => (
+                            <div className={cx('discountCard')} key={item._id}>
+                                <div className={cx('discountCardLeft')}>
+                                    <img src={item.discount.image?.link} alt={item.discount.image?.alt} className={cx('discountLogo')} />
+                                    <span>SMARKET</span>
+                                </div>
+                                <div className={cx('discountCardMiddle')}>
+                                    <h3>
+                                        Giảm {item.discount.discount}% Giảm tối đa {item.discount.minimizeOrder.toLocaleString() || '0'}₫
+                                    </h3>
+                                    <p>Đơn Tối Thiểu {item.discount.minimumOrder.toLocaleString() || '0' }₫</p>
+                                    <p>Áp dụng: {item.discount.type}</p>                            
+                                    <div className={cx('discountDate')}>Ngày bắt đầu: {formatDate(item.discount.dateStart)}</div>
+                                    <div className={cx('discountDate')}>Hạn sử dụng: {formatDate(item.discount.dateEnd)}</div>
+                                </div>
+                                <div className={cx('discountCardRight')}>
+                                   {new Date(item.discount.dateEnd) < new Date() ? (
+                                        <button className={cx('saveBtn', 'disabled')} disabled>Hết hạn</button>
+                                    ) : (
+                                        <button className={cx('saveBtn')} onClick={() => setOpenCartPanel(true)}>Sử dụng </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                        
+                    </div>
+                    <div className={cx('allDiscounts')}>
+                        <h2>Tất cả các mã</h2>
+                        {allDiscounts.length === 0 ? (
+                             <div className={cx('noDiscount')}>
+                                HIỆN KHÔNG CÓ MÃ GIẢM GIÁ NÀO
+                            </div>
+                        ): (<div className={cx('discountList')}>
+                         {allDiscounts.map((item) => (
+                            <div className={cx('discountCard')} key={item._id}>
+                                <div className={cx('discountCardLeft')}>
+                                    <img src={item.image?.link} alt={item.image?.alt} className={cx('discountLogo')} />
+                                    <span>SMARKET</span>
+                                </div>
+                                <div className={cx('discountCardMiddle')}>
+                                    <h3>
+                                        Giảm {item.discount}% Giảm tối đa {item.minimizeOrder.toLocaleString() || '0'}₫
+                                    </h3>
+                                    <p>Đơn Tối Thiểu {item.minimumOrder.toLocaleString() || '0' }₫</p>
+                                    <p>Áp dụng: {item.type}</p>
+                                    <div className={cx('discountDate')}>Ngày bắt đầu: {formatDate(item.dateStart)}</div>
+                                    <div className={cx('discountDate')}>Hạn sử dụng: {formatDate(item.dateEnd)}</div>
+                                </div>
+                                <div className={cx('discountCardRight')}>
+                                    {new Date(item.dateEnd) < new Date() ? (
+                                        <button className={cx('saveBtn', 'disabled')} disabled>Hết hạn</button>
+                                    ) : item.count > 0 ? (
+                                        <button className={cx('saveBtn')} onClick={(e) => handleSaveDiscount(e, item._id)}>Lưu</button>
+                                    ) : (
+                                        <button className={cx('saveBtn', 'disabled')} disabled>Hết mã</button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                    </div>
+                </div>
+            </Modal>
 
             <Drawer open={openCartPanel} onClose={() => setOpenCartPanel(false)} anchor="right" style={{ zIndex: 10 }}>
                 <div className={cx('cartDrawer')}>
                     <ToastContainer
+                        containerId="drawer"
                         position="top-center"
                         autoClose={3000} // Tự động tắt
                         hideProgressBar={true} //  thanh tiến trình

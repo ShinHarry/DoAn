@@ -156,9 +156,6 @@ const Home = () => {
                         <a href="#">TRANG CHỦ</a>
                     </li>
                     <li>
-                        <Link to="">MÃ GIẢM GIÁ</Link>
-                    </li>
-                    <li>
                         <Link to="/aboutMe">VỀ CHÚNG TÔI</Link>
                     </li>
                 </ul>

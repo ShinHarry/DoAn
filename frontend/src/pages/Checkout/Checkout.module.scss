@@ -160,8 +160,8 @@
     span {
         display: block;
         margin-bottom: 8px;
-        font-size: 1.4rem;
-        font-weight: 500;
+        font-size: 1.8rem;
+        font-weight: 600;
         color: #555;
     }
 
@@ -203,6 +203,7 @@
   .discountSelect {
     padding: 8px 12px;
     font-size: 1.6rem;
+    margin-bottom: 8px;
     border: 1px solid #ccc;
     border-radius: 6px;
     width: 100%;
@@ -211,7 +212,8 @@
   }
   //mess discount
 .discountMessage {
-    margin-top: 8px;
+    // margin-top: 6px;
+    margin-bottom: 20px;
     font-size: 14px;
     max-height: 8px;
     min-height: 5px;
@@ -253,4 +255,42 @@
 
 .error {
     color: #dc3545;
+}
+
+// my discount 
+.customSelect {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.discountOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.discountImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.discountInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.discountTitle {
+  font-weight: 600;
+}
+
+.discountDesc {
+  font-size: 13px;
+  color: #555;
+}
+.discountDate {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+  font-style: italic;
 }

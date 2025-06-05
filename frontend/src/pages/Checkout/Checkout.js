@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState, useCallback } from 'react';
+import Select from 'react-select';
 import classNames from 'classnames/bind';
 import Button from '~/components/Button';
 import styles from './Checkout.module.scss';
@@ -39,15 +40,23 @@ function Checkout() {
     const [address, setAddress] = useState('');
     //giam gia
     const [discountCategory, setDiscountCategory] = useState('');
-    const [discountValue, setDiscountValue] = useState(0);
     const [discountCode, setDiscountCode] = useState('');
     const [discountAmount, setDiscountAmount] = useState(0);
     const [discountMessage, setDiscountMessage] = useState('');
     const [discountMessageType, setDiscountMessageType] = useState('');
+
+    const [myDiscounts, setMyDiscounts] = useState([]);
+    const [selectedDiscount, setSelectedDiscount] = useState(null);
+    const [myDiscountType, setMyDiscountType] = useState(0);
+    const [myDiscountAmount, setMyDiscountAmount] = useState(0);
+    const [myDiscountMessage, setMyDiscountMessage] = useState('');
+    const [myDiscountMessageType, setMyDiscountMessageType] = useState('');
+
     //
     const currentUser = useSelector((state) => state.auth.login.currentUser);
 
     const dispatch = useDispatch();
+
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
     const fetchUserDataAndAddresses = useCallback(async () => {
         try {
@@ -101,11 +110,9 @@ function Checkout() {
         if (!currentUser) {
             dispatch(fetchUser());
         }
-
         const fetchMethod = async () => {
             try {
                 const response = await paymentMethodService.getPaymentMethod();
-                console.log(response);
                 setPaymentMethods(response);
             } catch (error) {
                 console.error('Lỗi lấy danh sách phương thức thanh toán', error);
@@ -125,6 +132,54 @@ function Checkout() {
         fetchMethod();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+    // lấy disscount hiện có của người dùng
+    useEffect(() => {
+        const fetchDiscountUser = async () => {
+            try {
+                const data = await saleService.getDiscountUser();
+                const now = new Date();
+
+                const filtered = (data || []).filter((item) => {
+                    const discount = item.discount;
+                    if (!discount || !discount.dateEnd) return false;
+                    return new Date(discount.dateEnd) > now;
+                });
+                setMyDiscounts(filtered);
+            } catch (error) {
+                console.error('Lỗi lấy discount:', error);
+                setMyDiscounts([]);
+            }
+        }
+        fetchDiscountUser();
+    }, []);
+    
+    // tạo option cho my discount
+    const discountOptions = [
+        {
+            value: '',
+            label: <div className={cx('discountOption')}><em>-- Không áp dụng mã giảm giá --</em></div>,
+        },
+        ...myDiscounts.map((item) => {
+        const d = item.discount;
+        return {
+            value: d._id,
+            label: (
+            <div className={cx('discountOption')}>
+                <img
+                    src={d.image?.link || null}
+                    alt={d.image?.alt || ''}
+                    className={cx('discountImage')}
+                />
+                <div className={cx('discountInfo')}>
+                    <div className={cx('discountTitle')}><strong>Áp dụng: {d.type}</strong> </div>
+                    <div className={cx('discountDesc')}>Giảm {d.discount}% | Đơn tối thiểu {d.minimumOrder.toLocaleString()}đ | Giảm tối đa {d.minimizeOrder.toLocaleString()}đ</div>
+                     <div className={cx('discountDate')}>Ngày bắt đầu: {new Date(d.dateEnd).toLocaleDateString('vi-VN')} - Hết hạn: {new Date(d.dateEnd).toLocaleDateString('vi-VN')} </div>
+                </div>
+            </div>
+            ),
+        };
+        })
+    ];
 
     useEffect(() => {
         const loadCheckoutData = async () => {
@@ -141,8 +196,15 @@ function Checkout() {
         if (shippingMethod === 'standard') fee = 20000;
         else if (shippingMethod === 'express') fee = 50000;
         setShippingFee(fee);
-        setFinalTotal(total - discountAmount + fee);
-    }, [shippingMethod, total, discountAmount]);
+        setFinalTotal(total - discountAmount - myDiscountAmount + fee);
+    }, [shippingMethod, total, discountAmount, myDiscountAmount]);
+
+    //tính lại giảm giá vận chuyển khi phương thức vận chuyển thay đổi
+    useEffect(() => {
+        if (selectedDiscount && myDiscountType === 'phí vận chuyển') {
+            handleApplyUserDiscount(selectedDiscount);
+        }
+    }, [shippingFee]);
 
     const handleShippingChange = (e) => {
         setShippingMethod(e.target.value);
@@ -164,8 +226,8 @@ function Checkout() {
             setName(selectedAddr.fullName);
         }
     };
-
-    const handleApplyDiscount = (code) => {
+    //áp dụng discount danh mụcmục
+    const handleApplyDiscountDM = (code) => {
         const selectedCode = code?.trim();
         const foundDiscount = discount.find((item) => item.name === selectedCode);
 
@@ -200,11 +262,73 @@ function Checkout() {
         }
 
         setDiscountCategory(discountCategory);
-        setDiscountValue(discountPercent);
         setDiscountAmount(discountAmountCalc);
-        setFinalTotal(total + shippingFee - discountAmountCalc);
+        // setFinalTotal(total + shippingFee - discountAmountCalc);
     };
+    //áp dụng discount người  dùng
+    const handleApplyUserDiscount = (e) => {
+        if (e.value === '') {
+            setMyDiscountAmount(0);
+            setMyDiscountMessage('');
+            setMyDiscountMessageType('');
+            // setFinalTotal(total + shippingFee);
+            return;
+        }
 
+        const selectedDiscountData = myDiscounts.find(
+            (item) => item.discount._id === e.value
+        );
+
+        if (!selectedDiscountData) return;
+
+        const discountData = selectedDiscountData.discount;
+        const now = new Date();
+        const end = new Date(discountData.dateEnd);
+        const start = new Date(discountData.dateStart);
+
+        if (now < start) {
+            setMyDiscountMessage('Mã giảm giá chưa đến ngày sử dụng.');
+            setMyDiscountMessageType('errorMessage');
+            return;
+        }
+        if (now > end) {
+            setMyDiscountMessage('Mã giảm giá đã hết hạn.');
+            setMyDiscountMessageType('errorMessage');
+            return;
+        }
+
+        const discountPercent = discountData.discount;
+        const type = discountData.type;
+        const minimumOrder = discountData.minimumOrder;
+        const maxDiscount = discountData.minimizeOrder;
+
+        if (total < minimumOrder) {
+            setMyDiscountMessage(`Đơn hàng phải đạt tối thiểu ${minimumOrder.toLocaleString()} VND để áp dụng mã.`);
+            setMyDiscountMessageType('errorMessage');
+            return;
+        }
+
+        let baseAmount = 0;
+
+        if (type === 'Phí vận chuyển') {
+            baseAmount = shippingFee;
+            setMyDiscountType('phí vận chuyển');
+        } else {
+            baseAmount = total;
+            setMyDiscountType('giá trị đơn hàng');
+        }
+
+        let calculatedDiscount = (baseAmount * discountPercent) / 100;
+        if (calculatedDiscount > maxDiscount) {
+            calculatedDiscount = maxDiscount;
+        }
+
+        setMyDiscountAmount(calculatedDiscount);
+        setMyDiscountMessage(`Áp dụng mã giảm giá ${discountPercent}% - ${discountData.type} thành công!`);
+        setMyDiscountMessageType('successMessage');
+        setSelectedDiscount(e);
+        // setFinalTotal(total + shippingFee - calculatedDiscount);
+    };
     const handlePlaceOrder = async () => {
         if (!selectedAddress) {
             toast.warning('Vui lòng chọn địa chỉ giao hàng!');
@@ -230,7 +354,8 @@ function Checkout() {
             shippingFee,
             totalPrice: total,
             totalAmount: finalTotal,
-            discount: discountAmount || 0,
+            discountCode: selectedDiscount.value,
+            discount: discountAmount + myDiscountAmount || 0,
             paymentMethod,
         };
 
@@ -258,7 +383,8 @@ function Checkout() {
                 const returnUrl = `${window.location.origin}/payment-return`;
                 sessionStorage.setItem('shippingFee', shippingFee);
                 sessionStorage.setItem('shippingAddress', address);
-                sessionStorage.setItem('discountValue', discountAmount);
+                sessionStorage.setItem('discountCode', selectedDiscount.value);
+                sessionStorage.setItem('discountValue', discountAmount + myDiscountAmount);
                 sessionStorage.setItem('name', name);
                 sessionStorage.setItem('phone', phone);
 
@@ -375,35 +501,31 @@ function Checkout() {
                             </div>
 
                             <div className={cx('summarySection')}>
-                                <span>Chọn mã giảm giá:</span>
+                                <span>Chọn mã giảm giá hiện có:</span>
                                 <div className={cx('discountWrapper')}>
-                                    {/* <input
-                                        type="text"
-                                        value={discountCode}
+                                    <Select
+                                        options={discountOptions}
+                                        value={selectedDiscount}
                                         onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDiscountCode(value);
-                                            if (value.trim() === '') {
-                                                setDiscountAmount(0);
-                                                setFinalTotal(total + shippingFee);
-                                                setDiscountMessage('');
-                                                setDiscountMessageType('');
-                                            } else {
-                                                // Nếu mã đang hiển thị "thành công", mà user gõ lại không trùng nữa → reset message
-                                                const found = discount.find((item) => item.name === value.trim());
-                                                if (!found || new Date() > new Date(found.dateEnd)) {
-                                                    setDiscountMessage('');
-                                                    setDiscountMessageType('');
-                                                    setDiscountAmount(0);
-                                                }
-                                            }
+                                            setSelectedDiscount(e)
+                                            handleApplyUserDiscount(e);
                                         }}
-                                        placeholder="Nhập mã giảm giá"
-                                        className={cx('discountInput')}
+                                        placeholder="Chọn mã giảm giá..."
+                                        className={cx('customSelect')}
                                     />
-                                    <button className={cx('discountButton')} onClick={handleApplyDiscount}>
-                                        Áp dụng
-                                    </button> */}
+                                </div>
+                                {myDiscountMessage && (
+                                    <div
+                                        className={cx('discountMessage', {
+                                            successMessage: myDiscountMessageType === 'successMessage',
+                                            errorMessage: myDiscountMessageType === 'errorMessage',
+                                        })}
+                                    >
+                                        {myDiscountMessage}
+                                    </div>
+                                )}
+                                <span>Chọn mã giảm giá cho danh mục sản phẩm:</span>
+                                <div className={cx('discountWrapper')}>
                                     <select
                                         value={discountCode}
                                         onChange={(e) => {
@@ -418,7 +540,7 @@ function Checkout() {
                                             }
 
                                             // Khi chọn xong thì áp dụng luôn
-                                            handleApplyDiscount(value);
+                                            handleApplyDiscountDM(value);
                                         }}
                                         className={cx('discountSelect')}
                                     >
@@ -448,6 +570,12 @@ function Checkout() {
                                 <span>Tạm tính:</span>
                                 <span>{total.toLocaleString()} VND</span>
                             </div>
+                            {myDiscountAmount > 0 && (
+                                <div className={cx('summaryItem')}>
+                                    <span>Giảm giá theo {myDiscountType} :</span>
+                                    <span>-{myDiscountAmount.toLocaleString()} VND</span>
+                                </div>
+                            )}
                             {discountAmount > 0 && (
                                 <div className={cx('summaryItem')}>
                                     <span>Giảm giá theo sản phẩm {discountCategory} :</span>

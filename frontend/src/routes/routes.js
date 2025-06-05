@@ -18,7 +18,9 @@ import Register from '~/pages/Register';
 import AddBanner from '~/pages/AddBanner';
 import UpdateBanner from '~/pages/UpdateBanner';
 import AddSale from '~/pages/AddSale';
+import AddDiscount from '~/pages/AddDiscount';
 import UpdateSale from '~/pages/UpdateSale';
+import UpdateDiscount from '~/pages/UpdateDiscount';
 
 import ForgotPassword from '~/pages/ForgotPassword';
 import Checkout from '~/pages/Checkout';
@@ -184,8 +186,10 @@ const privateRoutes = [
     { path: config.routes.updateNew, component: UpdateBanner, roles: ['admin', 'mod'], layout: LayoutNoFooter },
 
     { path: config.routes.sales, component: Sale, roles: ['admin', 'mod'], layout: LayoutNoFooter },
-    { path: config.routes.addSale, component: AddSale, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: config.routes.addSale, component: AddSale, roles: ['admin', 'mod'], layout: LayoutNoFooter }, 
+    { path: '/addDiscount', component: AddDiscount, roles: ['admin', 'mod'], layout: LayoutNoFooter }, 
     { path: config.routes.updateSale, component: UpdateSale, roles: ['admin', 'mod'], layout: LayoutNoFooter },
+    { path: '/updateDiscount/:DiscountId', component: UpdateDiscount, roles: ['admin', 'mod'], layout: LayoutNoFooter }, 
 
     { path: '/origins', component: Origin, roles: ['admin', 'mod'], layout: LayoutNoFooter },
     { path: '/manufacturers', component: Manufacturer, roles: ['admin', 'mod'], layout: LayoutNoFooter },

@@ -57,7 +57,7 @@ function Sidebar() {
                             activeIcon={<FileIcon />}
                         />
                         <MenuItem
-                            title="Mã giảm giá"
+                            title="Quản lý giảm giá"
                             to={'sales'}
                             icon={<VoucherIcon />}
                             activeIcon={<VoucherIcon />}
