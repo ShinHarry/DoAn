@@ -273,8 +273,10 @@ router.put(
           "discounts",
           "discount"
         );
-        image.link = cloudinaryUrl;
-        image.alt = name;
+        image = {
+          link: cloudinaryUrl,
+          alt: name,
+        };
       }
 
       const updateData = {
