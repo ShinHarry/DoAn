@@ -165,8 +165,8 @@ router.post(
           "discounts",
           "discount"
         );
-        discountImg.link = cloudinaryUrl;
-        discountImg.alt = name;
+        image.link = cloudinaryUrl;
+        image.alt = name;
       }
 
       // Tạo mới Sale
@@ -275,8 +275,8 @@ router.put(
           "discounts",
           "discount"
         );
-        discountImg.link = cloudinaryUrl;
-        discountImg.alt = name;
+        image.link = cloudinaryUrl;
+        image.alt = name;
       }
 
       const updateData = {
