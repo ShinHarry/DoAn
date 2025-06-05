@@ -92,6 +92,8 @@ const uploadProduct = multer({ storage, fileFilter: isImage });
 const uploadUser = multer({ storage, fileFilter: isImage });
 const uploadBanner = multer({ storage, fileFilter: isImage });
 const uploadCategory = multer({ storage, fileFilter: isImage });
+// const uploadDiscount = multer({ storage: discountStorage, fileFilter: isImages });
+const uploadDiscount = multer({ storage, fileFilter: isImage });
 
 const uploadToCloudinary = async (file, folder, namePrefix) => {
   const result = await cloudinary.uploader.upload(file.path, {
@@ -115,16 +117,15 @@ const isImages = (req, file, cb) => {
   else cb(new Error("Chỉ hình ảnh mới được chấp nhận"), false);
 };
 // Cấu hình lưu ảnh discount
-const discountStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/discounts");
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, `discount-${Date.now()}${ext}`);
-  },
-});
-const uploadDiscount = multer({ storage: discountStorage, fileFilter: isImages });
+// const discountStorage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "public/discounts");
+//   },
+//   filename: function (req, file, cb) {
+//     const ext = path.extname(file.originalname);
+//     cb(null, `discount-${Date.now()}${ext}`);
+//   },
+// });
 //hết test
 
 module.exports = {
@@ -132,7 +133,7 @@ module.exports = {
   uploadUser,
   uploadBanner,
   uploadCategory,
-  uploadDiscount,  //test
+  uploadDiscount, //test
   uploadToCloudinary,
   uploadMultipleToCloudinary,
 };
