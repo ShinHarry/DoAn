@@ -25,6 +25,9 @@ function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const trimmedUsername = formData.username.trim().toLowerCase();
+        const trimmedEmail = formData.email.trim();
+
         if (formData.password !== formData.confirmPassword) {
             toast.error('Mật khẩu không khớp!', {
                 position: 'top-center',
@@ -39,12 +42,13 @@ function Register() {
         setLoading(true);
         try {
             const dataSend = {
-                userNameAccount: formData.username,
-                userName: formData.username,
-                userEmail: formData.email,
+                userNameAccount: trimmedUsername,
+                userName: trimmedUsername,
+                userEmail: trimmedEmail,
                 userPassword: formData.password,
             };
             const res = await authService.register(dataSend);
+
             toast.success(res.message || 'Đăng ký thành công!', {
                 position: 'top-center',
                 autoClose: 3000,
@@ -55,16 +59,17 @@ function Register() {
 
             setTimeout(() => {
                 navigate('/login');
-            }, 1500); // delay một chút để toast hiển thị
+            }, 1500);
         } catch (err) {
-            toast.error('Đăng ký thất bại, vui lòng thử lại.', {
+            const errorMessage = err?.response?.data?.message || 'Đăng ký thất bại, vui lòng thử lại.';
+            toast.error(errorMessage, {
                 position: 'top-center',
                 autoClose: 3000,
                 hideProgressBar: true,
                 closeOnClick: true,
                 draggable: true,
             });
-            console.log(err);
+            console.error(err);
         } finally {
             setLoading(false);
         }
