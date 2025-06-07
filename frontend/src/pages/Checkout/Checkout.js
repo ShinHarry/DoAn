@@ -46,15 +46,44 @@ function Checkout() {
     const [discountMessageType, setDiscountMessageType] = useState('');
 
     const [myDiscounts, setMyDiscounts] = useState([]);
-    const [selectedDiscount, setSelectedDiscount] = useState(null);
     const [myDiscountType, setMyDiscountType] = useState(0);
     const [myDiscountAmount, setMyDiscountAmount] = useState(0);
     const [myDiscountMessage, setMyDiscountMessage] = useState('');
     const [myDiscountMessageType, setMyDiscountMessageType] = useState('');
-
+    // tạo option cho my discount
+    const discountOptions = [
+        {
+            value: '',
+            label: <div className={cx('discountOption')}><em>-- Không áp dụng mã giảm giá --</em></div>,
+        },
+        ...myDiscounts.map((item) => {
+        const d = item.discount;
+        return {
+            value: d._id,
+            label: (
+            <div className={cx('discountOption')}>
+                <img
+                    src={d.image?.link || null}
+                    alt={d.image?.alt || ''}
+                    className={cx('discountImage')}
+                />
+                <div className={cx('discountInfo')}>
+                    <div className={cx('discountTitle')}><strong>Áp dụng: {d.type}</strong> </div>
+                    <div className={cx('discountDesc')}>Giảm {d.discount}% | Đơn tối thiểu {d.minimumOrder.toLocaleString()}đ | Giảm tối đa {d.minimizeOrder.toLocaleString()}đ</div>
+                     <div className={cx('discountDate')}>Ngày bắt đầu: {new Date(d.dateEnd).toLocaleDateString('vi-VN')} - Hết hạn: {new Date(d.dateEnd).toLocaleDateString('vi-VN')} </div>
+                </div>
+            </div>
+            ),
+        };
+        })
+    ];
+    const defaultDiscountOption = {
+        value: '',
+        label: <div className={cx('discountOption')}><em>-- Không áp dụng mã giảm giá --</em></div>
+        };
+    const [selectedDiscount, setSelectedDiscount] = useState(defaultDiscountOption);
     //
     const currentUser = useSelector((state) => state.auth.login.currentUser);
-
     const dispatch = useDispatch();
 
     //lấy danh sách địa chỉ và setaddress bằng địa chỉ đầu
@@ -152,34 +181,6 @@ function Checkout() {
         }
         fetchDiscountUser();
     }, []);
-    
-    // tạo option cho my discount
-    const discountOptions = [
-        {
-            value: '',
-            label: <div className={cx('discountOption')}><em>-- Không áp dụng mã giảm giá --</em></div>,
-        },
-        ...myDiscounts.map((item) => {
-        const d = item.discount;
-        return {
-            value: d._id,
-            label: (
-            <div className={cx('discountOption')}>
-                <img
-                    src={d.image?.link || null}
-                    alt={d.image?.alt || ''}
-                    className={cx('discountImage')}
-                />
-                <div className={cx('discountInfo')}>
-                    <div className={cx('discountTitle')}><strong>Áp dụng: {d.type}</strong> </div>
-                    <div className={cx('discountDesc')}>Giảm {d.discount}% | Đơn tối thiểu {d.minimumOrder.toLocaleString()}đ | Giảm tối đa {d.minimizeOrder.toLocaleString()}đ</div>
-                     <div className={cx('discountDate')}>Ngày bắt đầu: {new Date(d.dateEnd).toLocaleDateString('vi-VN')} - Hết hạn: {new Date(d.dateEnd).toLocaleDateString('vi-VN')} </div>
-                </div>
-            </div>
-            ),
-        };
-        })
-    ];
 
     useEffect(() => {
         const loadCheckoutData = async () => {

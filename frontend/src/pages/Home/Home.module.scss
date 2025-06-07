@@ -4,45 +4,8 @@
     margin: auto;
 }
 
-.sidebar {
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-49.1%);
-    width: 100%;
-    max-width: 1360px;
-    z-index: 7;
-    display: flex;
-    justify-content: flex-start;
-    background-color: #e3f2fd;
-    padding: 5px 0;
-    border-bottom: 2px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 5px;
-    background: linear-gradient(90deg, #00d2ff 0%, #3a47d5 100%);
-
-    ul {
-        display: flex;
-        gap: 30px;
-        list-style: none;
-        font-weight: bold;
-    }
-
-    li {
-        display: inline-block;
-        font-size: 15px;
-        border-radius: 5px;
-        color: #333;
-        transition: color 0.3s ease;
-
-        &:hover a {
-            color: #ec1111;
-        }
-    }
-}
-
 .slide {
-    margin-top: 30px;
+    // margin-top: 30px;
     width: 100%;
 }
 

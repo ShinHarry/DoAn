@@ -6,29 +6,45 @@ const Category = require('../models/Category');
 const mongoose = require('mongoose');
 const ExcelJS = require('exceljs');
 
+//hàm tính lại múi giờ javascript sang utc
+function getUTCMidnight(date) {
+    const d = new Date(date);
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
 // hàm giúp lấy khoảng thời gian theo từng loại
 const getPeriodDateRange = (period, date = new Date()) => {
-    let startDate, endDate = new Date(date);
+    let startDate, endDate;
+    // Giờ UTC+7 = trừ 7 tiếng UTC
+    // const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+    const localDate = new Date(date);
+    const year = localDate.getFullYear();
+    const month = localDate.getMonth();
+    const day = localDate.getDate();
 
     if (period === 'daily') {
-        startDate = new Date(date);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
+        const startVN = new Date(year, month, day, 0, 0, 0, 0);
+        const endVN = new Date(year, month, day, 23, 59, 59, 999);
+        startDate = new Date(startVN.getTime());
+        endDate = new Date(endVN.getTime());
     } else if (period === 'weekly') {
-        startDate = new Date(date); // getDay() trả về số thứ trong tuần (0 = CN, 1 = T2, ..., 6 = T7)
-        startDate.setDate(date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1)); // Monday
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
+        const dayOfWeek = localDate.getDay(); // 0 (Sun) - 6 (Sat)
+        const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // về T2
+        const mondayVN = new Date(year, month, day + diff, 0, 0, 0, 0);
+        const sundayVN = new Date(mondayVN.getTime() + 6 * 24 * 60 * 60 * 1000 + 86399999); // +6 ngày + 23:59:59.999
+        startDate = new Date(mondayVN.getTime());
+        endDate = new Date(sundayVN.getTime());
     } else if (period === 'monthly') {
-        startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-        endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0); // ngày cuối của tháng
-        endDate.setHours(23, 59, 59, 999);
+        const startVN = new Date(year, month, 1, 0, 0, 0, 0);
+        const lastDay = new Date(year, month + 1, 0); // ngày cuối tháng
+        const endVN = new Date(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate(), 23, 59, 59, 999);
+        startDate = new Date(startVN.getTime());
+        endDate = new Date(endVN.getTime());
     } else if (period === 'yearly') {
-        startDate = new Date(date.getFullYear(), 0, 1); // ngày đầu của năm
-        endDate = new Date(date.getFullYear(), 11, 31); // ngày cuối của năm
-        endDate.setHours(23, 59, 59, 999);
+        const startVN = new Date(year, 0, 1, 0, 0, 0, 0);
+        const endVN = new Date(year, 11, 31, 23, 59, 59, 999);
+        startDate = new Date(startVN.getTime());
+        endDate = new Date(endVN.getTime());
     }
     return { startDate, endDate };
 };
@@ -39,7 +55,7 @@ router.get('/revenue', async (req, res) => {
     const { period, by , targetDate: rawTargetDate} = req.query; // 'daily', 'weekly', 'monthly', 'yearly'
     // console.log(period ,by)
     targetDate = rawTargetDate  ? new Date(rawTargetDate ) : new Date();  // xử lý nêú có truyền ngày lên
-
+    // console.log(targetDate)
     if (isNaN(targetDate.getTime())) {
         return res.status(400).json({ message: "targetDate không hợp lệ." });
     }
@@ -65,9 +81,10 @@ router.get('/revenue', async (req, res) => {
 
     if (period === 'daily') {
         const range = getPeriodDateRange('daily', targetDate);
+        // console.log(range)
         startDate = range.startDate;
         endDate = range.endDate;
-        console.log(startDate ,endDate )
+        // console.log(startDate ,endDate )
         matchStage.$match[condition] = { $gte: startDate, $lte: endDate };
         groupByFormat = { $hour: `$${condition}` }; // Nhóm theo giờ trong ngày
         pipeline.push(matchStage, {
@@ -81,7 +98,11 @@ router.get('/revenue', async (req, res) => {
         }, {
             $project: {  //output
                 _id: 0, // ẩn, bỏ trường _id
-                label: { $concat: [ { $toString: "$_id" }, ":00" ] }, // Format: "0:00", "1:00", ... "23:00"
+                label: { $let: {
+                        vars: {
+                        hourVN: { $mod: [ { $add: ["$_id", 7] }, 24 ] } },// cộng 7, rồi chia lấy dư 24 
+                        in: { $concat: [{ $toString: "$$hourVN" },":00"]}
+                    }},
                 value: "$totalRevenue",
                 orderCount: "$orderCount"
             }
@@ -182,22 +203,32 @@ router.get('/revenue', async (req, res) => {
     }
 });
 
+// hàm dùng để tạo khoảng thời gian tùy ý (fromDate, toDate) theo giờ Việt Nam (chuyển về UTC)
+const getPeriodDateRangeFromRange = (fromDate, toDate) => {
+    // const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+    const startVN = new Date(fromDate);
+    startVN.setHours(0, 0, 0, 0);
+    const endVN = new Date(toDate);
+    endVN.setHours(23, 59, 59, 999);
+
+    const startDate = new Date(startVN.getTime());
+    const endDate = new Date(endVN.getTime());
+
+    return { startDate, endDate };
+};
 // 2. Thống kê doanh thu theo range
 router.get('/revenueByRange', async (req, res) => {
     // console.log(req.query)
     const { fromDate, toDate, by = 'expected' } = req.query; 
-
+    
     if (!fromDate || !toDate) {
         return res.status(400).json({ message: 'fromDate và toDate là bắt buộc.' });
     }
+    // console.log(fromDate, toDate)
 
-    const startDate = new Date(fromDate);
-    startDate.setHours(0, 0, 0, 0);
-
-    const endDate = new Date(toDate);
-    endDate.setHours(23, 59, 59, 999);
-
-    console.log(startDate, endDate)
+    const { startDate, endDate } = getPeriodDateRangeFromRange(fromDate, toDate);
+    // console.log(startDate, endDate)
 
     const pipeline = [];
     // console.log(by)
@@ -217,7 +248,6 @@ router.get('/revenueByRange', async (req, res) => {
         period = 'yearly';
     }
     // console.log(period)
-
     // Điều kiện lọc cơ bản: lọc theo thời gian
     const matchStage = {
         $match: { [condition]: { $gte: startDate, $lte: endDate }}
@@ -238,7 +268,11 @@ router.get('/revenueByRange', async (req, res) => {
         }, {
             $project: {  //output
                 _id: 0, // ẩn, bỏ trường _id
-                label: { $concat: [ { $toString: "$_id" }, ":00" ] }, // Format: "0:00", "1:00", ... "23:00"
+                label: { $let: {
+                    vars: {
+                    hourVN: { $mod: [ { $add: ["$_id", 7] }, 24 ] } },// cộng 7, rồi chia lấy dư 24 
+                    in: { $concat: [{ $toString: "$$hourVN" },":00"]}
+                }},                
                 value: "$totalRevenue",
                 orderCount: "$orderCount"
             }
@@ -299,23 +333,21 @@ router.get('/revenueByRange', async (req, res) => {
 router.get('/revenue/export', async (req, res) => {
     try {
         const { fromDate, toDate, period = 'monthly', by = 'expected' } = req.query;
-        // console.log(fromDate, toDate, period, by)
+        console.log(fromDate, toDate, period, by)
         let startDate, endDate;
 
         // Xử lý ngày tháng năm được chọn
         if (fromDate && toDate) {
-            startDate = new Date(fromDate);
-            startDate.setHours(0, 0, 0, 0);
-
-            endDate = new Date(toDate);
-            endDate.setHours(23, 59, 59, 999);
-            } else {
+            const range = getPeriodDateRangeFromRange(fromDate, toDate);
+            startDate = range.startDate;
+            endDate = range.endDate;
+        } else {
             // Nếu không truyền from/to thì tính theo period
             const range = getPeriodDateRange(period, new Date());
             startDate = range.startDate;
             endDate = range.endDate;
         }
-        // console.log(startDate, endDate)
+        console.log(startDate, endDate)
         const condition = (by === 'expected') ? 'createdAt' : 'completeAt';
 
         const matchStage = {
