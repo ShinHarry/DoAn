@@ -32,7 +32,6 @@ function Login() {
             );
 
             const user = result?.user;
-            console.log('user: ', user);
             if (user) {
                 const role = user.userRole;
                 const status = user.userStatus;
@@ -90,7 +89,7 @@ function Login() {
                         className={cx('input')}
                         placeholder="Username"
                         value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => setUsername(e.target.value.trim().toLowerCase())}
                         required
                     />
                 </div>
