@@ -146,7 +146,7 @@ function UpdateProduct() {
 
             setTimeout(() => navigate('/moddashboard/productlist'), 2000);
         } catch (error) {
-            setError('Có lỗi xảy ra khi sửa sản phẩm. Vui lòng thử lại.1');
+            setError('Có lỗi xảy ra khi sửa sản phẩm. Vui lòng thử lại.');
             console.log(error);
         } finally {
             setLoading(false);

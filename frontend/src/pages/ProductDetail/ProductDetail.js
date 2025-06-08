@@ -16,6 +16,7 @@ import styles from './ProductDetail.module.scss';
 import config from '~/config';
 import Image from '~/components/Image';
 import * as feedbackService from '~/services/feedbackService';
+import { toast, ToastContainer } from 'react-toastify';
 const cx = classNames.bind(styles);
 
 function ProductDetail() {
@@ -180,14 +181,15 @@ function ProductDetail() {
             await productServices.deleteProductById(productId);
             await Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa thành công.', 'success');
             navigate('/moddashboard/productlist');
-        } catch (error) {  
-            // Lỗi từ phía server (400, sản phẩm tồn tại trong giỏ hàng hoặc đơn hàng)
-            if (error.response?.status === 400) {
-                Swal.fire('Không thể xóa', error.response?.data?.message, 'warning');
-            } else {
-                // Các lỗi khác (500, network,...)
-                Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
-            }
+        } catch (err) {
+            const errorMessage = err?.response?.data?.message || 'Xóa thất bại, vui lòng thử lại.';
+            toast.error(errorMessage, {
+                position: 'top-center',
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                draggable: true,
+            });
         }
     };
 
@@ -357,6 +359,7 @@ function ProductDetail() {
                     </ul>
                 )}
             </div>
+            <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
         </div>
     );
 }
