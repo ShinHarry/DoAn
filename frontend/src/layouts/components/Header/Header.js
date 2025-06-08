@@ -443,14 +443,14 @@ function Header() {
                     )}
 
                     <div className={cx('actions')}>
-                         {userRole !== 'mod' && userRole !== 'admin' && (
+                         {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                             <Tippy delay={[0, 50]} content="Discount" placement="bottom">
                                 <button className={cx('action-btn')} onClick={(e) => handleOpenDiscount(e)}>
                                     <FontAwesomeIcon icon={faTags} />
                                 </button>
                             </Tippy>
                         )}
-                        {userRole !== 'mod' && userRole !== 'admin' && (
+                        {userRole !== 'mod' && userRole !== 'admin' && userRole !== 'accountant' && (
                             <Tippy delay={[0, 50]} content="Danh sách yêu thích" placement="bottom">
                                 <button className={cx('action-btn')} onClick={() => navigate('/wishlist')}>
                                     <FiHeart />
