@@ -242,6 +242,8 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
+const Order = require("../models/Order");
+const CartProduct = require("../models/CartProduct");
 
 const verifyToken = require("../middlewares/Auth/verifyToken");
 const authPage = require("../middlewares/Auth/authoziration");
@@ -470,9 +472,26 @@ router.delete(
   authPage(["admin", "mod"]),
   async (req, res) => {
     try {
-      const deleted = await Product.findByIdAndDelete(req.params.id);
-      if (!deleted)
+      const productId = req.params.id;
+      // Kiểm tra trong giỏ hàng
+      const isInCart = await CartProduct.findOne({ product: productId });
+      if (isInCart) {
+        return res.status(400).json({
+          message: `Sản phẩm vẫn còn trong giỏ hàng của khách hàng ID: ${isInCart.userId}`,
+        });
+      }
+      // Kiểm tra trong đơn hàng
+      const isInOrder = await Order.findOne({ "orderDetails.product": productId });
+      if (isInOrder) {
+        return res.status(400).json({
+          message: `Sản phẩm vẫn tồn tại trong đơn hàng của khách hàng ID: ${isInOrder.user}`,
+        });
+      }
+      // Nếu không tồn tại trong cart hoặc order, tiến hành xóa
+      const deleted = await Product.findByIdAndDelete(productId);
+      if (!deleted) {
         return res.status(404).json({ message: "Product not found" });
+      }
 
       res.json({ message: "Xóa sản phẩm thành công", deletedProduct: deleted });
     } catch (error) {

@@ -180,8 +180,14 @@ function ProductDetail() {
             await productServices.deleteProductById(productId);
             await Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa thành công.', 'success');
             navigate('/moddashboard/productlist');
-        } catch (error) {
-            Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
+        } catch (error) {  
+            // Lỗi từ phía server (400, sản phẩm tồn tại trong giỏ hàng hoặc đơn hàng)
+            if (error.response?.status === 400) {
+                Swal.fire('Không thể xóa', error.response?.data?.message, 'warning');
+            } else {
+                // Các lỗi khác (500, network,...)
+                Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
+            }
         }
     };
 

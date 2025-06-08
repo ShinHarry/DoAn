@@ -406,8 +406,13 @@ const ProductList = () => {
                 fetchProducts();
             }
         } catch (error) {
-            console.error('Lỗi khi xóa sản phẩm:', error);
-            Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
+             // Lỗi từ phía server (400, sản phẩm tồn tại trong giỏ hàng hoặc đơn hàng)
+            if (error.response?.status === 400) {
+                Swal.fire('Không thể xóa', error.response?.data?.message, 'warning');
+            } else {
+                // Các lỗi khác (500, network,...)
+                Swal.fire('Lỗi', 'Đã xảy ra lỗi khi xóa sản phẩm.', 'error');
+            }
         }
     };
 
