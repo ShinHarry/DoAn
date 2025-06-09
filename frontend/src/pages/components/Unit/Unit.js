@@ -31,7 +31,6 @@ function Unit() {
             const response = await unitService.getUnit();
             setUnits(response);
         } catch (error) {
-            console.error('Lỗi lấy danh sách hãng sản xuất', error);
             setError(error);
         } finally {
             setIsLoading(false);

@@ -38,12 +38,12 @@ router.post("/", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
     await newUnit.save();
 
     res.status(201).json({
-      message: "Thêm hãng sản xuất thành công!",
+      message: "Thêm đơn vị thành công!",
       unit: newUnit,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Lỗi khi thêm hãng sản xuất", error });
+    res.status(500).json({ message: "Lỗi khi thêm đơn vị", error });
   }
 });
 
