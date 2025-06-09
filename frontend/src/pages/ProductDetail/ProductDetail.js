@@ -346,7 +346,7 @@ function ProductDetail() {
                                                     className={cx('star', i < (fb.rating || 0) ? 'filled' : '')}
                                                     aria-label={i < (fb.rating || 0) ? 'Đã đánh giá' : 'Chưa đánh giá'}
                                                 >
-                                                    ⭐
+                                                    ★
                                                 </span>
                                             ))}
                                         </div>

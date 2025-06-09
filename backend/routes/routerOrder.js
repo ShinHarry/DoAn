@@ -4,7 +4,7 @@ const Order = require("../models/Order");
 // const User = require("../models/User");
 const Product = require("../models/Product");
 const CartProduct = require("../models/CartProduct");
-const DiscountUser = require('../models/DiscountUser');
+const DiscountUser = require("../models/DiscountUser");
 const verifyToken = require("../middlewares/Auth/verifyToken");
 
 // Get all order
@@ -53,12 +53,7 @@ router.post("/", verifyToken, async (req, res) => {
   } = req.body;
   const userId = req.user._id;
 
-  if (
-    !orderItems ||
-    orderItems.length === 0 ||
-    !shippingAddress ||
-    !totalAmount
-  ) {
+  if (!orderItems || orderItems.length === 0 || !shippingAddress) {
     return res
       .status(400)
       .json({ success: false, message: "Thiếu thông tin đơn hàng." });
@@ -72,7 +67,7 @@ router.post("/", verifyToken, async (req, res) => {
     // 1. Kiểm tra kho và tạo orderDetails
     for (const item of orderItems) {
       // Cập nhật số lượng sản phẩm một cách atomic tránh tranh châps
-       const product = await Product.findOneAndUpdate(
+      const product = await Product.findOneAndUpdate(
         {
           _id: item.product,
           productQuantity: { $gte: item.quantity },
@@ -86,9 +81,12 @@ router.post("/", verifyToken, async (req, res) => {
       if (!product) {
         throw new Error(`Sản phẩm với ID ${item.product} không tìm thấy.`);
       }
-        // Cập nhật trạng thái sản phẩm nếu hết hàng
+      // Cập nhật trạng thái sản phẩm nếu hết hàng
       if (product.productQuantity === 0) {
-        await Product.updateOne({ _id: product._id }, { productStatus: "out_of_stock" });
+        await Product.updateOne(
+          { _id: product._id },
+          { productStatus: "out_of_stock" }
+        );
       }
 
       const itemSubTotal =
@@ -106,7 +104,7 @@ router.post("/", verifyToken, async (req, res) => {
           product.productUnitPrice * (1 - (product.productSupPrice || 0) / 100),
       });
 
-       productIdsInOrder.push(product._id);
+      productIdsInOrder.push(product._id);
     }
 
     // 2. Tạo đơn hàng mới
@@ -119,7 +117,10 @@ router.post("/", verifyToken, async (req, res) => {
       shippingMethod,
       shippingFee,
       subTotalPrice: calculatedSubtotal,
-      totalAmount: calculatedSubtotal + shippingFee - discount,
+      totalAmount:
+        calculatedSubtotal + shippingFee - discount <= 0
+          ? 0
+          : calculatedSubtotal + shippingFee - discount,
       discount,
       paymentMethod,
       orderStatus: "processing",
@@ -237,38 +238,35 @@ router.put("/:orderId/orderStatus", async (req, res) => {
       order.orderStatus !== "returned" &&
       order.orderStatus !== "cancelled"
     ) {
-      if(order.orderStatus === "completed"){
-      let productUpdates = order.orderDetails.map((item) => ({
-        updateOne: {
-          filter: { _id: item.product },
-          update: {
-            $inc: {
-              productQuantity: item.quantity,
-              productSoldQuantity: -item.quantity,
+      if (order.orderStatus === "completed") {
+        let productUpdates = order.orderDetails.map((item) => ({
+          updateOne: {
+            filter: { _id: item.product },
+            update: {
+              $inc: {
+                productQuantity: item.quantity,
+                productSoldQuantity: -item.quantity,
+              },
             },
           },
-        },
-      }));
-      await Product.bulkWrite(productUpdates);
-    }else{
-      let productUpdates = order.orderDetails.map((item) => ({
-        updateOne: {
-          filter: { _id: item.product },
-          update: {
-            $inc: {
-              productQuantity: item.quantity,
+        }));
+        await Product.bulkWrite(productUpdates);
+      } else {
+        let productUpdates = order.orderDetails.map((item) => ({
+          updateOne: {
+            filter: { _id: item.product },
+            update: {
+              $inc: {
+                productQuantity: item.quantity,
+              },
             },
           },
-        },
-      }));
-      await Product.bulkWrite(productUpdates);
+        }));
+        await Product.bulkWrite(productUpdates);
+      }
     }
-  }
     // Đánh dấu là hoàn tất → cộng số lượng đã bán
-    if (
-      status === "completed" &&
-      order.orderStatus !== "completed"
-    ) {
+    if (status === "completed" && order.orderStatus !== "completed") {
       const productUpdates = order.orderDetails.map((item) => ({
         updateOne: {
           filter: { _id: item.product },
@@ -324,25 +322,31 @@ router.put("/:orderId/orderStatus", async (req, res) => {
 });
 
 //Đánh giá
-router.post('/:orderId/rating', async (req, res) => {
+router.post("/:orderId/rating", async (req, res) => {
   try {
     const { orderId } = req.params;
     const { rating } = req.body;
 
-    const order = await Order.findById(orderId).populate('orderDetails.product');
+    const order = await Order.findById(orderId).populate(
+      "orderDetails.product"
+    );
 
-    if (!order || order.orderStatus !== 'completed') {
-      return res.status(400).json({ message: 'Đơn hàng không hợp lệ hoặc chưa hoàn tất.' });
+    if (!order || order.orderStatus !== "completed") {
+      return res
+        .status(400)
+        .json({ message: "Đơn hàng không hợp lệ hoặc chưa hoàn tất." });
     }
 
     if (order.hasRated) {
-      return res.status(400).json({ message: 'Đơn hàng đã được đánh giá trước đó.' });
+      return res
+        .status(400)
+        .json({ message: "Đơn hàng đã được đánh giá trước đó." });
     }
 
     for (const item of order.orderDetails) {
       const product = await Product.findById(item.product._id);
       if (!product) {
-        console.error('Không tìm thấy sản phẩm với id:', item.product._id);
+        console.error("Không tìm thấy sản phẩm với id:", item.product._id);
         continue;
       }
 
@@ -350,7 +354,10 @@ router.post('/:orderId/rating', async (req, res) => {
 
       product.productRatings.push({ userId: order.user, rating });
 
-      const total = product.productRatings.reduce((acc, cur) => acc + cur.rating, 0);
+      const total = product.productRatings.reduce(
+        (acc, cur) => acc + cur.rating,
+        0
+      );
       const avg = total / product.productRatings.length;
       product.productAvgRating = parseFloat(avg.toFixed(1));
 
@@ -360,10 +367,10 @@ router.post('/:orderId/rating', async (req, res) => {
     order.hasRated = true;
     await order.save();
 
-    res.json({ message: 'Đánh giá đã được lưu.' });
+    res.json({ message: "Đánh giá đã được lưu." });
   } catch (err) {
-    console.error('Lỗi khi đánh giá:', err);
-    res.status(500).json({ message: 'Lỗi khi đánh giá.', error: err.message });
+    console.error("Lỗi khi đánh giá:", err);
+    res.status(500).json({ message: "Lỗi khi đánh giá.", error: err.message });
   }
 });
 
