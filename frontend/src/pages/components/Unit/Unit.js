@@ -107,7 +107,7 @@ function Unit() {
         <div className={cx('wrapper')}>
             <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar closeOnClick draggable />
             <div className={cx('header')}>
-                <h2>Danh sách hãng sản xuất</h2>
+                <h2>Danh sách đơn vị</h2>
                 {error && <p>{error}</p>}
                 <Button
                     className={cx('add-btn')}
@@ -131,7 +131,7 @@ function Unit() {
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Tên hãng sản xuất</th>
+                            <th>Tên đơn vị</th>
                             <th>Mô tả</th>
                             <th>Hành động</th>
                         </tr>

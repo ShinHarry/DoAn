@@ -58,7 +58,7 @@ function PaymentReturn() {
                         const shippingFee = parseInt(sessionStorage.getItem('shippingFee')) || 0;
                         const shippingAddress = sessionStorage.getItem('shippingAddress');
                         const discountCode = sessionStorage.getItem('discountCode') || '';
-                        console.log(discountCode)
+                        console.log(discountCode);
                         const discount = parseInt(sessionStorage.getItem('discountValue')) || 0;
                         const name = sessionStorage.getItem('name');
                         const phone = sessionStorage.getItem('phone');
@@ -87,7 +87,7 @@ function PaymentReturn() {
                             shippingMethod: hardcodedShippingMethod,
                             shippingFee: shippingFee,
                             totalPrice: currentSubtotal,
-                            totalAmount: finalAmountFromVnpay,
+                            totalAmount: Math.max(finalAmountFromVnpay, 0),
                             discountCode: discountCode,
                             discount: discount,
                             paymentMethod: 'vnpay',

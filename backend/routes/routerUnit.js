@@ -27,7 +27,7 @@ router.post("/", verifyToken, authPage(["admin", "mod"]), async (req, res) => {
       nameUnit,
     });
     if (existingUnit) {
-      return res.status(409).json({ message: "Hãng sản xuất đã tồn tại." });
+      return res.status(409).json({ message: "Đơn vị đã tồn tại." });
     }
 
     const newUnit = new Unit({

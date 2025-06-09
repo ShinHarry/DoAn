@@ -364,7 +364,7 @@ function Checkout() {
             shippingMethod,
             shippingFee,
             totalPrice: total,
-            totalAmount: finalTotal,
+            totalAmount: Math.max(finalTotal, 0),
             discountCode: selectedDiscount.value,
             discount: discountAmount + myDiscountAmount || 0,
             paymentMethod,
